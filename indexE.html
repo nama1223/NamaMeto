@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NamaMeto</title>
+    <style>
+        /* テーマカラー変数 */
+        :root {
+            --bg-color: #121212; --surface-color: #1e1e1e;
+            --text-color: #e0e0e0; --primary-color: #bb86fc; --secondary-color: #03dac6;
+            --dot-bg: #333; --dot-weak: #666; --flash-color: #333333;
+        }
+        [data-theme="light"] {
+            --bg-color: #f0f2f5; --surface-color: #ffffff;
+            --text-color: #333333; --primary-color: #6200ee; --secondary-color: #018786;
+            --dot-bg: #e0e0e0; --dot-weak: #999; --flash-color: #cccccc;
+        }
+        [data-theme="matrix"] {
+            --bg-color: #000000; --surface-color: #111111;
+            --text-color: #00ff00; --primary-color: #00ff00; --secondary-color: #00aa00;
+            --dot-bg: #222; --dot-weak: #005500; --flash-color: #003300;
+        }
+        [data-theme="sunset"] {
+            --bg-color: #2d1b2e; --surface-color: #4a2b4d;
+            --text-color: #ffe6e6; --primary-color: #ff7e67; --secondary-color: #ffb4a2;
+            --dot-bg: #3a1c3b; --dot-weak: #8a5a8c; --flash-color: #5c355c;
+        }
+        [data-theme="ocean"] {
+            --bg-color: #0a192f; --surface-color: #112240;
+            --text-color: #ccd6f6; --primary-color: #64ffda; --secondary-color: #48b09d;
+            --dot-bg: #0d213f; --dot-weak: #233f6e; --flash-color: #1a365d;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--bg-color); color: var(--text-color);
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; margin: 0; user-select: none;
+            transition: background-color 0.1s ease-out, color 0.3s;
+        }
+        body.flash-active { background-color: var(--flash-color); }
+
+        .container {
+            background-color: var(--surface-color); padding: 1.5rem;
+            border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+            width: 95%; max-width: 450px; transition: background-color 0.3s;
+        }
+
+        h1 { text-align: center; margin-top: 0; margin-bottom: 15px; font-weight: 800; letter-spacing: 2px; }
+
+        /* Inputs & Selects */
+        label { display: block; font-size: 0.8rem; margin-bottom: 5px; opacity: 0.8; }
+        select, input[type="number"], input[type="text"] {
+            background: var(--bg-color); border: 1px solid var(--dot-weak);
+            color: var(--text-color); padding: 10px; border-radius: 8px;
+            font-size: 1.1rem; width: 100%; box-sizing: border-box; text-align: center;
+        }
+
+        .top-settings { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+
+        .options-row {
+            display: flex; justify-content: space-around; background: var(--bg-color);
+            padding: 10px; border-radius: 8px; margin-bottom: 20px;
+        }
+        .options-row label { margin-bottom: 0; display: flex; align-items: center; gap: 5px; cursor: pointer; font-size: 0.9rem; }
+
+        /* BPM Section */
+        .bpm-section {
+            background: var(--bg-color); padding: 15px; border-radius: 12px;
+            display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; gap: 15px;
+        }
+        .bpm-display { text-align: center; flex-grow: 1; }
+        .bpm-display input { font-size: 2.5rem; font-weight: bold; background: transparent; border: none; color: var(--primary-color); width: 120px; padding: 0; }
+
+        .dial-container {
+            width: 80px; height: 80px; border-radius: 50%;
+            background: conic-gradient(from 180deg, var(--dot-weak), var(--surface-color));
+            position: relative; cursor: pointer; display: flex; justify-content: center; align-items: center; touch-action: none; flex-shrink: 0;
+            border: 2px solid var(--dot-bg);
+        }
+        .dial-indicator {
+            width: 8px; height: 8px; background-color: var(--secondary-color);
+            border-radius: 50%; position: absolute; top: 10px; box-shadow: 0 0 5px var(--secondary-color);
+        }
+
+        .vertical-slider-container { height: 200px; display: flex; align-items: center; flex-shrink: 0; }
+        input[type="range"][orient="vertical"] { writing-mode: bt-lr; -webkit-appearance: slider-vertical; width: 25px; height: 180px; }
+
+        .jump-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+        .jump-btn {
+            background: var(--surface-color); border: 1px solid var(--dot-weak); color: var(--text-color);
+            padding: 12px 5px; border-radius: 6px; cursor: pointer; font-size: 1.1rem; font-weight: bold;
+        }
+        .jump-btn:active { background: var(--dot-weak); }
+
+        /* Sequencer */
+        .sequencer-container { margin: 20px 0; touch-action: none; /* スワイプ操作用 */ }
+        .sequencer { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; min-height: 60px; align-items: center; }
+        
+        .beat-dot {
+            border-radius: 50%; cursor: pointer; transition: all 0.1s;
+            border: 2px solid transparent; display: flex; justify-content: center; align-items: center;
+        }
+        .beat-dot[data-state="0"] { width: 20px; height: 20px; background-color: transparent; border-color: var(--dot-weak); }
+        .beat-dot[data-state="1"] { width: 30px; height: 30px; background-color: var(--dot-weak); }
+        .beat-dot[data-state="2"] { width: 40px; height: 40px; background-color: var(--secondary-color); }
+        .beat-dot[data-state="3"] { width: 50px; height: 50px; background-color: var(--primary-color); box-shadow: 0 0 15px var(--primary-color); }
+        .beat-dot.active { border-color: white; transform: scale(1.15); }
+
+        /* Presets */
+        .presets { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+        .preset-btn {
+            background: var(--bg-color); border: 1px solid var(--dot-weak); color: var(--text-color);
+            padding: 10px 5px; border-radius: 6px; font-size: 0.8rem; cursor: pointer; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;
+        }
+        .preset-btn.has-data { border-color: var(--secondary-color); font-weight: bold; }
+
+        /* Play Button */
+        #playBtn {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            border: none; color: #fff; padding: 40px 20px; font-size: 2rem; border-radius: 16px;
+            cursor: pointer; width: 100%; font-weight: bold; letter-spacing: 3px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); margin-top: 10px;
+        }
+        #playBtn:active { transform: translateY(2px); }
+        #playBtn.playing { background: #cf6679; box-shadow: 0 4px 15px rgba(207, 102, 121, 0.3); }
+
+        /* Custom Modal */
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 1000;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-content {
+            background: var(--surface-color); padding: 25px; border-radius: 16px; width: 85%; max-width: 320px; text-align: center;
+        }
+        .modal-buttons { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+        .modal-buttons button { padding: 15px; border-radius: 8px; border: none; font-size: 1.1rem; cursor: pointer; font-weight: bold; }
+        .btn-load { background: var(--secondary-color); color: #000; }
+        .btn-save { background: var(--primary-color); color: #fff; }
+        .btn-clear { background: #cf6679; color: #fff; }
+        .btn-cancel { background: var(--dot-weak); color: #fff; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>NamaMeto</h1>
+
+        <div class="options-row">
+            <label><input type="checkbox" id="flashToggle"> フラッシュ</label>
+            <label><input type="checkbox" id="vibrateToggle"> バイブレーション</label>
+        </div>
+
+        <div class="top-settings">
+            <div>
+                <label>Theme (テーマ)</label>
+                <select id="themeSelect">
+                    <option value="dark">Dark</option>
+                    <option value="light">Light</option>
+                    <option value="matrix">Matrix</option>
+                    <option value="sunset">Sunset</option>
+                    <option value="ocean">Ocean</option>
+                </select>
+            </div>
+            <div>
+                <label>Sound (音色)</label>
+                <select id="soundSelect">
+                    <option value="click">Modern Click</option>
+                    <option value="beep">Digital Beep</option>
+                    <option value="clave">Wood Clave</option>
+                    <option value="synth">Synth Pluck</option>
+                </select>
+            </div>
+            <div>
+                <label>Beats (拍数)</label>
+                <input type="number" id="beatsInput" value="4" min="1" max="16">
+            </div>
+        </div>
+
+        <div class="bpm-section">
+            <div class="dial-container" id="bpmDial">
+                <div class="dial-indicator" id="dialIndicator"></div>
+            </div>
+            
+            <div class="bpm-display">
+                <label>BPM</label>
+                <input type="number" id="bpmInput" value="120" min="20" max="300">
+                <div class="jump-buttons">
+                    <button class="jump-btn" onclick="adjustBPM(-10)">-10</button>
+                    <button class="jump-btn" onclick="adjustBPM(10)">+10</button>
+                    <button class="jump-btn" onclick="adjustBPM(-5)">-5</button>
+                    <button class="jump-btn" onclick="adjustBPM(5)">+5</button>
+                </div>
+            </div>
+
+            <div class="vertical-slider-container">
+                <input type="range" id="bpmSlider" value="120" min="20" max="300" orient="vertical">
+            </div>
+        </div>
+
+        <div class="sequencer-container">
+            <label style="text-align: center;">タップで切替 / 上下スワイプで強弱調整</label>
+            <div class="sequencer" id="sequencer"></div>
+        </div>
+
+        <div class="presets">
+            <button class="preset-btn" id="preset1" onclick="openModal(1)">Slot 1</button>
+            <button class="preset-btn" id="preset2" onclick="openModal(2)">Slot 2</button>
+            <button class="preset-btn" id="preset3" onclick="openModal(3)">Slot 3</button>
+        </div>
+
+        <button id="playBtn">START</button>
+    </div>
+
+    <div id="presetModal" class="modal-overlay">
+        <div class="modal-content">
+            <h2 id="modalTitle">Slot 1</h2>
+            <input type="text" id="presetName" placeholder="プリセット名 (例: 8ビート練習用)">
+            
+            <div class="modal-buttons" id="modalBtnsEmpty">
+                <button class="btn-save" onclick="savePreset()">保存する</button>
+                <button class="btn-cancel" onclick="closeModal()">キャンセル (何もしない)</button>
+            </div>
+
+            <div class="modal-buttons" id="modalBtnsFull" style="display: none;">
+                <button class="btn-load" onclick="loadPreset()">読み込む</button>
+                <button class="btn-save" onclick="savePreset()">上書き保存する</button>
+                <button class="btn-clear" onclick="clearPreset()">データを削除</button>
+                <button class="btn-cancel" onclick="closeModal()">キャンセル (何もしない)</button>
+            </div>
+        </div>
+    </div>
+
+<script>
+    let audioCtx = null; let isPlaying = false; let currentBeat = 0; let nextNoteTime = 0.0; let timerID = null;
+    const lookahead = 25.0; const scheduleAheadTime = 0.1;
+
+    let bpm = 120; let totalBeats = 4; let beatPattern = [3, 1, 2, 1];
+    let soundSet = 'click'; let currentTheme = 'dark';
+    let activeSlot = 1;
+
+    const playBtn = document.getElementById('playBtn');
+    const bpmInput = document.getElementById('bpmInput'); const bpmSlider = document.getElementById('bpmSlider');
+    const beatsInput = document.getElementById('beatsInput'); const soundSelect = document.getElementById('soundSelect');
+    const themeSelect = document.getElementById('themeSelect'); const sequencer = document.getElementById('sequencer');
+    const bpmDial = document.getElementById('bpmDial'); const dialIndicator = document.getElementById('dialIndicator');
+    const flashToggle = document.getElementById('flashToggle'); const vibrateToggle = document.getElementById('vibrateToggle');
+    const modal = document.getElementById('presetModal');
+
+    function init() {
+        renderSequencer(); updateDialVisual(); updatePresetButtons();
+        
+        bpmInput.addEventListener('change', (e) => setBPM(e.target.value));
+        bpmSlider.addEventListener('input', (e) => setBPM(e.target.value));
+        soundSelect.addEventListener('change', (e) => soundSet = e.target.value);
+        themeSelect.addEventListener('change', (e) => {
+            currentTheme = e.target.value;
+            document.body.setAttribute('data-theme', currentTheme);
+        });
+        
+        beatsInput.addEventListener('change', (e) => {
+            let val = parseInt(e.target.value);
+            if(val < 1) val = 1; if(val > 16) val = 16;
+            totalBeats = val; updateBeatPatternSize(); renderSequencer();
+        });
+
+        playBtn.addEventListener('click', togglePlay);
+        setupDial(); setupSequencerDrag();
+    }
+
+    // --- Modal & Preset Logic ---
+    function openModal(slot) {
+        activeSlot = slot;
+        document.getElementById('modalTitle').textContent = `Slot ${slot}`;
+        const dataStr = localStorage.getItem(`namameto_slot_${slot}`);
+        
+        if (dataStr) {
+            const data = JSON.parse(dataStr);
+            document.getElementById('presetName').value = data.name || `Preset ${slot}`;
+            document.getElementById('modalBtnsEmpty').style.display = 'none';
+            document.getElementById('modalBtnsFull').style.display = 'flex';
+        } else {
+            document.getElementById('presetName').value = '';
+            document.getElementById('modalBtnsEmpty').style.display = 'flex';
+            document.getElementById('modalBtnsFull').style.display = 'none';
+        }
+        modal.classList.add('active');
+    }
+
+    function closeModal() { modal.classList.remove('active'); }
+
+    function savePreset() {
+        const name = document.getElementById('presetName').value || `Preset ${activeSlot}`;
+        const data = { name, bpm, totalBeats, beatPattern, soundSet, theme: currentTheme, flash: flashToggle.checked, vibrate: vibrateToggle.checked };
+        localStorage.setItem(`namameto_slot_${activeSlot}`, JSON.stringify(data));
+        updatePresetButtons(); closeModal();
+    }
+
+    function loadPreset() {
+        const dataStr = localStorage.getItem(`namameto_slot_${activeSlot}`);
+        if(dataStr) {
+            const data = JSON.parse(dataStr);
+            bpm = data.bpm; totalBeats = data.totalBeats; beatPattern = data.beatPattern;
+            soundSet = data.soundSet; currentTheme = data.theme || 'dark';
+            flashToggle.checked = data.flash || false; vibrateToggle.checked = data.vibrate || false;
+            
+            bpmInput.value = bpm; bpmSlider.value = bpm; beatsInput.value = totalBeats;
+            soundSelect.value = soundSet; themeSelect.value = currentTheme;
+            document.body.setAttribute('data-theme', currentTheme);
+            
+            updateDialVisual(); renderSequencer(); closeModal();
+        }
+    }
+
+    function clearPreset() {
+        localStorage.removeItem(`namameto_slot_${activeSlot}`);
+        updatePresetButtons(); closeModal();
+    }
+
+    function updatePresetButtons() {
+        for(let i=1; i<=3; i++) {
+            const btn = document.getElementById(`preset${i}`);
+            const dataStr = localStorage.getItem(`namameto_slot_${i}`);
+            if(dataStr) {
+                const data = JSON.parse(dataStr);
+                btn.textContent = data.name; btn.classList.add('has-data');
+            } else {
+                btn.textContent = `[ Empty ${i} ]`; btn.classList.remove('has-data');
+            }
+        }
+    }
+
+    // --- Dial & BPM ---
+    function setupDial() {
+        let isDragging = false, startAngle = 0, startBPM = bpm;
+        const getAngle = (e) => {
+            const rect = bpmDial.getBoundingClientRect();
+            const cx = rect.left + rect.width/2, cy = rect.top + rect.height/2;
+            const px = e.touches ? e.touches[0].clientX : e.clientX;
+            const py = e.touches ? e.touches[0].clientY : e.clientY;
+            return Math.atan2(py - cy, px - cx) * (180 / Math.PI);
+        };
+        const startDrag = (e) => { isDragging = true; startAngle = getAngle(e); startBPM = bpm; e.preventDefault(); };
+        const onDrag = (e) => {
+            if (!isDragging) return;
+            let diff = getAngle(e) - startAngle;
+            if (diff > 180) diff -= 360; if (diff < -180) diff += 360;
+            setBPM(Math.round(startBPM + (diff / 2)));
+        };
+        const stopDrag = () => { isDragging = false; };
+        bpmDial.addEventListener('mousedown', startDrag); document.addEventListener('mousemove', onDrag); document.addEventListener('mouseup', stopDrag);
+        bpmDial.addEventListener('touchstart', startDrag, {passive: false}); document.addEventListener('touchmove', onDrag, {passive: false}); document.addEventListener('touchend', stopDrag);
+    }
+    function updateDialVisual() { dialIndicator.style.transform = `rotate(${((bpm - 20)/280)*360}deg) translateY(-30px)`; }
+    function setBPM(val) { bpm = Math.max(20, Math.min(300, parseInt(val))); bpmInput.value = bpm; bpmSlider.value = bpm; updateDialVisual(); }
+    function adjustBPM(amount) { setBPM(bpm + amount); }
+
+    // --- Sequencer (Smooth Swipe Adjust) ---
+    function updateBeatPatternSize() {
+        const newPattern = [];
+        for (let i = 0; i < totalBeats; i++) newPattern.push(i < beatPattern.length ? beatPattern[i] : 1);
+        beatPattern = newPattern;
+    }
+
+    function setupSequencerDrag() {
+        let activeIdx = -1, startY = 0, startVal = 0, isTap = true;
+
+        const getPt = (e) => e.touches ? e.touches[0] : e;
+
+        sequencer.addEventListener('mousedown', handleStart);
+        sequencer.addEventListener('touchstart', handleStart, {passive: false});
+        document.addEventListener('mousemove', handleMove);
+        document.addEventListener('touchmove', handleMove, {passive: false});
+        document.addEventListener('mouseup', handleEnd);
+        document.addEventListener('touchend', handleEnd);
+
+        function handleStart(e) {
+            const dot = e.target.closest('.beat-dot');
+            if(!dot) return;
+            activeIdx = parseInt(dot.dataset.index);
+            startY = getPt(e).clientY;
+            startVal = beatPattern[activeIdx];
+            isTap = true;
+            e.preventDefault(); // スクロール防止
+        }
+
+        function handleMove(e) {
+            if (activeIdx === -1) return;
+            const currentY = getPt(e).clientY;
+            const diff = startY - currentY; // 上へスワイプでプラス
+
+            if (Math.abs(diff) > 10) isTap = false; // 10px以上動かしたらスワイプ判定
+
+            // 15px動かす毎に1段階変わる
+            let step = Math.floor(diff / 15);
+            let newVal = Math.max(0, Math.min(3, startVal + step));
+
+            if (beatPattern[activeIdx] !== newVal) {
+                beatPattern[activeIdx] = newVal;
+                document.querySelector(`.beat-dot[data-index="${activeIdx}"]`).dataset.state = newVal;
+            }
+        }
+
+        function handleEnd(e) {
+            if (activeIdx !== -1 && isTap) {
+                // タップ判定なら単純に次へサイクル (0->1->2->3->0)
+                let n = beatPattern[activeIdx] - 1;
+                if (n < 0) n = 3;
+                beatPattern[activeIdx] = n;
+                document.querySelector(`.beat-dot[data-index="${activeIdx}"]`).dataset.state = n;
+            }
+            activeIdx = -1;
+        }
+    }
+
+    function renderSequencer() {
+        sequencer.innerHTML = '';
+        beatPattern.forEach((state, index) => {
+            const dot = document.createElement('div');
+            dot.className = 'beat-dot';
+            dot.dataset.state = state;
+            dot.dataset.index = index;
+            sequencer.appendChild(dot);
+        });
+    }
+
+    // --- Audio Engine ---
+    function playSound(time, level) {
+        if (level === 0) return;
+        const osc = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        osc.connect(gainNode); gainNode.connect(audioCtx.destination);
+        let freq, vol, type = 'sine', decay = 0.1;
+
+        switch(soundSet) {
+            case 'click': // 高低差を強調
+                freq = level === 3 ? 2000 : level === 2 ? 1000 : 500;
+                vol = level === 3 ? 1.0 : level === 2 ? 0.6 : 0.3;
+                decay = 0.05;
+                osc.frequency.setValueAtTime(freq, time);
+                osc.frequency.exponentialRampToValueAtTime(10, time + decay); // ピッチを急降下させて「カチッ」とさせる
+                break;
+            case 'beep': // デジタルウォッチ風
+                type = 'square';
+                freq = level === 3 ? 1760 : level === 2 ? 880 : 440; // A6, A5, A4
+                vol = level === 3 ? 0.15 : level === 2 ? 0.1 : 0.05;
+                decay = 0.1;
+                osc.frequency.setValueAtTime(freq, time); // ピッチ降下させない
+                break;
+            case 'clave': // クラーベ/ウッドブロック風
+                type = 'triangle';
+                freq = level === 3 ? 2500 : level === 2 ? 1800 : 1200;
+                vol = level === 3 ? 1.5 : level === 2 ? 0.8 : 0.4;
+                decay = 0.03; // 非常に短く
+                osc.frequency.setValueAtTime(freq, time);
+                break;
+            case 'synth': // シンセプラック
+                type = 'sawtooth';
+                freq = level === 3 ? 880 : level === 2 ? 440 : 220;
+                vol = level === 3 ? 0.4 : level === 2 ? 0.2 : 0.1;
+                decay = 0.15;
+                osc.frequency.setValueAtTime(freq, time);
+                osc.frequency.exponentialRampToValueAtTime(freq/2, time + decay);
+                break;
+        }
+
+        osc.type = type;
+        gainNode.gain.setValueAtTime(vol, time);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, time + decay);
+        osc.start(time); osc.stop(time + decay);
+    }
+
+    function scheduler() {
+        while (nextNoteTime < audioCtx.currentTime + scheduleAheadTime) {
+            scheduleNote(currentBeat, nextNoteTime); nextNote();
+        }
+        timerID = window.setTimeout(scheduler, lookahead);
+    }
+
+    function scheduleNote(beatNumber, time) {
+        const level = beatPattern[beatNumber];
+        playSound(time, level);
+
+        const drawTime = (time - audioCtx.currentTime) * 1000;
+        setTimeout(() => {
+            if (level === 0) return;
+            document.querySelectorAll('.beat-dot').forEach(d => d.classList.remove('active'));
+            const activeDot = document.querySelector(`.beat-dot[data-index="${beatNumber}"]`);
+            if(activeDot) activeDot.classList.add('active');
+
+            if (flashToggle.checked) {
+                document.body.classList.add('flash-active');
+                setTimeout(() => document.body.classList.remove('flash-active'), 50);
+            }
+            if (vibrateToggle.checked && navigator.vibrate) {
+                navigator.vibrate(level === 3 ? 50 : level === 2 ? 30 : 15);
+            }
+        }, Math.max(0, drawTime));
+    }
+
+    function nextNote() {
+        nextNoteTime += 60.0 / bpm;
+        currentBeat = (currentBeat + 1) % totalBeats;
+    }
+
+    function togglePlay() {
+        isPlaying = !isPlaying;
+        if (isPlaying) {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            currentBeat = 0; nextNoteTime = audioCtx.currentTime + 0.1;
+            playBtn.textContent = "STOP"; playBtn.classList.add('playing');
+            scheduler();
+        } else {
+            window.clearTimeout(timerID);
+            playBtn.textContent = "START"; playBtn.classList.remove('playing');
+            document.querySelectorAll('.beat-dot').forEach(d => d.classList.remove('active'));
+            document.body.classList.remove('flash-active');
+        }
+    }
+
+    init();
+</script>
+</body>
+</html>

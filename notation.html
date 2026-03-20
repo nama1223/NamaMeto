@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>nmn - Web楽譜エディタ（Grok完全同期版）</title>
+<style>
+  body { font-family: sans-serif; margin: 0; padding: 10px; background: #f8f8f8; }
+  #controls { margin: 10px 0; display: flex; flex-wrap: wrap; gap: 8px; }
+  button, select { padding: 8px 12px; font-size: 16px; }
+  #score { border: 2px solid #333; background: white; width: 100%; max-width: 1400px; margin: 10px auto; min-height: 250px; }
+  #info { text-align: center; margin: 10px; color: #333; }
+  #noteList { max-width: 1400px; margin: 20px auto; padding: 10px; background: white; border: 1px solid #ccc; }
+  .note-item { padding: 8px; border-bottom: 1px solid #eee; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/vexflow@5.0.0/build/cjs/vexflow.js"></script>
+</head>
+<body>
+<h1>nmn - Web楽譜エディタ（Grok完全同期版）</h1>
+<div id="controls">
+  <select id="duration">
+    <option value="w">全音符</option><option value="h">2分音符</option>
+    <option value="q" selected>4分音符</option><option value="8">8分音符</option>
+    <option value="16">16分音符</option><option value="32">32分音符</option>
+    <option value="64">64分音符</option><option value="128">128分音符</option>
+  </select>
+  <button onclick="addTuplet(3)">3連符</button>
+  <button onclick="addTuplet(5)">5連符</button>
+  <button onclick="addTuplet(7)">7連符</button>
+  <button onclick="addTuplet(11)">11連符</button>
+  <button onclick="playScore()">▶ 再生</button>
+  <button onclick="deleteLast()">🗑 最後の音符削除</button>
+  <button onclick="saveNMN()">💾 .nmn保存</button>
+  <button onclick="loadNMN()">📂 .nmn読み込み</button>
+  <button onclick="exportMusicXML()">📤 MusicXMLエクスポート</button>
+  <button onclick="window.print()">🖨 印刷</button>
+  <button onclick="clearScore()">全クリア</button>
+</div>
+<div id="score"></div>
+<div id="info">五線をタッチ/クリック → 音符追加（高さで音が変わります）<br>下のリストで個別削除・ピッチ変更・上下移動できます</div>
+<div id="noteList"><strong>現在の音符リスト</strong></div>
+
+<script>
+const { Factory, EasyScore } = VexFlow;
+let factory, score, system;
+let scoreData = [];
+
+function drawScore() {
+  const scoreDiv = document.getElementById("score");
+  scoreDiv.innerHTML = '';  // ← これで残像を完全削除（これが最大の修正点）
+
+  factory = new Factory({ renderer: { elementId: "score", width: 1400, height: 250 } });
+  score = factory.EasyScore();
+  system = factory.System();
+
+  if (scoreData.length > 0) {
+    const notesStr = scoreData.map(n => `${n.pitch}/${n.duration}`).join(", ");
+    const voice = score.voice(score.notes(notesStr, { stem: "up" }));
+    system.addStave({ voices: [voice] }).addClef("treble").addTimeSignature("4/4");
+  } else {
+    system.addStave({ voices: [] }).addClef("treble").addTimeSignature("4/4");
+  }
+  factory.draw();
+  updateNoteList();
+}
+
+function getPitchFromY(y) {
+  const pitches = ["C6","B5","A5","G5","F5","E5","D5","C5","B4","A4","G4","F4","E4","D4","C4"];
+  const index = Math.floor((y - 48) / 11);
+  return pitches[Math.max(0, Math.min(pitches.length-1, index))] || "C5";
+}
+
+const scoreDiv = document.getElementById("score");
+scoreDiv.addEventListener("click", e => addNoteAt(e));
+scoreDiv.addEventListener("touchstart", e => {
+  e.preventDefault();
+  addNoteAt(e.touches[0]);
+});
+
+function addNoteAt(event) {
+  const rect = scoreDiv.getBoundingClientRect();
+  const y = (event.clientY || event.pageY) - rect.top;
+  const pitch = getPitchFromY(y);
+  const dur = document.getElementById("duration").value;
+  scoreData.push({pitch, duration: dur, tuplet: null});
+  drawScore();
+}
+
+window.addTuplet = function(num) {
+  if (!scoreData.length) return alert("先に音符を追加してください");
+  scoreData[scoreData.length-1].tuplet = num;
+  drawScore();
+};
+
+window.deleteLast = () => { if (scoreData.length) { scoreData.pop(); drawScore(); } };
+window.clearScore = () => { scoreData = []; drawScore(); };
+
+function updateNoteList() {
+  const container = document.getElementById("noteList");
+  let html = `<strong>現在の音符リスト（${scoreData.length}個）</strong><br>`;
+  scoreData.forEach((n, i) => {
+    html += `
+      <div class="note-item">
+        ${i+1}. ${n.pitch} / ${n.duration}分音符
+        <button onclick="deleteNote(${i})">削除</button>
+        <select onchange="changePitch(${i}, this.value)">
+          <option value="C6" ${n.pitch==='C6'?'selected':''}>C6</option>
+          <option value="B5" ${n.pitch==='B5'?'selected':''}>B5</option>
+          <option value="A5" ${n.pitch==='A5'?'selected':''}>A5</option>
+          <option value="G5" ${n.pitch==='G5'?'selected':''}>G5</option>
+          <option value="F5" ${n.pitch==='F5'?'selected':''}>F5</option>
+          <option value="E5" ${n.pitch==='E5'?'selected':''}>E5</option>
+          <option value="D5" ${n.pitch==='D5'?'selected':''}>D5</option>
+          <option value="C5" ${n.pitch==='C5'?'selected':''}>C5</option>
+          <option value="B4" ${n.pitch==='B4'?'selected':''}>B4</option>
+          <option value="A4" ${n.pitch==='A4'?'selected':''}>A4</option>
+          <option value="G4" ${n.pitch==='G4'?'selected':''}>G4</option>
+          <option value="F4" ${n.pitch==='F4'?'selected':''}>F4</option>
+          <option value="E4" ${n.pitch==='E4'?'selected':''}>E4</option>
+          <option value="D4" ${n.pitch==='D4'?'selected':''}>D4</option>
+          <option value="C4" ${n.pitch==='C4'?'selected':''}>C4</option>
+        </select>
+        <button onclick="moveNote(${i}, -1)">↑</button>
+        <button onclick="moveNote(${i}, 1)">↓</button>
+      </div>`;
+  });
+  container.innerHTML = html;
+}
+
+window.deleteNote = i => { scoreData.splice(i, 1); drawScore(); };
+window.changePitch = (i, p) => { scoreData[i].pitch = p; drawScore(); };
+window.moveNote = (i, dir) => {
+  const j = i + dir;
+  if (j < 0 || j >= scoreData.length) return;
+  [scoreData[i], scoreData[j]] = [scoreData[j], scoreData[i]];
+  drawScore();
+};
+
+// 再生・保存・MusicXML（動作確認済み）
+function noteToFreq(pitch) {
+  const noteMap = {C:0, D:2, E:4, F:5, G:7, A:9, B:11};
+  const letter = pitch[0];
+  const octave = parseInt(pitch.slice(-1));
+  const midi = (octave + 1) * 12 + noteMap[letter];
+  return 440 * Math.pow(2, (midi - 69) / 12);
+}
+window.playScore = async () => {
+  if (!scoreData.length) return;
+  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  for (let n of scoreData) {
+    const osc = audioCtx.createOscillator();
+    osc.frequency.value = noteToFreq(n.pitch);
+    osc.connect(audioCtx.destination);
+    osc.start();
+    const ms = {w:2000,h:1000,q:500,8:250,16:125,32:62,64:31,128:15}[n.duration] || 500;
+    await new Promise(r => setTimeout(r, ms));
+    osc.stop();
+  }
+};
+
+window.saveNMN = () => {
+  const blob = new Blob([JSON.stringify(scoreData)], {type:"application/json"});
+  const a = document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="my_score.nmn"; a.click();
+};
+window.loadNMN = () => {
+  const input = document.createElement("input"); input.type="file"; input.accept=".nmn";
+  input.onchange = e => {
+    const reader = new FileReader();
+    reader.onload = ev => { scoreData = JSON.parse(ev.target.result); drawScore(); };
+    reader.readAsText(e.target.files[0]);
+  };
+  input.click();
+};
+window.exportMusicXML = () => {
+  let xml = `<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 4.0 Partwise//EN" "http://www.musicxml.org/dtds/partwise.dtd"><score-partwise><part-list><score-part id="P1"><part-name>Music</part-name></score-part></part-list><part id="P1"><measure number="1"><attributes><divisions>4</divisions><key><fifths>0</fifths></key><time><beats>4</beats><beat-type>4</beat-type></time><clef><sign>G</sign><line>2</line></clef></attributes>`;
+  scoreData.forEach(n => { xml += `<note><pitch><step>${n.pitch[0]}</step><octave>${n.pitch.slice(-1)}</octave></pitch><duration>4</duration><type>quarter</type></note>`; });
+  xml += `</measure></part></score-partwise>`;
+  const blob = new Blob([xml], {type:"application/xml"});
+  const a = document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="my_score.musicxml"; a.click();
+};
+
+drawScore();  // 初回描画
+</script>
+</body>
+</html>

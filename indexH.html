@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NamaMeto</title>
+    <style>
+        /* テーマカラー変数 */
+        :root {
+            --bg-color: #dccaaf; --surface-color: #fdf8f5;
+            --text-color: #4a3f35; --primary-color: #d4a373; --secondary-color: #dda15e;
+            --dot-bg: #e6d5c3; --dot-weak: #bda692; --flash-color: #ffffff;
+        }
+        [data-theme="dark"] {
+            --bg-color: #121212; --surface-color: #2c2c2c;
+            --text-color: #e0e0e0; --primary-color: #bb86fc; --secondary-color: #03dac6;
+            --dot-bg: #444; --dot-weak: #777; --flash-color: #444444;
+        }
+        [data-theme="light"] {
+            --bg-color: #e5e5e5; --surface-color: #d4d4d4;
+            --text-color: #333333; --primary-color: #6200ee; --secondary-color: #018786;
+            --dot-bg: #bbb; --dot-weak: #888; --flash-color: #eeeeee;
+        }
+        [data-theme="darkred"] {
+            --bg-color: #2b0f0f; --surface-color: #3d1a1a;
+            --text-color: #fcdcdc; --primary-color: #ff4d4d; --secondary-color: #ff8080;
+            --dot-bg: #4d2626; --dot-weak: #8a4848; --flash-color: #5c2020;
+        }
+        [data-theme="navy"] {
+            --bg-color: #111b2e; --surface-color: #1e293b;
+            --text-color: #e2e8f0; --primary-color: #38bdf8; --secondary-color: #818cf8;
+            --dot-bg: #334155; --dot-weak: #475569; --flash-color: #2a3b5c;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--bg-color); color: var(--text-color);
+            display: flex; flex-direction: column; align-items: center;
+            min-height: 100vh; margin: 0; user-select: none;
+            transition: background-color 0.1s ease-out, color 0.3s;
+        }
+        body.flash-active { background-color: var(--flash-color) !important; }
+
+        /* タブUI */
+        .app-tabs {
+            display: flex; gap: 5px; margin-top: 15px; width: 95%; max-width: 450px;
+        }
+        .tab-btn {
+            flex: 1; padding: 12px 5px; background: var(--dot-weak); color: #fff;
+            border: none; border-radius: 12px 12px 0 0; cursor: pointer;
+            font-weight: bold; font-size: 0.9rem; transition: background 0.2s;
+        }
+        .tab-btn.active { background: var(--surface-color); color: var(--text-color); }
+        .tab-btn.disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .container {
+            background-color: var(--surface-color); padding: 1.5rem;
+            border-radius: 0 0 16px 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            width: 95%; max-width: 450px; transition: background-color 0.3s;
+            z-index: 10; box-sizing: border-box;
+        }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        .ad-spacer { height: 150px; width: 100%; pointer-events: none; flex-shrink: 0; }
+
+        h1 { text-align: center; margin-top: 5px; margin-bottom: 15px; font-weight: 800; letter-spacing: 2px; }
+
+        .control-label { display: block; font-size: 0.8rem; margin-bottom: 5px; opacity: 0.8; font-weight: bold; pointer-events: none; }
+        
+        /* スクロール操作＆ホバー対応 */
+        .scrollable-control {
+            border: 2px solid transparent; border-radius: 8px;
+            transition: border-color 0.2s, background-color 0.2s; cursor: ns-resize;
+            touch-action: pan-x; /* 縦スワイプはJSで処理するためブラウザの縦スクロールを抑制 */
+        }
+        .scrollable-control:hover, .scrollable-control.touch-active {
+            border-color: var(--secondary-color); background-color: rgba(255, 255, 255, 0.1);
+        }
+        select, input[type="number"], input[type="text"] {
+            background: var(--bg-color); border: 1px solid var(--dot-weak); color: var(--text-color);
+            padding: 10px; border-radius: 8px; font-size: 1.1rem; width: 100%; box-sizing: border-box; text-align: center; cursor: pointer;
+        }
+        .scrollable-control select, .scrollable-control input { border: none; }
+
+        .top-settings { display: grid; grid-template-columns: 1.2fr 1.2fr 0.8fr; gap: 5px; margin-bottom: 15px; }
+
+        .stepper-ui {
+            display: flex; align-items: center; justify-content: space-between;
+            background: var(--bg-color); border-radius: 8px; overflow: hidden; height: 44px;
+        }
+        .stepper-ui button { background: transparent; color: var(--text-color); border: none; width: 40px; height: 100%; font-size: 1.5rem; cursor: pointer; font-weight: bold; }
+        .stepper-ui button:active { background: var(--dot-weak); }
+        .stepper-ui span { font-weight: bold; font-size: 1.1rem; flex-grow: 1; text-align: center; pointer-events: none; }
+
+        .options-row {
+            display: flex; justify-content: space-around; background: var(--bg-color);
+            padding: 10px; border-radius: 8px; margin-bottom: 5px; border: 1px solid var(--dot-weak);
+        }
+        /* チェックボックスが押せるように pointer-events を削除 */
+        .options-row label { margin-bottom: 0; display: flex; align-items: center; gap: 5px; cursor: pointer; font-size: 0.9rem; font-weight: bold;}
+
+        /* オフセット設定パネル */
+        .offset-panel { background: var(--bg-color); border-radius: 8px; padding: 10px; margin-bottom: 20px; border: 1px solid var(--dot-weak); }
+        .offset-header { font-size: 0.8rem; font-weight: bold; cursor: pointer; display: flex; justify-content: space-between; }
+        .offset-body { display: none; margin-top: 10px; align-items: center; gap: 10px; }
+        .offset-body.open { display: flex; }
+        .offset-body input { width: 80px; padding: 5px; }
+
+        /* アコーディオンパネル */
+        .accordion-panel { background: var(--bg-color); border-radius: 8px; margin-bottom: 20px; border: 1px solid var(--dot-weak); overflow: hidden; }
+        .accordion-header { padding: 10px; font-weight: bold; font-size: 0.9rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .accordion-header:hover { background: rgba(255,255,255,0.05); }
+        .accordion-body { padding: 15px; border-top: 1px solid var(--dot-weak); display: none; }
+        .accordion-body.open { display: block; }
+        .calc-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+        .calc-row select { font-size: 0.9rem; padding: 5px; }
+        .calc-row input { width: 80px; padding: 5px; }
+        .apply-btn { width: 100%; background: var(--secondary-color); color: #000; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 5px; }
+        .apply-btn:active { opacity: 0.8; }
+
+        /* BPM Section */
+        .bpm-section { background: var(--bg-color); padding: 15px; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; gap: 15px; border: 1px solid var(--dot-weak); }
+        .bpm-display { text-align: center; flex-grow: 1; padding: 10px; }
+        .bpm-input-stepper { display: flex; align-items: center; justify-content: center; margin-bottom: 10px; }
+        .bpm-input-stepper button { background: transparent; border: none; color: var(--text-color); font-size: 2rem; cursor: pointer; padding: 0 10px; }
+        .bpm-input-stepper input { font-size: 2.5rem; font-weight: bold; background: transparent; color: var(--primary-color); width: 100px; padding: 0; }
+        .dial-container { width: 80px; height: 80px; border-radius: 50%; background: conic-gradient(from 180deg, var(--dot-weak), var(--surface-color)); position: relative; cursor: pointer; display: flex; justify-content: center; align-items: center; touch-action: none; flex-shrink: 0; border: 2px solid var(--dot-bg); }
+        .dial-indicator { width: 8px; height: 8px; background-color: var(--secondary-color); border-radius: 50%; position: absolute; top: 10px; box-shadow: 0 0 5px var(--secondary-color); }
+        .vertical-slider-container { height: 200px; display: flex; align-items: center; flex-shrink: 0; cursor: ns-resize; }
+        input[type="range"][orient="vertical"] { writing-mode: bt-lr; -webkit-appearance: slider-vertical; width: 25px; height: 180px; pointer-events: none; /* スライダー上のスクロール用 */ }
+        input[type="range"][orient="vertical"]::-webkit-slider-thumb { pointer-events: auto; }
+        input[type="range"][orient="vertical"]::-moz-range-thumb { pointer-events: auto; }
+
+        .jump-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .jump-btn { background: var(--surface-color); border: 1px solid var(--dot-weak); color: var(--text-color); padding: 10px 5px; border-radius: 6px; cursor: pointer; font-size: 1.1rem; font-weight: bold; }
+        .jump-btn:active { background: var(--dot-weak); }
+
+        /* Sequencer */
+        .sequencer-container { margin: 20px 0; touch-action: none; }
+        .sequencer { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; min-height: 60px; align-items: center; }
+        .beat-dot { border-radius: 50%; cursor: pointer; transition: all 0.1s; border: 2px solid transparent; display: flex; justify-content: center; align-items: center; }
+        .beat-dot[data-state="0"] { width: 20px; height: 20px; background-color: transparent; border-color: var(--dot-weak); }
+        .beat-dot[data-state="1"] { width: 30px; height: 30px; background-color: var(--dot-weak); }
+        .beat-dot[data-state="2"] { width: 40px; height: 40px; background-color: var(--secondary-color); }
+        .beat-dot[data-state="3"] { width: 50px; height: 50px; background-color: var(--primary-color); box-shadow: 0 0 15px var(--primary-color); }
+        .beat-dot.active { border-color: white; transform: scale(1.15); }
+
+        .presets { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+        .preset-btn { background: var(--bg-color); border: 1px solid var(--dot-weak); color: var(--text-color); padding: 10px 5px; border-radius: 6px; font-size: 0.8rem; cursor: pointer; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; }
+        .preset-btn.has-data { border-color: var(--secondary-color); font-weight: bold; }
+
+        #playBtn { background: linear-gradient(45deg, var(--primary-color), var(--secondary-color)); border: none; color: #fff; padding: 40px 20px; font-size: 2rem; border-radius: 16px; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); cursor: pointer; width: 100%; font-weight: bold; letter-spacing: 3px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); margin-top: 10px; }
+        #playBtn:active { transform: translateY(2px); }
+        #playBtn.playing { background: #cf6679; box-shadow: 0 4px 15px rgba(207, 102, 121, 0.3); }
+
+        /* File Tab UI */
+        .file-section { background: var(--bg-color); padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid var(--dot-weak); }
+        .file-section h3 { margin-top: 0; font-size: 1.1rem; border-bottom: 1px solid var(--dot-weak); padding-bottom: 5px; }
+        .custom-file-row { display: grid; grid-template-columns: 40px 1fr; align-items: center; gap: 10px; margin-bottom: 10px; }
+        .custom-file-row label { font-size: 0.9rem; font-weight: bold; text-align: center; }
+        .custom-file-row input[type="file"] { font-size: 0.8rem; padding: 5px; background: transparent; border: 1px solid var(--dot-weak); border-radius: 4px; }
+        .status-badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; background: var(--dot-weak); color: #fff; margin-left: 10px; }
+        .status-badge.loaded { background: var(--secondary-color); color: #000; }
+
+        /* Modal */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 1000; }
+        .modal-overlay.active { display: flex; }
+        .modal-content { background: var(--surface-color); padding: 25px; border-radius: 16px; width: 85%; max-width: 320px; text-align: center; }
+        .modal-buttons { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+        .modal-buttons button { padding: 15px; border-radius: 8px; border: none; font-size: 1.1rem; cursor: pointer; font-weight: bold; }
+        .btn-load { background: var(--secondary-color); color: #000; }
+        .btn-save { background: var(--primary-color); color: #fff; }
+        .btn-clear { background: #cf6679; color: #fff; }
+        .btn-cancel { background: var(--dot-weak); color: #fff; }
+    </style>
+</head>
+<body data-theme="beige">
+
+    <div class="app-tabs">
+        <button class="tab-btn active" onclick="switchTab('metro')">メトロノーム</button>
+        <button class="tab-btn" onclick="switchTab('file')">ファイル</button>
+        <button class="tab-btn disabled" title="プログラミングメトロノーム実装予定">プログラム(予定)</button>
+    </div>
+
+    <div class="container">
+        <h1>NamaMeto</h1>
+
+        <div id="tab-metro" class="tab-content active">
+            
+            <div class="options-row">
+                <label><input type="checkbox" id="flashToggle"> フラッシュ</label>
+                <label><input type="checkbox" id="vibrateToggle"> バイブレーション</label>
+            </div>
+            <div class="offset-panel">
+                <div class="offset-header" onclick="toggleAccordion('offsetBody', 'offsetArrow')">
+                    <span>⚙️ 視覚・振動のズレ補正 (ms)</span><span id="offsetArrow">▼</span>
+                </div>
+                <div class="offset-body" id="offsetBody">
+                    <label style="font-size:0.8rem;">補正値:</label>
+                    <input type="number" id="syncOffset" value="0" step="10">
+                    <span style="font-size:0.8rem; color:#888;">マイナスで早く、プラスで遅くなります</span>
+                </div>
+            </div>
+
+            <div class="top-settings">
+                <div class="scrollable-control" id="themeCtrl">
+                    <span class="control-label">Theme</span>
+                    <select id="themeSelect">
+                        <option value="beige">1. Beige</option>
+                        <option value="dark">2. Dark</option>
+                        <option value="light">3. Light</option>
+                        <option value="darkred">4. Dark Red</option>
+                        <option value="navy">5. Navy</option>
+                    </select>
+                </div>
+                <div class="scrollable-control" id="soundCtrl">
+                    <span class="control-label">Sound</span>
+                    <select id="soundSelect">
+                        <option value="beep">1. Digital Beep</option>
+                        <option value="clave">2. Wood Clave</option>
+                        <option value="click">3. Modern Click</option>
+                        <option value="cowbell">4. Cowbell</option>
+                        <option value="kickhat">5. Kick & Hat</option>
+                        <option value="custom1">6. Custom 1</option>
+                        <option value="custom2">7. Custom 2</option>
+                        <option value="custom3">8. Custom 3</option>
+                    </select>
+                </div>
+                <div class="scrollable-control" id="beatsCtrl">
+                    <span class="control-label">Beats</span>
+                    <div class="stepper-ui">
+                        <button onclick="adjustBeats(-1)">-</button>
+                        <span id="beatsValDisplay">4</span>
+                        <button onclick="adjustBeats(1)">+</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="accordion-panel">
+                <div class="accordion-header" onclick="toggleAccordion('scoreCalcBody', 'calcArrow')">
+                    <span>🎼 楽譜テンポ換算 (分母指定)</span><span id="calcArrow">▼</span>
+                </div>
+                <div class="accordion-body" id="scoreCalcBody">
+                    <div style="font-size:0.8rem; color:#888; margin-bottom:10px;">楽譜の指定テンポから、刻む音符の間隔を自動計算します。</div>
+                    <div class="calc-row">
+                        <select id="sheetNoteVal">
+                            <option value="2">2分音符 (d)</option>
+                            <option value="1.5">付点4分 (♩.)</option>
+                            <option value="1" selected>4分音符 (♩)</option>
+                            <option value="0.75">付点8分 (♪.)</option>
+                            <option value="0.5">8分音符 (♪)</option>
+                        </select>
+                        <span>=</span>
+                        <input type="number" id="sheetBpmVal" value="60" placeholder="BPM">
+                    </div>
+                    <div class="calc-row">
+                        <span style="font-size:0.9rem;">刻む音符:</span>
+                        <select id="clickNoteVal" style="flex-grow:1;">
+                            <option value="1.5">付点4分音符</option>
+                            <option value="1">4分音符</option>
+                            <option value="0.5" selected>8分音符</option>
+                            <option value="0.25">16分音符</option>
+                            <option value="0.3333">3連符</option>
+                        </select>
+                    </div>
+                    <button class="apply-btn" onclick="applyScoreBpm()">メトロノームに反映</button>
+                </div>
+            </div>
+
+            <div class="bpm-section">
+                <div class="dial-container" id="bpmDial">
+                    <div class="dial-indicator" id="dialIndicator"></div>
+                </div>
+                
+                <div class="bpm-display scrollable-control" id="bpmCtrl">
+                    <span class="control-label">BPM</span>
+                    <div class="bpm-input-stepper">
+                        <button onclick="adjustBPM(-1)">-</button>
+                        <input type="number" id="bpmInput" value="120" min="20" max="300">
+                        <button onclick="adjustBPM(1)">+</button>
+                    </div>
+                    <div class="jump-buttons">
+                        <button class="jump-btn" onclick="adjustBPM(10)">+10</button>
+                        <button class="jump-btn" onclick="adjustBPM(5)">+5</button>
+                        <button class="jump-btn" onclick="adjustBPM(-10)">-10</button>
+                        <button class="jump-btn" onclick="adjustBPM(-5)">-5</button>
+                    </div>
+                </div>
+
+                <div class="vertical-slider-container" id="sliderCtrl">
+                    <input type="range" id="bpmSlider" value="120" min="20" max="300" orient="vertical">
+                </div>
+            </div>
+
+            <div class="sequencer-container">
+                <div class="control-label" style="text-align: center;">Beat Pattern (タップで変更)</div>
+                <div class="sequencer" id="sequencer"></div>
+            </div>
+
+            <div class="presets">
+                <button class="preset-btn" id="preset1" onclick="openModal(1)">Slot 1</button>
+                <button class="preset-btn" id="preset2" onclick="openModal(2)">Slot 2</button>
+                <button class="preset-btn" id="preset3" onclick="openModal(3)">Slot 3</button>
+            </div>
+
+            <button id="playBtn">START</button>
+        </div>
+
+        <div id="tab-file" class="tab-content">
+            <h2 style="font-size: 1.2rem; margin-top:0;">オリジナル音色の登録</h2>
+            <p style="font-size: 0.8rem; color:#888;">端末内の短い音声ファイル(.mp3/.wav等)をカスタム音色として設定できます。ブラウザに保存されます。</p>
+
+            <div class="file-section">
+                <h3>Custom 1 <span class="status-badge" id="c1_status">未設定</span></h3>
+                <div class="custom-file-row"><label>強拍</label><input type="file" accept="audio/*" onchange="loadCustomAudio(event, 'custom1', 3)"></div>
+                <div class="custom-file-row"><label>中拍</label><input type="file" accept="audio/*" onchange="loadCustomAudio(event, 'custom1', 2)"></div>
+                <div class="custom-file-row"><label>弱拍</label><input type="file" accept="audio/*" onchange="loadCustomAudio(event, 'custom1', 1)"></div>
+            </div>
+            <div class="file-section">
+                <h3>Custom 2 <span class="status-badge" id="c2_status">未設定</span></h3>
+                <div class="custom-file-row"><label>強拍</label><input type="file" accept="audio/*" onchange="loadCustomAudio(event, 'custom2', 3)"></div>
+                <div class="custom-file-row"><label>中拍</label><input type="file" accept="audio/*" onchange="loadCustomAudio(event, 'custom2', 2)"></div>
+                <div class="custom-file-row"><label>弱拍</label><input type="file" accept="audio/*" onchange="loadCustomAudio(event, 'custom2', 1)"></div>
+            </div>
+            <div class="file-section">
+                <h3>Custom 3 <span class="status-badge" id="c3_status">未設定</span></h3>
+                <div class="custom-file-row"><label>強拍</label><input type="file" accept="audio/*" onchange="loadCustomAudio(event, 'custom3', 3)"></div>
+                <div class="custom-file-row"><label>中拍</label><input type="file" accept="audio/*" onchange="loadCustomAudio(event, 'custom3', 2)"></div>
+                <div class="custom-file-row"><label>弱拍</label><input type="file" accept="audio/*" onchange="loadCustomAudio(event, 'custom3', 1)"></div>
+            </div>
+            <p style="font-size: 0.8rem; color:#888; text-align:center;">※プログラミング機能の実装時に、<br>プロジェクトファイルの共有機能が追加されます。</p>
+        </div>
+
+    </div>
+
+    <div class="ad-spacer"></div>
+
+    <div id="presetModal" class="modal-overlay">
+        <div class="modal-content">
+            <h2 id="modalTitle">Slot 1</h2>
+            <input type="text" id="presetName" placeholder="プリセット名 (例: 8ビート練習用)">
+            
+            <div class="modal-buttons" id="modalBtnsEmpty">
+                <button class="btn-save" onclick="savePreset()">保存する</button>
+                <button class="btn-cancel" onclick="closeModal()">キャンセル</button>
+            </div>
+            <div class="modal-buttons" id="modalBtnsFull" style="display: none;">
+                <button class="btn-load" onclick="loadPreset()">読み込む</button>
+                <button class="btn-save" onclick="savePreset()">上書き保存する</button>
+                <button class="btn-clear" onclick="clearPreset()">データを削除</button>
+                <button class="btn-cancel" onclick="closeModal()">キャンセル</button>
+            </div>
+        </div>
+    </div>
+
+<script>
+    let audioCtx = null; let isPlaying = false; let currentBeat = 0; let nextNoteTime = 0.0; let timerID = null;
+    const lookahead = 25.0; const scheduleAheadTime = 0.1;
+
+    let bpm = 120; let totalBeats = 4; let beatPattern = [3, 1, 2, 1];
+    let soundSet = 'beep'; let currentTheme = 'beige';
+    let activeSlot = 1; let visualQueue = [];
+
+    // オリジナル音色（AudioBuffer）を格納するオブジェクト
+    const customAudioBuffers = {
+        custom1: { 3: null, 2: null, 1: null },
+        custom2: { 3: null, 2: null, 1: null },
+        custom3: { 3: null, 2: null, 1: null }
+    };
+
+    const playBtn = document.getElementById('playBtn'); const bpmInput = document.getElementById('bpmInput');
+    const bpmSlider = document.getElementById('bpmSlider'); const beatsValDisplay = document.getElementById('beatsValDisplay');
+    const soundSelect = document.getElementById('soundSelect'); const themeSelect = document.getElementById('themeSelect');
+    const sequencer = document.getElementById('sequencer'); const bpmDial = document.getElementById('bpmDial');
+    const dialIndicator = document.getElementById('dialIndicator'); const flashToggle = document.getElementById('flashToggle');
+    const vibrateToggle = document.getElementById('vibrateToggle'); const syncOffsetInput = document.getElementById('syncOffset');
+    const modal = document.getElementById('presetModal');
+
+    function init() {
+        renderSequencer(); updateDialVisual(); updatePresetButtons(); restoreCustomAudioFromStorage();
+        
+        bpmInput.addEventListener('change', (e) => setBPM(e.target.value));
+        bpmSlider.addEventListener('input', (e) => setBPM(e.target.value));
+        soundSelect.addEventListener('change', (e) => soundSet = e.target.value);
+        themeSelect.addEventListener('change', (e) => { currentTheme = e.target.value; document.body.setAttribute('data-theme', currentTheme); });
+
+        playBtn.addEventListener('click', togglePlay);
+        setupDial(); setupScrollAndSwipeControls();
+        visualSyncLoop();
+    }
+
+    // --- Tab UI ---
+    function switchTab(tabId) {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+        document.getElementById('tab-' + tabId).classList.add('active');
+        event.target.classList.add('active');
+    }
+
+    // --- Accordion Logic ---
+    function toggleAccordion(bodyId, arrowId) {
+        const body = document.getElementById(bodyId); const arrow = document.getElementById(arrowId);
+        if (body.classList.contains('open')) { body.classList.remove('open'); arrow.textContent = '▼'; }
+        else { body.classList.add('open'); arrow.textContent = '▲'; }
+    }
+
+    // --- Hover, Mouse Wheel & Touch Swipe Controls ---
+    function setupScrollAndSwipeControls() {
+        const bindControl = (elementId, actionUp, actionDown) => {
+            const el = document.getElementById(elementId);
+            
+            // Mouse Wheel
+            el.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                if (e.deltaY < 0) actionUp();
+                else if (e.deltaY > 0) actionDown();
+            });
+
+            // Touch Swipe (Smartphone)
+            let touchStartY = 0;
+            el.addEventListener('touchstart', (e) => {
+                touchStartY = e.touches[0].clientY;
+                el.classList.add('touch-active'); // アクティブ枠線表示
+            }, {passive: true});
+
+            el.addEventListener('touchmove', (e) => {
+                const currentY = e.touches[0].clientY;
+                const diff = touchStartY - currentY;
+                if (Math.abs(diff) > 20) { // 20px動いたら値変更
+                    if (diff > 0) actionUp(); // 上スワイプ
+                    else actionDown(); // 下スワイプ
+                    touchStartY = currentY; // 連続で変わるようにリセット
+                    if(e.cancelable) e.preventDefault(); // 画面全体のスクロールを防止
+                }
+            }, {passive: false});
+
+            el.addEventListener('touchend', () => el.classList.remove('touch-active'));
+        };
+
+        const shiftSelect = (selectId, dir) => {
+            const sel = document.getElementById(selectId);
+            let idx = sel.selectedIndex + dir;
+            if (idx >= 0 && idx < sel.options.length) { sel.selectedIndex = idx; sel.dispatchEvent(new Event('change')); }
+        };
+
+        bindControl('bpmCtrl', () => adjustBPM(1), () => adjustBPM(-1));
+        bindControl('beatsCtrl', () => adjustBeats(1), () => adjustBeats(-1));
+        bindControl('themeCtrl', () => shiftSelect('themeSelect', -1), () => shiftSelect('themeSelect', 1));
+        bindControl('soundCtrl', () => shiftSelect('soundSelect', -1), () => shiftSelect('soundSelect', 1));
+        
+        // スライダー上でのマウススクロール対応
+        document.getElementById('sliderCtrl').addEventListener('wheel', (e) => {
+            e.preventDefault();
+            if (e.deltaY < 0) adjustBPM(1); else if (e.deltaY > 0) adjustBPM(-1);
+        });
+    }
+
+    // --- Original Custom Sound (File Tab) ---
+    function ensureAudioContext() {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+
+    function loadCustomAudio(event, setId, level) {
+        const file = event.target.files[0];
+        if (!file) return;
+        ensureAudioContext();
+        
+        const reader = new FileReader();
+        // localStorageに保存するためにBase64(Data URL)で読み込む
+        reader.readAsDataURL(file);
+        reader.onload = async (e) => {
+            const dataUrl = e.target.result;
+            try {
+                // デコードしてバッファに保存
+                const arrayBuffer = await fetch(dataUrl).then(res => res.arrayBuffer());
+                const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+                customAudioBuffers[setId][level] = audioBuffer;
+                
+                // localStorageに保存 (サイズ上限注意)
+                localStorage.setItem(`nama_${setId}_${level}`, dataUrl);
+                updateCustomStatus(setId);
+            } catch (err) { alert("音声ファイルの読み込みに失敗しました。"); }
+        };
+    }
+
+    async function restoreCustomAudioFromStorage() {
+        ensureAudioContext();
+        ['custom1', 'custom2', 'custom3'].forEach(async (setId) => {
+            let hasData = false;
+            for (let level = 1; level <= 3; level++) {
+                const dataUrl = localStorage.getItem(`nama_${setId}_${level}`);
+                if (dataUrl) {
+                    hasData = true;
+                    try {
+                        const arrayBuffer = await fetch(dataUrl).then(res => res.arrayBuffer());
+                        const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+                        customAudioBuffers[setId][level] = audioBuffer;
+                    } catch(e) { console.warn("Restore error", e); }
+                }
+            }
+            if (hasData) updateCustomStatus(setId);
+        });
+    }
+
+    function updateCustomStatus(setId) {
+        const badge = document.getElementById(setId === 'custom1' ? 'c1_status' : setId === 'custom2' ? 'c2_status' : 'c3_status');
+        badge.textContent = "設定済"; badge.classList.add('loaded');
+    }
+
+    // --- Score Calculator ---
+    function applyScoreBpm() {
+        const sheetNote = parseFloat(document.getElementById('sheetNoteVal').value);
+        const sheetBpm = parseFloat(document.getElementById('sheetBpmVal').value);
+        const clickNote = parseFloat(document.getElementById('clickNoteVal').value);
+        if (!sheetBpm) return;
+        setBPM(Math.round(sheetBpm * (sheetNote / clickNote)));
+        toggleAccordion('scoreCalcBody', 'calcArrow');
+    }
+
+    // --- Beats & BPM Adjust ---
+    function adjustBeats(amount) {
+        totalBeats = Math.max(1, Math.min(16, totalBeats + amount));
+        beatsValDisplay.textContent = totalBeats;
+        const newPattern = [];
+        for (let i = 0; i < totalBeats; i++) newPattern.push(i < beatPattern.length ? beatPattern[i] : 1);
+        beatPattern = newPattern; renderSequencer();
+    }
+    function setBPM(val) { bpm = Math.max(20, Math.min(600, parseInt(val))); bpmInput.value = bpm; bpmSlider.value = Math.min(300, bpm); updateDialVisual(); }
+    function adjustBPM(amount) { setBPM(bpm + amount); }
+
+    // --- Presets (Save/Load) ---
+    function openModal(slot) {
+        activeSlot = slot; document.getElementById('modalTitle').textContent = `Slot ${slot}`;
+        const dataStr = localStorage.getItem(`namameto_slot_${slot}`);
+        if (dataStr) {
+            document.getElementById('presetName').value = JSON.parse(dataStr).name || `Preset ${slot}`;
+            document.getElementById('modalBtnsEmpty').style.display = 'none'; document.getElementById('modalBtnsFull').style.display = 'flex';
+        } else {
+            document.getElementById('presetName').value = '';
+            document.getElementById('modalBtnsEmpty').style.display = 'flex'; document.getElementById('modalBtnsFull').style.display = 'none';
+        }
+        modal.classList.add('active');
+    }
+    function closeModal() { modal.classList.remove('active'); }
+    function savePreset() {
+        const data = { name: document.getElementById('presetName').value || `Preset ${activeSlot}`, bpm, totalBeats, beatPattern, soundSet, theme: currentTheme, flash: flashToggle.checked, vibrate: vibrateToggle.checked, offset: syncOffsetInput.value };
+        localStorage.setItem(`namameto_slot_${activeSlot}`, JSON.stringify(data)); updatePresetButtons(); closeModal();
+    }
+    function loadPreset() {
+        const dataStr = localStorage.getItem(`namameto_slot_${activeSlot}`);
+        if(dataStr) {
+            const data = JSON.parse(dataStr);
+            bpm = data.bpm; totalBeats = data.totalBeats; beatPattern = data.beatPattern; soundSet = data.soundSet || 'beep'; currentTheme = data.theme || 'beige';
+            flashToggle.checked = data.flash || false; vibrateToggle.checked = data.vibrate || false;
+            syncOffsetInput.value = data.offset || 0;
+            bpmInput.value = bpm; bpmSlider.value = Math.min(300, bpm); beatsValDisplay.textContent = totalBeats;
+            soundSelect.value = soundSet; themeSelect.value = currentTheme; document.body.setAttribute('data-theme', currentTheme);
+            updateDialVisual(); renderSequencer(); closeModal();
+        }
+    }
+    function clearPreset() { localStorage.removeItem(`namameto_slot_${activeSlot}`); updatePresetButtons(); closeModal(); }
+    function updatePresetButtons() {
+        for(let i=1; i<=3; i++) {
+            const btn = document.getElementById(`preset${i}`); const dataStr = localStorage.getItem(`namameto_slot_${i}`);
+            if(dataStr) { btn.textContent = JSON.parse(dataStr).name; btn.classList.add('has-data'); }
+            else { btn.textContent = `[ Empty ${i} ]`; btn.classList.remove('has-data'); }
+        }
+    }
+
+    // --- Dial ---
+    function setupDial() {
+        let isDragging = false, startAngle = 0, startBPM = bpm;
+        const getAngle = (e) => {
+            const rect = bpmDial.getBoundingClientRect(); const cx = rect.left + rect.width/2, cy = rect.top + rect.height/2;
+            const px = e.touches ? e.touches[0].clientX : e.clientX, py = e.touches ? e.touches[0].clientY : e.clientY;
+            return Math.atan2(py - cy, px - cx) * (180 / Math.PI);
+        };
+        const startDrag = (e) => { isDragging = true; startAngle = getAngle(e); startBPM = bpm; e.preventDefault(); };
+        const onDrag = (e) => {
+            if (!isDragging) return;
+            let diff = getAngle(e) - startAngle;
+            if (diff > 180) diff -= 360; if (diff < -180) diff += 360;
+            setBPM(Math.round(startBPM + (diff / 2)));
+        };
+        const stopDrag = () => { isDragging = false; };
+        bpmDial.addEventListener('mousedown', startDrag); document.addEventListener('mousemove', onDrag); document.addEventListener('mouseup', stopDrag);
+        bpmDial.addEventListener('touchstart', startDrag, {passive: false}); document.addEventListener('touchmove', onDrag, {passive: false}); document.addEventListener('touchend', stopDrag);
+    }
+    function updateDialVisual() { dialIndicator.style.transform = `rotate(${((bpm - 20)/280)*360}deg) translateY(-30px)`; }
+
+    // --- Sequencer ---
+    function cycleBeatState(index) { beatPattern[index] = (beatPattern[index] + 1) % 4; renderSequencer(); }
+    function renderSequencer() {
+        sequencer.innerHTML = '';
+        beatPattern.forEach((state, index) => {
+            const dot = document.createElement('div');
+            dot.className = 'beat-dot'; dot.dataset.state = state; dot.dataset.index = index;
+            dot.onclick = () => cycleBeatState(index); sequencer.appendChild(dot);
+        });
+    }
+
+    // --- Audio Engine ---
+    function playSound(time, level) {
+        if (level === 0) return;
+        ensureAudioContext();
+
+        // オリジナル音色の再生処理
+        if (soundSet.startsWith('custom')) {
+            const buffer = customAudioBuffers[soundSet][level];
+            if (buffer) {
+                const source = audioCtx.createBufferSource();
+                source.buffer = buffer;
+                const gainNode = audioCtx.createGain();
+                source.connect(gainNode); gainNode.connect(audioCtx.destination);
+                gainNode.gain.setValueAtTime(level === 3 ? 1.0 : level === 2 ? 0.7 : 0.4, time);
+                source.start(time);
+                return; // 再生できたら終了
+            }
+            // バッファが無ければフォールバック（電子音）へ
+        }
+
+        const osc = audioCtx.createOscillator(); const gainNode = audioCtx.createGain();
+        osc.connect(gainNode); gainNode.connect(audioCtx.destination);
+        let freq, vol, type = 'sine', decay = 0.1;
+
+        switch(soundSet) {
+            case 'clave': type = 'triangle'; freq = level === 3 ? 2500 : level === 2 ? 1800 : 1200; vol = level === 3 ? 1.5 : level === 2 ? 0.8 : 0.4; decay = 0.03; osc.frequency.setValueAtTime(freq, time); break;
+            case 'click': freq = level === 3 ? 2400 : level === 2 ? 1200 : 600; vol = level === 3 ? 1.0 : level === 2 ? 0.7 : 0.4; decay = level === 3 ? 0.05 : 0.03; osc.frequency.setValueAtTime(freq, time); osc.frequency.exponentialRampToValueAtTime(10, time + decay); break;
+            case 'cowbell': type = 'square'; freq = level === 3 ? 800 : level === 2 ? 540 : 400; vol = level === 3 ? 0.2 : level === 2 ? 0.1 : 0.05; osc.frequency.setValueAtTime(freq, time); break;
+            case 'kickhat':
+                if (level === 3) { type = 'sine'; freq = 150; vol = 1.0; decay = 0.1; osc.frequency.setValueAtTime(freq, time); osc.frequency.exponentialRampToValueAtTime(0.01, time + decay); }
+                else if (level === 2) { type = 'triangle'; freq = 400; vol = 0.6; decay = 0.15; osc.frequency.setValueAtTime(freq, time); osc.frequency.exponentialRampToValueAtTime(800, time + decay); }
+                else { type = 'square'; freq = 8000; vol = 0.05; decay = 0.03; osc.frequency.setValueAtTime(freq, time); }
+                break;
+            default: // beep & fallback
+                type = 'square'; freq = level === 3 ? 1760 : level === 2 ? 880 : 440; vol = level === 3 ? 0.15 : level === 2 ? 0.1 : 0.05; osc.frequency.setValueAtTime(freq, time); break;
+        }
+
+        osc.type = type; gainNode.gain.setValueAtTime(vol, time); gainNode.gain.exponentialRampToValueAtTime(0.001, time + decay);
+        osc.start(time); osc.stop(time + decay);
+    }
+
+    // --- Audio / Visual Sync ---
+    function scheduler() {
+        while (nextNoteTime < audioCtx.currentTime + scheduleAheadTime) {
+            scheduleNote(currentBeat, nextNoteTime); nextNote();
+        }
+        timerID = window.setTimeout(scheduler, lookahead);
+    }
+
+    function scheduleNote(beatNumber, time) {
+        const level = beatPattern[beatNumber];
+        playSound(time, level);
+        
+        // オフセット（ms）を秒に変換して加算
+        const offsetSec = (parseInt(syncOffsetInput.value) || 0) / 1000;
+        visualQueue.push({ time: time + offsetSec, beatNumber: beatNumber, level: level });
+    }
+
+    function nextNote() { nextNoteTime += 60.0 / bpm; currentBeat = (currentBeat + 1) % totalBeats; }
+
+    function visualSyncLoop() {
+        requestAnimationFrame(visualSyncLoop);
+        if (!isPlaying || !audioCtx) return;
+
+        const currentTime = audioCtx.currentTime;
+        while (visualQueue.length && visualQueue[0].time <= currentTime) {
+            const note = visualQueue.shift();
+            if (note.level > 0) {
+                document.querySelectorAll('.beat-dot').forEach(d => d.classList.remove('active'));
+                const activeDot = document.querySelector(`.beat-dot[data-index="${note.beatNumber}"]`);
+                if(activeDot) activeDot.classList.add('active');
+
+                if (flashToggle.checked) {
+                    document.body.classList.add('flash-active');
+                    setTimeout(() => document.body.classList.remove('flash-active'), 50);
+                }
+                if (vibrateToggle.checked && navigator.vibrate) {
+                    navigator.vibrate(note.level === 3 ? 50 : note.level === 2 ? 30 : 15);
+                }
+            }
+        }
+    }
+
+    function togglePlay() {
+        isPlaying = !isPlaying;
+        if (isPlaying) {
+            ensureAudioContext();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            currentBeat = 0; nextNoteTime = audioCtx.currentTime + 0.1;
+            visualQueue = []; playBtn.textContent = "STOP"; playBtn.classList.add('playing');
+            scheduler();
+        } else {
+            window.clearTimeout(timerID); playBtn.textContent = "START"; playBtn.classList.remove('playing');
+            document.querySelectorAll('.beat-dot').forEach(d => d.classList.remove('active')); document.body.classList.remove('flash-active');
+        }
+    }
+
+    init();
+</script>
+</body>
+</html>

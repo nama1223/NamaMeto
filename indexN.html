@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NamaMeto</title>
+    <style>
+        /* テーマカラー変数 */
+        :root {
+            --bg-color: #dccaaf; --surface-color: #fdf8f5;
+            --text-color: #4a3f35; --primary-color: #d4a373; --secondary-color: #dda15e;
+            --dot-bg: #e6d5c3; --dot-weak: #bda692; --flash-color: #ffffff;
+            --active-border: var(--text-color);
+        }
+        [data-theme="dark"] {
+            --bg-color: #121212; --surface-color: #2c2c2c;
+            --text-color: #e0e0e0; --primary-color: #bb86fc; --secondary-color: #03dac6;
+            --dot-bg: #444; --dot-weak: #777; --flash-color: #444444;
+            --active-border: #ffffff;
+        }
+        [data-theme="light"] {
+            --bg-color: #e5e5e5; --surface-color: #d4d4d4;
+            --text-color: #333333; --primary-color: #6200ee; --secondary-color: #018786;
+            --dot-bg: #bbb; --dot-weak: #888; 
+            --flash-color: #000000;
+            --active-border: var(--primary-color);
+        }
+        [data-theme="darkred"] {
+            --bg-color: #2b0f0f; --surface-color: #3d1a1a;
+            --text-color: #fcdcdc; --primary-color: #ff4d4d; --secondary-color: #ff8080;
+            --dot-bg: #4d2626; --dot-weak: #8a4848; --flash-color: #5c2020;
+            --active-border: #ffffff;
+        }
+        [data-theme="navy"] {
+            --bg-color: #111b2e; --surface-color: #1e293b;
+            --text-color: #e2e8f0; --primary-color: #38bdf8; --secondary-color: #818cf8;
+            --dot-bg: #334155; --dot-weak: #475569; --flash-color: #2a3b5c;
+            --active-border: #ffffff;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif; background-color: var(--bg-color); color: var(--text-color);
+            display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; user-select: none;
+            transition: background-color 0.1s ease-out, color 0.3s;
+        }
+        body.flash-active { background-color: var(--flash-color) !important; }
+
+        /* ヘルプ（ツールチップ）UI */
+        .help-overlay-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1500; cursor: pointer; }
+        .help-wrapper { position: relative; width: 100%; }
+        .help-tip {
+            display: none; position: absolute; background: var(--primary-color); color: #fff;
+            padding: 8px 12px; border-radius: 8px; font-size: 0.8rem; font-weight: bold;
+            z-index: 1600; box-shadow: 0 4px 10px rgba(0,0,0,0.5); pointer-events: none; white-space: nowrap;
+        }
+        .help-tip::after {
+            content: ''; position: absolute; bottom: -6px; left: 20px;
+            border-width: 6px 6px 0; border-style: solid; border-color: var(--primary-color) transparent transparent transparent;
+        }
+        
+        /* 瞬間移動バグを解消するためのアニメーション分離 */
+        @keyframes pop { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes pop-center { 0% { transform: translateX(-50%) scale(0.8); opacity: 0; } 100% { transform: translateX(-50%) scale(1); opacity: 1; } }
+        
+        .help-tip.center-tip { transform: translateX(-50%); }
+        .help-tip.center-tip::after { left: 50%; transform: translateX(-50%); } /* しっぽも中央に */
+
+        body.help-active .help-overlay-bg { display: block; }
+        body.help-active .help-tip { display: block; animation: pop 0.2s ease-out forwards; }
+        body.help-active .help-tip.center-tip { animation: pop-center 0.2s ease-out forwards; }
+        body.help-active .help-target { z-index: 1501; pointer-events: none; }
+        body.help-active .container { z-index: auto !important; }
+
+        .app-tabs { display: flex; gap: 5px; margin-top: 15px; width: 95%; max-width: 450px; }
+        .tab-btn { flex: 1; padding: 12px 5px; background: var(--dot-weak); color: #fff; border: none; border-radius: 12px 12px 0 0; cursor: pointer; font-weight: bold; font-size: 0.9rem; transition: background 0.2s; }
+        .tab-btn.active { background: var(--surface-color); color: var(--text-color); }
+        .tab-btn.disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .container {
+            background-color: var(--surface-color); padding: 1.5rem; border-radius: 0 0 16px 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2); width: 95%; max-width: 450px; transition: background-color 0.3s;
+            z-index: 10; box-sizing: border-box; position: relative;
+        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .ad-spacer { height: 150px; width: 100%; pointer-events: none; flex-shrink: 0; }
+
+        .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .help-btn {
+            width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--text-color); background: transparent; color: var(--text-color);
+            font-weight: bold; font-size: 1.2rem; cursor: pointer; display: flex; justify-content: center; align-items: center; opacity: 0.7; z-index: 1600; position: relative;
+        }
+        .help-btn:hover { opacity: 1; border-color: var(--secondary-color); color: var(--secondary-color); }
+        h1 { margin: 0; font-weight: 800; letter-spacing: 2px; }
+        .header-spacer { width: 32px; }
+
+        .control-label { display: block; font-size: 0.8rem; margin-bottom: 5px; opacity: 0.8; font-weight: bold; pointer-events: none; }
+        .scrollable-control { border: 2px solid transparent; border-radius: 8px; transition: border-color 0.2s, background-color 0.2s; cursor: ns-resize; touch-action: pan-x; }
+        .scrollable-control:hover, .scrollable-control.touch-active { border-color: var(--secondary-color); background-color: rgba(255, 255, 255, 0.1); }
+        select, input[type="number"], input[type="text"] { background: var(--bg-color); border: 1px solid var(--dot-weak); color: var(--text-color); padding: 10px; border-radius: 8px; font-size: 1.1rem; width: 100%; box-sizing: border-box; text-align: center; cursor: pointer; }
+        .scrollable-control select, .scrollable-control input { border: none; }
+
+        .top-settings { display: grid; grid-template-columns: 1.2fr 1.2fr 0.8fr; gap: 5px; margin-bottom: 15px; }
+        .stepper-ui { display: flex; align-items: center; justify-content: space-between; background: var(--bg-color); border-radius: 8px; overflow: hidden; height: 44px; }
+        .stepper-ui button { background: transparent; color: var(--text-color); border: none; width: 40px; height: 100%; font-size: 1.5rem; cursor: pointer; font-weight: bold; }
+        .stepper-ui button:active { background: var(--dot-weak); }
+        .stepper-ui span { font-weight: bold; font-size: 1.1rem; flex-grow: 1; text-align: center; pointer-events: none; }
+
+        .options-row { display: flex; justify-content: space-around; background: var(--bg-color); padding: 10px; border-radius: 8px; margin-bottom: 5px; border: 1px solid var(--dot-weak); }
+        .options-row label { margin-bottom: 0; display: flex; align-items: center; gap: 5px; cursor: pointer; font-size: 0.9rem; font-weight: bold;}
+
+        /* オフセットパネル */
+        .offset-panel { background: var(--bg-color); border-radius: 8px; padding: 10px; margin-bottom: 20px; border: 1px solid var(--dot-weak); }
+        .offset-header { font-size: 0.8rem; font-weight: bold; cursor: pointer; display: flex; justify-content: space-between; }
+        .offset-body { display: none; margin-top: 10px; flex-direction: column; gap: 10px; }
+        .offset-body.open { display: flex; }
+        .offset-row { display: flex; align-items: center; justify-content: space-between; }
+        .offset-row input { width: 80px; padding: 5px; }
+
+        /* アコーディオンパネル */
+        .accordion-panel { background: var(--bg-color); border-radius: 8px; margin-bottom: 20px; border: 1px solid var(--dot-weak); overflow: hidden; }
+        .accordion-header { padding: 10px; font-weight: bold; font-size: 0.9rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .accordion-header:hover { background: rgba(255,255,255,0.05); }
+        .accordion-body { padding: 15px; border-top: 1px solid var(--dot-weak); display: none; }
+        .accordion-body.open { display: block; }
+        .calc-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+        .calc-row select { font-size: 0.9rem; padding: 5px; }
+        .sheet-bpm-stepper { display: flex; align-items: center; background: var(--surface-color); border-radius: 8px; flex-grow: 1; }
+        .sheet-bpm-stepper button { background: transparent; border: none; color: var(--text-color); font-size: 1.2rem; cursor: pointer; width: 30px; font-weight: bold; }
+        .sheet-bpm-stepper input { flex-grow: 1; width: 60px; padding: 5px; border: none; background: transparent; }
+        .apply-btn { width: 100%; background: var(--secondary-color); color: #000; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 5px; }
+
+        /* BPM Section & Pendulum */
+        .bpm-section { background: var(--bg-color); padding: 15px; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; gap: 15px; border: 1px solid var(--dot-weak); }
+        
+        /* BPMコンテナから overflow: hidden を削除して見切れを防止 */
+        .bpm-display { text-align: center; flex-grow: 1; padding: 10px; position: relative; border-radius: 8px; }
+        
+        /* 振り子の長さを見える範囲に最適化 (120px) */
+        .pendulum-container {
+            position: absolute; bottom: 0px; left: 50%; width: 5px; height: 120px; 
+            transform-origin: bottom center; z-index: 0; pointer-events: none; opacity: 0.3;
+            transform: translateX(-50%) rotate(0deg);
+        }
+        .pendulum-stick { 
+            width: 100%; height: 100%; background-color: var(--text-color); border-radius: 4px; position: relative;
+            transition: background-color 0.05s, box-shadow 0.05s; /* 棒も光るようにトランジション追加 */
+        }
+        .pendulum-weight {
+            position: absolute; top: 15%; left: -5.5px; width: 16px; height: 16px;
+            background-color: var(--secondary-color); border-radius: 50%; box-shadow: 0 0 5px rgba(0,0,0,0.5);
+            transition: background-color 0.05s, box-shadow 0.05s; 
+        }
+        
+        /* フラッシュ時のエフェクトクラス */
+        .pendulum-stick.flash { background-color: #fff; box-shadow: 0 0 15px #fff, 0 0 20px var(--secondary-color); }
+        .pendulum-weight.flash { background-color: #fff; box-shadow: 0 0 15px #fff, 0 0 30px var(--secondary-color); }
+
+        .bpm-content-wrapper { position: relative; z-index: 2; }
+        .bpm-input-stepper { display: flex; align-items: center; justify-content: center; margin-bottom: 10px; }
+        .bpm-input-stepper button { background: transparent; border: none; color: var(--text-color); font-size: 2rem; cursor: pointer; padding: 0 10px; text-shadow: 0 0 5px var(--bg-color); }
+        .bpm-input-stepper input { font-size: 2.5rem; font-weight: bold; background: transparent; color: var(--primary-color); width: 100px; padding: 0; text-shadow: 0 0 5px var(--bg-color); }
+        
+        .dial-container { width: 80px; height: 80px; border-radius: 50%; background: conic-gradient(from 180deg, var(--dot-weak), var(--surface-color)); position: relative; cursor: pointer; display: flex; justify-content: center; align-items: center; touch-action: none; flex-shrink: 0; border: 2px solid var(--dot-bg); }
+        .dial-indicator { width: 8px; height: 8px; background-color: var(--secondary-color); border-radius: 50%; position: absolute; top: 50%; left: 50%; margin-top: -4px; margin-left: -4px; box-shadow: 0 0 5px var(--secondary-color); }
+        
+        .vertical-slider-container { height: 200px; display: flex; align-items: center; flex-shrink: 0; cursor: ns-resize; }
+        input[type="range"][orient="vertical"] { writing-mode: bt-lr; -webkit-appearance: slider-vertical; width: 25px; height: 180px; pointer-events: none; }
+        input[type="range"][orient="vertical"]::-webkit-slider-thumb { pointer-events: auto; }
+        input[type="range"][orient="vertical"]::-moz-range-thumb { pointer-events: auto; }
+
+        .jump-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; position: relative; width: 100%; }
+        .jump-btn { background: var(--surface-color); border: 1px solid var(--dot-weak); color: var(--text-color); padding: 10px 5px; border-radius: 6px; cursor: pointer; font-size: 1.1rem; font-weight: bold; opacity: 0.9; }
+        .jump-btn:active { background: var(--dot-weak); }
+
+        /* Sequencer */
+        .sequencer-container { margin: 20px 0; touch-action: none; }
+        .sequencer { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; min-height: 60px; align-items: center; }
+        .beat-dot {
+            border-radius: 50%; cursor: pointer; transition: all 0.1s; border: 2px solid transparent; display: flex; justify-content: center; align-items: center;
+            font-weight: bold; color: #fff; text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        }
+        .beat-dot[data-state="0"] { width: 25px; height: 25px; background-color: transparent; border-color: var(--dot-weak); color: var(--dot-weak); font-size: 0.7rem; text-shadow: none; }
+        .beat-dot[data-state="1"] { width: 30px; height: 30px; background-color: var(--dot-weak); font-size: 0.75rem; }
+        .beat-dot[data-state="2"] { width: 40px; height: 40px; background-color: var(--secondary-color); font-size: 0.9rem; }
+        .beat-dot[data-state="3"] { width: 50px; height: 50px; background-color: var(--primary-color); box-shadow: 0 0 15px var(--primary-color); font-size: 1.1rem; }
+        .beat-dot.active { border-color: var(--active-border); transform: scale(1.15); }
+
+        /* Preset Section */
+        .preset-section { background: var(--bg-color); padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid var(--dot-weak); }
+        .preset-controls { display: flex; gap: 8px; align-items: center; }
+        .preset-select { flex-grow: 1; padding: 8px; font-size: 0.9rem; text-align: left; }
+        .preset-action-btn { padding: 8px 15px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.9rem; }
+        .load-btn { background: var(--secondary-color); color: #000; }
+        .save-btn { background: var(--primary-color); color: #fff; }
+
+        #playBtn { background: linear-gradient(45deg, var(--primary-color), var(--secondary-color)); border: none; color: #fff; padding: 40px 20px; font-size: 2rem; border-radius: 16px; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); cursor: pointer; width: 100%; font-weight: bold; letter-spacing: 3px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); margin-top: 10px; }
+        #playBtn:active { transform: translateY(2px); }
+        #playBtn.playing { background: #cf6679; box-shadow: 0 4px 15px rgba(207, 102, 121, 0.3); }
+
+        /* File Tab UI */
+        .file-section { background: var(--bg-color); border-radius: 12px; margin-bottom: 15px; border: 1px solid var(--dot-weak); overflow: hidden; }
+        .file-section h3 { margin: 0; font-size: 1.1rem; padding: 8px 15px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+        .file-section h3:hover { background: rgba(255,255,255,0.05); }
+        
+        .custom-file-row { display: flex; gap: 10px; margin-bottom: 12px; background: var(--surface-color); padding: 8px; border-radius: 8px; align-items: stretch; }
+        .custom-file-left { display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 45px; border-right: 1px solid var(--dot-weak); padding-right: 5px; gap: 5px; }
+        .custom-file-left label { margin: 0; font-size: 0.85rem; font-weight: bold; }
+        .preview-btn { background: var(--secondary-color); color: #000; border: none; border-radius: 50%; width: 26px; height: 26px; display: flex; justify-content: center; align-items: center; cursor: pointer; font-size: 0.7rem; padding-left: 4px; }
+        
+        .file-input-wrapper { display: flex; flex-direction: column; gap: 8px; overflow: hidden; flex-grow: 1; justify-content: center; }
+        .file-top-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; overflow: hidden; }
+        .file-top-row input[type="file"] { display: none; }
+        .file-btn { background: var(--dot-weak); color: #fff; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; white-space: nowrap; flex-shrink: 0;}
+        .file-name-display { font-size: 0.8rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-grow: 1; text-align: left; opacity: 0.8;}
+        .timing-row { display: flex; align-items: center; gap: 5px; width: 100%; }
+        .timing-row input[type="range"] { flex-grow: 1; width: 10px; margin: 0; }
+        .timing-row input[type="number"] { width: 65px; padding: 3px; font-size: 0.8rem; text-align: center; flex-shrink: 0;}
+        
+        .status-badge { padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; background: var(--dot-weak); color: #fff; pointer-events: none;}
+        .status-badge.loaded { background: var(--secondary-color); color: #000; }
+
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 2000; }
+        .modal-overlay.active { display: flex; }
+        .modal-content { background: var(--surface-color); padding: 25px; border-radius: 16px; width: 85%; max-width: 320px; text-align: center; }
+        .modal-buttons { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+        .modal-buttons button { padding: 15px; border-radius: 8px; border: none; font-size: 1.1rem; cursor: pointer; font-weight: bold; }
+        .btn-save { background: var(--primary-color); color: #fff; }
+        .btn-clear { background: #cf6679; color: #fff; }
+        .btn-cancel { background: var(--dot-weak); color: #fff; }
+    </style>
+</head>
+<body data-theme="beige">
+
+    <div class="help-overlay-bg" onclick="toggleHelp()">
+        <div style="position: absolute; top: 20px; left: 50%; transform: translateX(-50%); color: #fff; font-weight: bold; letter-spacing: 2px;">画面をタップして閉じる</div>
+    </div>
+
+    <div class="app-tabs">
+        <button class="tab-btn active" onclick="switchTab('metro')">メトロノーム</button>
+        <button class="tab-btn" onclick="switchTab('file')">ファイル</button>
+        <button class="tab-btn disabled" title="プログラミングメトロノーム実装予定">プログラム(予定)</button>
+    </div>
+
+    <div class="container">
+        <div class="header-row">
+            <button class="help-btn" onclick="toggleHelp()">?</button>
+            <h1>NamaMeto</h1>
+            <div class="header-spacer"></div>
+        </div>
+
+        <div id="tab-metro" class="tab-content active">
+            
+            <div class="options-row">
+                <label><input type="checkbox" id="flashToggle" onchange="saveCurrentState()"> フラッシュ</label>
+                <label><input type="checkbox" id="vibrateToggle" onchange="saveCurrentState()"> バイブレーション</label>
+            </div>
+            
+            <div class="offset-panel">
+                <div class="offset-header" onclick="toggleAccordion('offsetBody', 'offsetArrow')">
+                    <span>⚙️ 視覚・振動のズレ補正 (ms)</span><span id="offsetArrow">▼</span>
+                </div>
+                <div class="offset-body" id="offsetBody">
+                    <div class="offset-row">
+                        <label style="font-size:0.8rem;">フラッシュ補正:</label>
+                        <input type="number" id="flashOffset" class="scroll-number" value="0" step="10" onchange="saveCurrentState()">
+                    </div>
+                    <div class="offset-row">
+                        <label style="font-size:0.8rem;">バイブ補正:</label>
+                        <input type="number" id="vibeOffset" class="scroll-number" value="0" step="10" onchange="saveCurrentState()">
+                    </div>
+                    <span style="font-size:0.75rem; color:#888;">マイナスで早く発動、プラスで遅く発動</span>
+                </div>
+            </div>
+
+            <div class="help-wrapper help-target">
+                <div class="help-tip" style="top: -25px; left: 10%;">👆 マウスホイール・上下スワイプで変更可能</div>
+                <div class="top-settings">
+                    <div class="scrollable-control" id="themeCtrl">
+                        <span class="control-label">Theme</span>
+                        <select id="themeSelect">
+                            <option value="beige">1. Beige</option>
+                            <option value="dark">2. Dark</option>
+                            <option value="light">3. Light</option>
+                            <option value="darkred">4. Dark Red</option>
+                            <option value="navy">5. Navy</option>
+                        </select>
+                    </div>
+                    <div class="scrollable-control" id="soundCtrl">
+                        <span class="control-label">Sound</span>
+                        <select id="soundSelect">
+                            <option value="beep">1. Digital Beep</option>
+                            <option value="clave">2. Wood Clave</option>
+                            <option value="click">3. Modern Click</option>
+                            <option value="cowbell">4. Cowbell</option>
+                            <option value="kickhat">5. Kick & Hat</option>
+                            <option value="custom1">6. Custom 1</option>
+                            <option value="custom2">7. Custom 2</option>
+                            <option value="custom3">8. Custom 3</option>
+                        </select>
+                    </div>
+                    <div class="scrollable-control" id="beatsCtrl">
+                        <span class="control-label">Beats</span>
+                        <div class="stepper-ui">
+                            <button onclick="adjustBeats(-1)">-</button>
+                            <span id="beatsValDisplay">4</span>
+                            <button onclick="adjustBeats(1)">+</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="help-wrapper help-target">
+                <div class="help-tip" style="top: -25px; left: 10%;">🎼 楽譜の指定からBPMを自動計算！</div>
+                <div class="accordion-panel">
+                    <div class="accordion-header" onclick="toggleAccordion('scoreCalcBody', 'calcArrow')">
+                        <span>🎼 楽譜テンポ換算 (分母指定)</span><span id="calcArrow">▼</span>
+                    </div>
+                    <div class="accordion-body" id="scoreCalcBody">
+                        <div style="font-size:0.8rem; color:#888; margin-bottom:10px;">楽譜の指定テンポから、刻む音符の間隔を自動計算します。</div>
+                        <div class="calc-row">
+                            <select id="sheetNoteVal" onchange="saveCurrentState()">
+                                <option value="2">2分音符 (d)</option>
+                                <option value="1.5">付点4分 (♩.)</option>
+                                <option value="1" selected>4分音符 (♩)</option>
+                                <option value="0.75">付点8分 (♪.)</option>
+                                <option value="0.5">8分音符 (♪)</option>
+                            </select>
+                            <span>=</span>
+                            <div class="sheet-bpm-stepper scrollable-control" id="sheetBpmCtrl">
+                                <button onclick="adjustSheetBpm(-1)">-</button>
+                                <input type="number" id="sheetBpmVal" value="60" onchange="saveCurrentState()">
+                                <button onclick="adjustSheetBpm(1)">+</button>
+                            </div>
+                        </div>
+                        <div class="calc-row">
+                            <span style="font-size:0.9rem;">刻む音符:</span>
+                            <select id="clickNoteVal" style="flex-grow:1;" onchange="saveCurrentState()">
+                                <option value="1.5">付点4分音符</option>
+                                <option value="1">4分音符</option>
+                                <option value="0.5" selected>8分音符</option>
+                                <option value="0.25">16分音符</option>
+                                <option value="0.3333">3連符</option>
+                            </select>
+                        </div>
+                        <button class="apply-btn" onclick="applyScoreBpm()">メトロノームに反映</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bpm-section">
+                <div class="help-wrapper help-target" style="width: auto;">
+                    <div class="help-tip center-tip" style="top: -30px; left: 50%;">🔄 なぞって回せる！</div>
+                    <div class="dial-container" id="bpmDial">
+                        <div class="dial-indicator" id="dialIndicator"></div>
+                    </div>
+                </div>
+                
+                <div class="bpm-display scrollable-control" id="bpmCtrl">
+                    <div id="pendulumContainer" class="pendulum-container">
+                        <div class="pendulum-stick" id="pendulumStick"><div class="pendulum-weight" id="pendulumWeight"></div></div>
+                    </div>
+
+                    <div class="bpm-content-wrapper">
+                        <span class="control-label">BPM</span>
+                        <div class="bpm-input-stepper">
+                            <button onclick="adjustBPM(-1)">-</button>
+                            <input type="number" id="bpmInput" value="120" min="20" max="300">
+                            <button onclick="adjustBPM(1)">+</button>
+                        </div>
+                        <div class="jump-buttons help-wrapper help-target">
+                            <div class="help-tip center-tip" style="top: -35px; left: 50%;">⚡ 長押しで連続変化！</div>
+                            <button class="jump-btn" id="btnP10">+10</button>
+                            <button class="jump-btn" id="btnP5">+5</button>
+                            <button class="jump-btn" id="btnM10">-10</button>
+                            <button class="jump-btn" id="btnM5">-5</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="vertical-slider-container" id="sliderCtrl">
+                    <input type="range" id="bpmSlider" value="120" min="20" max="300" orient="vertical">
+                </div>
+            </div>
+
+            <div class="sequencer-container">
+                <div class="control-label" style="text-align: center;">Beat Pattern (タップで変更)</div>
+                <div class="sequencer" id="sequencer"></div>
+            </div>
+
+            <div class="help-wrapper help-target">
+                <div class="help-tip" style="top: -25px; left: 10%;">💾 10枠まで設定を保存・呼出可能</div>
+                <div class="preset-section">
+                    <label class="control-label">Preset (設定の保存/読込)</label>
+                    <div class="preset-controls">
+                        <select id="presetSelect" class="preset-select"></select>
+                        <button class="preset-action-btn load-btn" onclick="loadPresetBtn()">読込</button>
+                        <button class="preset-action-btn save-btn" onclick="openModalForSave()">保存</button>
+                    </div>
+                </div>
+            </div>
+
+            <button id="playBtn">START</button>
+        </div>
+
+        <div id="tab-file" class="tab-content">
+            <div class="help-wrapper help-target">
+                <div class="help-tip" style="top: 0px; left: 10%;">🎧 それぞれの拍の音を自由に設定・試聴</div>
+                <h2 style="font-size: 1.2rem; margin-top:0;">オリジナル音色の登録</h2>
+                <p style="font-size: 0.8rem; color:#888; line-height: 1.4;">端末内の音声ファイルをカスタム音色として設定できます。<br>（推奨: 1MB以下の短くカットされた .mp3 / .wav）</p>
+                
+                <div class="file-section accordion-panel">
+                    <div class="accordion-header" onclick="toggleAccordion('c1_body', 'c1_arrow')">
+                        <h3 style="margin:0; font-size:1.1rem; flex-grow:1;">Custom 1 <span class="status-badge" id="c1_status">0/3 設定済</span></h3><span id="c1_arrow">▼</span>
+                    </div>
+                    <div class="accordion-body" id="c1_body"><div id="c1_3_block"></div><div id="c1_2_block"></div><div id="c1_1_block"></div></div>
+                </div>
+                <div class="file-section accordion-panel">
+                    <div class="accordion-header" onclick="toggleAccordion('c2_body', 'c2_arrow')">
+                        <h3 style="margin:0; font-size:1.1rem; flex-grow:1;">Custom 2 <span class="status-badge" id="c2_status">0/3 設定済</span></h3><span id="c2_arrow">▼</span>
+                    </div>
+                    <div class="accordion-body" id="c2_body"><div id="c2_3_block"></div><div id="c2_2_block"></div><div id="c2_1_block"></div></div>
+                </div>
+                <div class="file-section accordion-panel">
+                    <div class="accordion-header" onclick="toggleAccordion('c3_body', 'c3_arrow')">
+                        <h3 style="margin:0; font-size:1.1rem; flex-grow:1;">Custom 3 <span class="status-badge" id="c3_status">0/3 設定済</span></h3><span id="c3_arrow">▼</span>
+                    </div>
+                    <div class="accordion-body" id="c3_body"><div id="c3_3_block"></div><div id="c3_2_block"></div><div id="c3_1_block"></div></div>
+                </div>
+                <p style="font-size: 0.8rem; color:#888; text-align:center;">※プロジェクトファイル共有機能は近日実装予定</p>
+            </div>
+        </div>
+    </div>
+    <div class="ad-spacer"></div>
+
+    <div id="presetModal" class="modal-overlay">
+        <div class="modal-content">
+            <h2 id="modalTitle">Slot 1 に保存</h2>
+            <input type="text" id="presetName" placeholder="プリセット名 (例: 8ビート練習用)">
+            <div class="modal-buttons">
+                <button class="btn-save" onclick="savePreset()">保存・上書きする</button>
+                <button class="btn-clear" onclick="clearPreset()">このSlotを削除</button>
+                <button class="btn-cancel" onclick="closeModal()">キャンセル</button>
+            </div>
+        </div>
+    </div>
+
+<script>
+    let audioCtx = null; let isPlaying = false; let currentBeat = 0; let nextNoteTime = 0.0; let timerID = null;
+    const lookahead = 25.0; const scheduleAheadTime = 1.5; 
+
+    let bpm = 120; let totalBeats = 4; let beatPattern = [3, 1, 2, 1];
+    let soundSet = 'beep'; let currentTheme = 'beige';
+    let activeSlot = 1; 
+    let dotQueue = [], flashQueue = [], vibeQueue = [];
+    let pendQueue = []; let pendTickIndex = 0; 
+    let activeAudioNodes = []; 
+
+    const customAudioBuffers = { custom1: { 3: null, 2: null, 1: null }, custom2: { 3: null, 2: null, 1: null }, custom3: { 3: null, 2: null, 1: null } };
+    const beatStateText = ["無", "弱", "中", "強"];
+
+    const playBtn = document.getElementById('playBtn'); const bpmInput = document.getElementById('bpmInput');
+    const bpmSlider = document.getElementById('bpmSlider'); const beatsValDisplay = document.getElementById('beatsValDisplay');
+    const soundSelect = document.getElementById('soundSelect'); const themeSelect = document.getElementById('themeSelect');
+    const sequencer = document.getElementById('sequencer'); const bpmDial = document.getElementById('bpmDial');
+    const dialIndicator = document.getElementById('dialIndicator'); const flashToggle = document.getElementById('flashToggle');
+    const vibrateToggle = document.getElementById('vibrateToggle'); 
+    const flashOffsetInput = document.getElementById('flashOffset'); const vibeOffsetInput = document.getElementById('vibeOffset');
+    const modal = document.getElementById('presetModal'); const presetSelect = document.getElementById('presetSelect');
+    
+    // 振り子DOM要素の取得
+    const pendulumContainer = document.getElementById('pendulumContainer'); 
+    const pendulumStick = document.getElementById('pendulumStick');
+    const pendulumWeight = document.getElementById('pendulumWeight');
+
+    function init() {
+        renderCustomSoundUI(); restoreCustomAudioFromStorage();
+        loadCurrentState(); 
+        updatePresetOptions();
+        
+        bpmInput.addEventListener('change', (e) => setBPM(e.target.value));
+        bpmSlider.addEventListener('input', (e) => setBPM(e.target.value));
+        soundSelect.addEventListener('change', (e) => { soundSet = e.target.value; saveCurrentState(); });
+        themeSelect.addEventListener('change', (e) => { currentTheme = e.target.value; document.body.setAttribute('data-theme', currentTheme); saveCurrentState(); });
+
+        playBtn.addEventListener('click', togglePlay);
+        setupDial(); setupScrollAndSwipeControls(); setupHoldButtons();
+        visualSyncLoop();
+    }
+
+    // --- State Persistence ---
+    function saveCurrentState() {
+        const state = {
+            bpm, totalBeats, beatPattern, soundSet, currentTheme,
+            flash: flashToggle.checked, vibrate: vibrateToggle.checked,
+            fOffset: flashOffsetInput.value, vOffset: vibeOffsetInput.value,
+            sheetNote: document.getElementById('sheetNoteVal').value,
+            sheetBpm: document.getElementById('sheetBpmVal').value,
+            clickNote: document.getElementById('clickNoteVal').value
+        };
+        localStorage.setItem('namameto_current_state', JSON.stringify(state));
+    }
+    function loadCurrentState() {
+        const dataStr = localStorage.getItem('namameto_current_state');
+        if(dataStr) {
+            try {
+                const data = JSON.parse(dataStr);
+                bpm = data.bpm || 120; totalBeats = data.totalBeats || 4; if(data.beatPattern) beatPattern = data.beatPattern;
+                soundSet = data.soundSet || 'beep'; currentTheme = data.currentTheme || 'beige';
+                if(data.flash !== undefined) flashToggle.checked = data.flash;
+                if(data.vibrate !== undefined) vibrateToggle.checked = data.vibrate;
+                if(data.fOffset !== undefined) flashOffsetInput.value = data.fOffset;
+                if(data.vOffset !== undefined) vibeOffsetInput.value = data.vOffset;
+                if(data.sheetNote) document.getElementById('sheetNoteVal').value = data.sheetNote;
+                if(data.sheetBpm) document.getElementById('sheetBpmVal').value = data.sheetBpm;
+                if(data.clickNote) document.getElementById('clickNoteVal').value = data.clickNote;
+            } catch(e){}
+        }
+        bpmInput.value = bpm; bpmSlider.value = Math.min(300, bpm); beatsValDisplay.textContent = totalBeats;
+        soundSelect.value = soundSet; themeSelect.value = currentTheme; document.body.setAttribute('data-theme', currentTheme);
+        updateDialVisual(); renderSequencer();
+    }
+
+    function toggleHelp() { document.body.classList.toggle('help-active'); }
+
+    function switchTab(tabId) {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+        document.getElementById('tab-' + tabId).classList.add('active');
+        event.target.classList.add('active');
+    }
+
+    function toggleAccordion(bodyId, arrowId) {
+        const body = document.getElementById(bodyId); const arrow = document.getElementById(arrowId);
+        if (body.classList.contains('open')) { body.classList.remove('open'); arrow.textContent = '▼'; }
+        else { body.classList.add('open'); arrow.textContent = '▲'; }
+    }
+
+    // --- Scroll & Swipe Controls ---
+    function setupScrollAndSwipeControls() {
+        const bindControlNode = (el, actionUp, actionDown, sensMultiplier = 1) => {
+            if(!el) return; let wheelAcc = 0;
+            el.addEventListener('wheel', (e) => {
+                e.preventDefault(); wheelAcc += e.deltaY;
+                const threshold = 50 * sensMultiplier;
+                if (wheelAcc > threshold) { actionDown(); wheelAcc = 0; }
+                else if (wheelAcc < -threshold) { actionUp(); wheelAcc = 0; }
+            });
+            let touchStartY = 0;
+            el.addEventListener('touchstart', (e) => { touchStartY = e.touches[0].clientY; el.classList.add('touch-active'); }, {passive: true});
+            el.addEventListener('touchmove', (e) => {
+                const currentY = e.touches[0].clientY; const diff = touchStartY - currentY;
+                const threshold = 20 * sensMultiplier;
+                if (Math.abs(diff) > threshold) {
+                    if (diff > 0) actionUp(); else actionDown();
+                    touchStartY = currentY; if(e.cancelable) e.preventDefault();
+                }
+            }, {passive: false});
+            el.addEventListener('touchend', () => el.classList.remove('touch-active'));
+        };
+
+        const shiftSelect = (selectId, dir) => {
+            const sel = document.getElementById(selectId); let idx = sel.selectedIndex + dir;
+            if (idx >= 0 && idx < sel.options.length) { sel.selectedIndex = idx; sel.dispatchEvent(new Event('change')); }
+        };
+
+        bindControlNode(document.getElementById('themeCtrl'), () => shiftSelect('themeSelect', -1), () => shiftSelect('themeSelect', 1), 3); 
+        bindControlNode(document.getElementById('soundCtrl'), () => shiftSelect('soundSelect', -1), () => shiftSelect('soundSelect', 1), 3);
+        bindControlNode(document.getElementById('beatsCtrl'), () => adjustBeats(1), () => adjustBeats(-1), 2); 
+        bindControlNode(document.getElementById('bpmCtrl'), () => adjustBPM(1), () => adjustBPM(-1), 1);
+        bindControlNode(document.getElementById('sheetBpmCtrl'), () => adjustSheetBpm(1), () => adjustSheetBpm(-1), 1);
+        
+        document.getElementById('sliderCtrl').addEventListener('wheel', (e) => { e.preventDefault(); if (e.deltaY < 0) adjustBPM(1); else if (e.deltaY > 0) adjustBPM(-1); });
+
+        document.querySelectorAll('.scroll-number').forEach(el => {
+            el.classList.add('scrollable-control');
+            const step = parseInt(el.step) || 1;
+            bindControlNode(el, 
+                () => { el.value = Number(el.value) + step; el.dispatchEvent(new Event('change')); }, 
+                () => { el.value = Number(el.value) - step; el.dispatchEvent(new Event('change')); }, 
+                3
+            );
+        });
+    }
+
+    function setupHoldButtons() {
+        const attachHold = (id, amount) => {
+            const btn = document.getElementById(id); let timeout, interval;
+            const start = (e) => {
+                if(e.cancelable) e.preventDefault(); 
+                adjustBPM(amount);
+                timeout = setTimeout(() => { interval = setInterval(() => adjustBPM(amount), 300); }, 300); 
+            };
+            const stop = () => { clearTimeout(timeout); clearInterval(interval); };
+            btn.addEventListener('mousedown', start); btn.addEventListener('touchstart', start, {passive: false});
+            btn.addEventListener('mouseup', stop); btn.addEventListener('mouseleave', stop);
+            btn.addEventListener('touchend', stop); btn.addEventListener('touchcancel', stop);
+        };
+        attachHold('btnP10', 10); attachHold('btnP5', 5); attachHold('btnM10', -10); attachHold('btnM5', -5);
+    }
+
+    function adjustSheetBpm(amount) { const input = document.getElementById('sheetBpmVal'); input.value = Math.max(1, parseInt(input.value) + amount); saveCurrentState(); }
+    function applyScoreBpm() {
+        const sheetNote = parseFloat(document.getElementById('sheetNoteVal').value);
+        const sheetBpm = parseFloat(document.getElementById('sheetBpmVal').value);
+        const clickNote = parseFloat(document.getElementById('clickNoteVal').value);
+        if (!sheetBpm) return;
+        setBPM(Math.round(sheetBpm * (sheetNote / clickNote))); toggleAccordion('scoreCalcBody', 'calcArrow');
+    }
+
+    function adjustBeats(amount) {
+        totalBeats = Math.max(1, Math.min(16, totalBeats + amount)); beatsValDisplay.textContent = totalBeats;
+        const newPattern = []; for (let i = 0; i < totalBeats; i++) newPattern.push(i < beatPattern.length ? beatPattern[i] : 1);
+        beatPattern = newPattern; renderSequencer(); saveCurrentState();
+    }
+    function setBPM(val) { bpm = Math.max(20, Math.min(600, parseInt(val))); bpmInput.value = bpm; bpmSlider.value = Math.min(300, bpm); updateDialVisual(); saveCurrentState(); }
+    function adjustBPM(amount) { setBPM(bpm + amount); }
+
+    function setupDial() {
+        let isDragging = false, lastAngle = 0, accumulatedAngle = 0, startBPM = bpm;
+        const getAngle = (e) => {
+            const rect = bpmDial.getBoundingClientRect(); const cx = rect.left + rect.width/2, cy = rect.top + rect.height/2;
+            const px = e.touches ? e.touches[0].clientX : e.clientX, py = e.touches ? e.touches[0].clientY : e.clientY;
+            return Math.atan2(py - cy, px - cx) * (180 / Math.PI);
+        };
+        const startDrag = (e) => { isDragging = true; lastAngle = getAngle(e); startBPM = bpm; accumulatedAngle = 0; e.preventDefault(); };
+        const onDrag = (e) => {
+            if (!isDragging) return;
+            let currentAngle = getAngle(e); let delta = currentAngle - lastAngle;
+            if (delta > 180) delta -= 360; else if (delta < -180) delta += 360;
+            accumulatedAngle += delta;
+            let newBPM = Math.round(startBPM + (accumulatedAngle / 4)); 
+            setBPM(newBPM); lastAngle = currentAngle;
+        };
+        const stopDrag = () => { isDragging = false; };
+        
+        bpmDial.addEventListener('mousedown', startDrag); document.addEventListener('mousemove', onDrag); document.addEventListener('mouseup', stopDrag);
+        bpmDial.addEventListener('touchstart', startDrag, {passive: false}); document.addEventListener('touchmove', onDrag, {passive: false}); document.addEventListener('touchend', stopDrag);
+    }
+    function updateDialVisual() { dialIndicator.style.transform = `rotate(${bpm * 4}deg) translateY(-32px)`; }
+
+    function updatePresetOptions() {
+        const lastSelected = presetSelect.value; presetSelect.innerHTML = '';
+        for(let i=1; i<=10; i++) {
+            const dataStr = localStorage.getItem(`namameto_slot_${i}`); let text = `Slot ${i}: (未設定)`;
+            if(dataStr) { try { const d = JSON.parse(dataStr); text = `Slot ${i}: ${d.name} (${d.bpm}BPM, ${d.totalBeats}拍)`; } catch(e){} }
+            presetSelect.innerHTML += `<option value="${i}">${text}</option>`;
+        }
+        if(lastSelected && lastSelected <= 10) presetSelect.value = lastSelected;
+    }
+    function loadPresetBtn() {
+        activeSlot = presetSelect.value; const dataStr = localStorage.getItem(`namameto_slot_${activeSlot}`);
+        if(dataStr) {
+            try {
+                const data = JSON.parse(dataStr);
+                bpm = data.bpm; totalBeats = data.totalBeats; beatPattern = data.beatPattern; soundSet = data.soundSet || 'beep'; currentTheme = data.theme || 'beige';
+                flashToggle.checked = data.flash || false; vibrateToggle.checked = data.vibrate || false;
+                flashOffsetInput.value = data.fOffset || 0; vibeOffsetInput.value = data.vOffset || 0;
+                bpmInput.value = bpm; bpmSlider.value = Math.min(300, bpm); beatsValDisplay.textContent = totalBeats;
+                soundSelect.value = soundSet; themeSelect.value = currentTheme; document.body.setAttribute('data-theme', currentTheme);
+                updateDialVisual(); renderSequencer(); saveCurrentState(); alert(`Slot ${activeSlot} を読み込みました。`);
+            } catch(e) { alert("データの読み込みに失敗しました。"); }
+        } else { alert("このSlotにはデータが保存されていません。"); }
+    }
+    function openModalForSave() {
+        activeSlot = presetSelect.value; document.getElementById('modalTitle').textContent = `Slot ${activeSlot} に保存`;
+        const dataStr = localStorage.getItem(`namameto_slot_${activeSlot}`);
+        if (dataStr) { try { document.getElementById('presetName').value = JSON.parse(dataStr).name || `Preset ${activeSlot}`; }catch(e){}} else document.getElementById('presetName').value = '';
+        modal.classList.add('active');
+    }
+    function closeModal() { modal.classList.remove('active'); }
+    function savePreset() {
+        const data = { name: document.getElementById('presetName').value || `Preset ${activeSlot}`, bpm, totalBeats, beatPattern, soundSet, theme: currentTheme, flash: flashToggle.checked, vibrate: vibrateToggle.checked, fOffset: flashOffsetInput.value, vOffset: vibeOffsetInput.value };
+        localStorage.setItem(`namameto_slot_${activeSlot}`, JSON.stringify(data)); updatePresetOptions(); closeModal();
+    }
+    function clearPreset() { localStorage.removeItem(`namameto_slot_${activeSlot}`); updatePresetOptions(); closeModal(); }
+
+    function cycleBeatState(index) { beatPattern[index] = (beatPattern[index] + 1) % 4; renderSequencer(); saveCurrentState(); }
+    function renderSequencer() {
+        sequencer.innerHTML = '';
+        beatPattern.forEach((state, index) => {
+            const dot = document.createElement('div');
+            dot.className = 'beat-dot'; dot.dataset.state = state; dot.dataset.index = index;
+            dot.textContent = beatStateText[state];
+            dot.onclick = () => cycleBeatState(index); sequencer.appendChild(dot);
+        });
+    }
+
+    // --- Original Custom Sound Logic ---
+    function renderCustomSoundUI() {
+        const labels = {3:"強拍", 2:"中拍", 1:"弱拍"};
+        ['c1', 'c2', 'c3'].forEach((cKey, cIndex) => {
+            const setId = `custom${cIndex+1}`;
+            [3, 2, 1].forEach(level => {
+                const html = `
+                <div class="custom-file-row">
+                    <div class="custom-file-left">
+                        <label>${labels[level]}</label>
+                        <button class="preview-btn" onclick="previewCustomSound('${setId}', ${level})" title="試聴">▶</button>
+                    </div>
+                    <div class="file-input-wrapper">
+                        <div class="file-top-row">
+                            <input type="file" id="file_${setId}_${level}" accept="audio/*" onchange="loadCustomAudio(event, '${setId}', ${level})">
+                            <button class="file-btn" onclick="document.getElementById('file_${setId}_${level}').click()">ファイル選択</button>
+                            <span class="file-name-display" id="fname_${setId}_${level}">未選択</span>
+                        </div>
+                        <div class="timing-row">
+                            <span style="font-size:0.75rem; color:#888; flex-shrink:0;">ズレ補正:</span>
+                            <input type="range" id="sl_${setId}_${level}" min="-1000" max="1000" step="10" value="0" oninput="syncCustomOffset('${setId}', ${level}, true)">
+                            <input type="number" id="num_${setId}_${level}" class="scroll-number" value="0" step="10" onchange="syncCustomOffset('${setId}', ${level}, false); saveCurrentState();">
+                            <span style="font-size:0.75rem; flex-shrink:0;">ms</span>
+                        </div>
+                    </div>
+                </div>`;
+                document.getElementById(`${cKey}_${level}_block`).innerHTML = html;
+            });
+        });
+    }
+
+    function syncCustomOffset(setId, level, fromSlider) {
+        const sl = document.getElementById(`sl_${setId}_${level}`); const num = document.getElementById(`num_${setId}_${level}`);
+        if(fromSlider) num.value = sl.value; else sl.value = num.value;
+        localStorage.setItem(`nama_off_${setId}_${level}`, num.value);
+    }
+
+    function ensureAudioContext() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+
+    function loadCustomAudio(event, setId, level) {
+        const file = event.target.files[0]; if (!file) return; ensureAudioContext();
+        document.getElementById(`fname_${setId}_${level}`).textContent = file.name;
+        localStorage.setItem(`nama_fn_${setId}_${level}`, file.name);
+
+        const reader = new FileReader(); reader.readAsDataURL(file);
+        reader.onload = async (e) => {
+            const dataUrl = e.target.result;
+            try {
+                const arrayBuffer = await fetch(dataUrl).then(res => res.arrayBuffer());
+                const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+                customAudioBuffers[setId][level] = audioBuffer;
+                localStorage.setItem(`nama_dat_${setId}_${level}`, dataUrl);
+                updateCustomStatus(setId);
+            } catch (err) { alert("音声ファイルのデコードに失敗しました。"); }
+        };
+    }
+
+    async function restoreCustomAudioFromStorage() {
+        ['custom1', 'custom2', 'custom3'].forEach(async (setId) => {
+            for (let level = 1; level <= 3; level++) {
+                const fn = localStorage.getItem(`nama_fn_${setId}_${level}`);
+                if (fn) document.getElementById(`fname_${setId}_${level}`).textContent = fn;
+                const off = localStorage.getItem(`nama_off_${setId}_${level}`);
+                if (off) { document.getElementById(`sl_${setId}_${level}`).value = off; document.getElementById(`num_${setId}_${level}`).value = off; }
+                const dataUrl = localStorage.getItem(`nama_dat_${setId}_${level}`);
+                if (dataUrl) {
+                    try {
+                        ensureAudioContext(); const arrayBuffer = await fetch(dataUrl).then(res => res.arrayBuffer());
+                        customAudioBuffers[setId][level] = await audioCtx.decodeAudioData(arrayBuffer);
+                    } catch(e) {}
+                }
+            }
+            updateCustomStatus(setId);
+        });
+    }
+
+    function updateCustomStatus(setId) {
+        const cKey = setId === 'custom1' ? 'c1' : setId === 'custom2' ? 'c2' : 'c3';
+        const badge = document.getElementById(`${cKey}_status`);
+        let count = 0; [1,2,3].forEach(l => { if(customAudioBuffers[setId][l]) count++; });
+        badge.textContent = `${count}/3 設定済`;
+        if (count > 0) badge.classList.add('loaded'); else badge.classList.remove('loaded');
+    }
+
+    function previewCustomSound(setId, level) {
+        ensureAudioContext(); const buffer = customAudioBuffers[setId][level];
+        if (buffer) {
+            const source = audioCtx.createBufferSource(); source.buffer = buffer;
+            const gainNode = audioCtx.createGain(); source.connect(gainNode); gainNode.connect(audioCtx.destination);
+            gainNode.gain.value = level === 3 ? 1.0 : level === 2 ? 0.7 : 0.4;
+            source.start(0);
+        } else { alert("このタイミングには音色が設定されていません。"); }
+    }
+
+    // --- Audio Engine ---
+    function playSound(time, level) {
+        if (level === 0) return; ensureAudioContext();
+        if (soundSet.startsWith('custom')) {
+            const buffer = customAudioBuffers[soundSet][level];
+            const customOffsetMs = parseInt(document.getElementById(`num_${soundSet}_${level}`).value) || 0;
+            if (buffer) {
+                const source = audioCtx.createBufferSource(); source.buffer = buffer;
+                const gainNode = audioCtx.createGain(); source.connect(gainNode); gainNode.connect(audioCtx.destination);
+                gainNode.gain.setValueAtTime(level === 3 ? 1.0 : level === 2 ? 0.7 : 0.4, time);
+                let playTime = time + (customOffsetMs / 1000); if(playTime < audioCtx.currentTime) playTime = audioCtx.currentTime;
+                
+                activeAudioNodes.push(source);
+                source.onended = () => { activeAudioNodes = activeAudioNodes.filter(n => n !== source); };
+                source.start(playTime); return; 
+            }
+        }
+        const osc = audioCtx.createOscillator(); const gainNode = audioCtx.createGain(); osc.connect(gainNode); gainNode.connect(audioCtx.destination);
+        let freq, vol, type = 'sine', decay = 0.1;
+
+        switch(soundSet) {
+            case 'clave': type = 'triangle'; freq = level === 3 ? 2500 : level === 2 ? 1800 : 1200; vol = level === 3 ? 1.5 : level === 2 ? 0.8 : 0.4; decay = 0.03; osc.frequency.setValueAtTime(freq, time); break;
+            case 'click': freq = level === 3 ? 2400 : level === 2 ? 1200 : 600; vol = level === 3 ? 1.0 : level === 2 ? 0.7 : 0.4; decay = level === 3 ? 0.05 : 0.03; osc.frequency.setValueAtTime(freq, time); osc.frequency.exponentialRampToValueAtTime(10, time + decay); break;
+            case 'cowbell': type = 'square'; freq = level === 3 ? 800 : level === 2 ? 540 : 400; vol = level === 3 ? 0.2 : level === 2 ? 0.1 : 0.05; osc.frequency.setValueAtTime(freq, time); break;
+            case 'kickhat':
+                if (level === 3) { type = 'sine'; freq = 150; vol = 1.0; decay = 0.1; osc.frequency.setValueAtTime(freq, time); osc.frequency.exponentialRampToValueAtTime(0.01, time + decay); }
+                else if (level === 2) { type = 'triangle'; freq = 400; vol = 0.6; decay = 0.15; osc.frequency.setValueAtTime(freq, time); osc.frequency.exponentialRampToValueAtTime(800, time + decay); }
+                else { type = 'square'; freq = 8000; vol = 0.05; decay = 0.03; osc.frequency.setValueAtTime(freq, time); }
+                break;
+            default: type = 'square'; freq = level === 3 ? 1760 : level === 2 ? 880 : 440; vol = level === 3 ? 0.15 : level === 2 ? 0.1 : 0.05; osc.frequency.setValueAtTime(freq, time); break;
+        }
+        osc.type = type; gainNode.gain.setValueAtTime(vol, time); gainNode.gain.exponentialRampToValueAtTime(0.001, time + decay);
+        
+        activeAudioNodes.push(osc);
+        osc.onended = () => { activeAudioNodes = activeAudioNodes.filter(n => n !== osc); };
+        osc.start(time); osc.stop(time + decay);
+    }
+
+    // --- Sync & Loop ---
+    function scheduler() {
+        while (nextNoteTime < audioCtx.currentTime + scheduleAheadTime) { scheduleNote(currentBeat, nextNoteTime); nextNote(); }
+        timerID = window.setTimeout(scheduler, lookahead);
+    }
+
+    function scheduleNote(beatNumber, time) {
+        const level = beatPattern[beatNumber];
+        playSound(time, level);
+        const fOff = (parseInt(flashOffsetInput.value) || 0) / 1000;
+        const vOff = (parseInt(vibeOffsetInput.value) || 0) / 1000;
+        
+        dotQueue.push({ time: time, beatNumber: beatNumber, level: level });
+        flashQueue.push({ time: time + fOff, level: level });
+        vibeQueue.push({ time: time + vOff, level: level });
+        pendQueue.push({ time: time, index: pendTickIndex++ }); 
+    }
+
+    function nextNote() { nextNoteTime += 60.0 / bpm; currentBeat = (currentBeat + 1) % totalBeats; }
+
+    function visualSyncLoop() {
+        requestAnimationFrame(visualSyncLoop);
+        if (!isPlaying || !audioCtx) {
+            pendulumContainer.style.transform = `translateX(-50%) rotate(0deg)`;
+            return;
+        }
+        const currentTime = audioCtx.currentTime;
+
+        while (dotQueue.length && dotQueue[0].time <= currentTime) {
+            const note = dotQueue.shift();
+            if (note.level > 0) {
+                document.querySelectorAll('.beat-dot').forEach(d => d.classList.remove('active'));
+                const activeDot = document.querySelector(`.beat-dot[data-index="${note.beatNumber}"]`);
+                if(activeDot) activeDot.classList.add('active');
+                
+                // 振り子の棒と重りを両方フラッシュ発光
+                pendulumStick.classList.add('flash');
+                pendulumWeight.classList.add('flash');
+                setTimeout(() => {
+                    pendulumStick.classList.remove('flash');
+                    pendulumWeight.classList.remove('flash');
+                }, 50);
+            }
+        }
+        while (flashQueue.length && flashQueue[0].time <= currentTime) {
+            const note = flashQueue.shift();
+            if (note.level > 0 && flashToggle.checked) {
+                document.body.classList.add('flash-active');
+                setTimeout(() => document.body.classList.remove('flash-active'), 50);
+            }
+        }
+        while (vibeQueue.length && vibeQueue[0].time <= currentTime) {
+            const note = vibeQueue.shift();
+            if (note.level > 0 && vibrateToggle.checked && navigator.vibrate) {
+                navigator.vibrate(note.level === 3 ? 50 : note.level === 2 ? 30 : 15);
+            }
+        }
+
+        while (pendQueue.length > 2 && pendQueue[1].time <= currentTime) { pendQueue.shift(); }
+        if (pendQueue.length >= 2) {
+            const p0 = pendQueue[0]; const p1 = pendQueue[1];
+            if (currentTime >= p0.time && currentTime <= p1.time) {
+                const progress = (currentTime - p0.time) / (p1.time - p0.time); 
+                const dir = (p0.index % 2 === 0) ? 1 : -1; 
+                const angle = 40 * Math.sin(progress * Math.PI) * dir; 
+                pendulumContainer.style.transform = `translateX(-50%) rotate(${angle}deg)`;
+            }
+        }
+    }
+
+    function togglePlay() {
+        isPlaying = !isPlaying;
+        if (isPlaying) {
+            ensureAudioContext(); if (audioCtx.state === 'suspended') audioCtx.resume();
+            currentBeat = 0; nextNoteTime = audioCtx.currentTime + 0.1;
+            dotQueue = []; flashQueue = []; vibeQueue = []; pendQueue = []; pendTickIndex = 0;
+            playBtn.textContent = "STOP"; playBtn.classList.add('playing');
+            scheduler();
+        } else {
+            window.clearTimeout(timerID); playBtn.textContent = "START"; playBtn.classList.remove('playing');
+            document.querySelectorAll('.beat-dot').forEach(d => d.classList.remove('active')); document.body.classList.remove('flash-active');
+            
+            activeAudioNodes.forEach(node => { try { node.stop(); } catch(e){} });
+            activeAudioNodes = [];
+        }
+    }
+
+    init();
+
+</script>
+</body>
+</html>

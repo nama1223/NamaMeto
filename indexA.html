@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gemini Complex Metronome</title>
+<style>
+  body {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #1a1a1a;
+    color: #f0f0f0;
+  }
+  .metronome {
+    background: #2a2a2a;
+    padding: 2.5rem;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    text-align: center;
+    width: 300px;
+  }
+  h2 { margin-top: 0; color: #4CAF50; }
+  .control-group { margin-bottom: 1.5rem; text-align: left; }
+  label { display: block; margin-bottom: 5px; font-size: 0.9rem; color: #aaa; }
+  input[type="number"], input[type="text"] {
+    width: 100%;
+    padding: 10px;
+    font-size: 1.2rem;
+    box-sizing: border-box;
+    border: 1px solid #444;
+    border-radius: 6px;
+    background: #111;
+    color: #fff;
+    text-align: center;
+  }
+  .help-text { font-size: 0.8rem; color: #888; margin-top: 4px; }
+  button {
+    width: 100%;
+    padding: 15px;
+    font-size: 1.5rem;
+    font-weight: bold;
+    cursor: pointer;
+    border: none;
+    border-radius: 8px;
+    background: #4CAF50;
+    color: white;
+    transition: background 0.2s;
+  }
+  button.playing { background: #f44336; }
+  #visual-beat {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+  }
+  .dot {
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    background: #444;
+    transition: background 0.05s;
+  }
+  .dot.accent { background: #4CAF50; box-shadow: 0 0 10px #4CAF50; }
+  .dot.normal { background: #fff; box-shadow: 0 0 10px #fff; }
+</style>
+</head>
+<body>
+
+<div class="metronome">
+  <h2>Complex Metronome</h2>
+  
+  <div class="control-group">
+    <label for="bpm">テンポ (BPM)</label>
+    <input type="number" id="bpm" value="120" min="30" max="300">
+  </div>
+  
+  <div class="control-group">
+    <label for="pattern">拍子・アクセントパターン</label>
+    <input type="text" id="pattern" value="3,2,2">
+    <div class="help-text">
+      例: 4/4拍子 → <b>4</b><br>
+      例: 7/8拍子 (3+2+2) → <b>3,2,2</b><br>
+      例: 5/4拍子 (Mission Impossible風) → <b>3,3,2,2</b>
+    </div>
+  </div>
+  
+  <button id="play-btn">START</button>
+  
+  <div id="visual-beat"></div>
+</div>
+
+<script>
+  // Web Audio APIのコンテキスト
+  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  
+  // 状態管理変数
+  let isPlaying = false;
+  let currentBeatIndex = 0;
+  let nextNoteTime = 0.0;
+  let timerID;
+  
+  // スケジューリング設定
+  const lookahead = 25.0; // タイマーを呼ぶ間隔 (ms)
+  const scheduleAheadTime = 0.1; // 先読みしてスケジュールする時間 (秒)
+  
+  // パターンデータ
+  let beatPattern = []; // 2: 強拍(アクセント), 1: 弱拍
+  let dots = []; // UI描画用のDOM要素配列
+
+  // 入力された文字列からアクセントパターンを生成
+  function parsePattern() {
+    const input = document.getElementById('pattern').value;
+    // カンマ区切りで数値を配列化
+    const groups = input.split(',').map(n => parseInt(n.trim(), 10)).filter(n => !isNaN(n) && n > 0);
+    
+    beatPattern = [];
+    if (groups.length === 0) groups.push(4); // デフォルト
+    
+    groups.forEach(group => {
+      beatPattern.push(2); // グループの頭は強拍 (2)
+      for (let i = 1; i < group; i++) {
+        beatPattern.push(1); // 残りは弱拍 (1)
+      }
+    });
+    
+    setupVisuals();
+  }
+
+  // UIのドットを生成
+  function setupVisuals() {
+    const container = document.getElementById('visual-beat');
+    container.innerHTML = '';
+    dots = [];
+    beatPattern.forEach(type => {
+      const dot = document.createElement('div');
+      dot.className = 'dot';
+      // 強拍の場合は少し大きめにしたり色を変えたりするベース設定も可能
+      if (type === 2) dot.style.transform = 'scale(1.2)';
+      container.appendChild(dot);
+      dots.push(dot);
+    });
+  }
+
+  // 次の音の時間を計算
+  function advanceNote() {
+    const bpm = parseInt(document.getElementById('bpm').value, 10);
+    const secondsPerBeat = 60.0 / bpm;
+    nextNoteTime += secondsPerBeat;
+    
+    currentBeatIndex++;
+    if (currentBeatIndex >= beatPattern.length) {
+      currentBeatIndex = 0;
+    }
+  }
+
+  // 音を鳴らし、画面を光らせる
+  function scheduleNote(time, beatIndex) {
+    const beatType = beatPattern[beatIndex];
+    
+    // オシレーター（発振器）の設定
+    const osc = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+    osc.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+
+    // 音色の設定 (サイン波)
+    osc.type = 'sine';
+    if (beatType === 2) {
+      osc.frequency.value = 1000; // アクセント（高い音）
+    } else {
+      osc.frequency.value = 400;  // ノーマル（低い音）
+    }
+
+    // 音の長さを設定（減衰させる）
+    gainNode.gain.setValueAtTime(1, time);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, time + 0.1);
+
+    osc.start(time);
+    osc.stop(time + 0.1);
+
+    // アニメーションの同期（AudioContextの時間に合わせて少し遅らせて描画）
+    const delay = (time - audioCtx.currentTime) * 1000;
+    setTimeout(() => {
+      // 一旦すべてのドットを消灯
+      dots.forEach(d => {
+        d.classList.remove('accent');
+        d.classList.remove('normal');
+      });
+      // 現在のドットを点灯
+      if (beatType === 2) {
+        dots[beatIndex].classList.add('accent');
+      } else {
+        dots[beatIndex].classList.add('normal');
+      }
+    }, delay);
+  }
+
+  // スケジューラーのメインループ
+  function scheduler() {
+    // 先読み時間内に鳴らすべき音があればスケジュールする
+    while (nextNoteTime < audioCtx.currentTime + scheduleAheadTime) {
+      scheduleNote(nextNoteTime, currentBeatIndex);
+      advanceNote();
+    }
+    timerID = setTimeout(scheduler, lookahead);
+  }
+
+  // 再生/停止ボタンの制御
+  document.getElementById('play-btn').addEventListener('click', function() {
+    // ブラウザの自動再生ポリシー対策
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
+    
+    if (isPlaying) {
+      clearTimeout(timerID);
+      this.textContent = 'START';
+      this.classList.remove('playing');
+      // ドットをリセット
+      dots.forEach(d => { d.classList.remove('accent'); d.classList.remove('normal'); });
+    } else {
+      parsePattern();
+      currentBeatIndex = 0;
+      nextNoteTime = audioCtx.currentTime + 0.05; // 少しだけ余裕を持たせてスタート
+      scheduler();
+      this.textContent = 'STOP';
+      this.classList.add('playing');
+    }
+    isPlaying = !isPlaying;
+  });
+
+  // 初期化
+  parsePattern();
+</script>
+</body>
+</html>

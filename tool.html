@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html><body style="padding: 20px; font-family: sans-serif; background: #f0f0f0;">
+    <h3>音声ファイル → Base64変換ツール</h3>
+    <input type="file" id="f" accept="audio/*" style="margin-bottom: 10px;"><br>
+    <textarea id="t" style="width:100%; height:300px; font-size:10px;" placeholder="ここに変換された文字列が出現します"></textarea>
+    <script>
+        document.getElementById('f').onchange = e => {
+            const r = new FileReader();
+            r.onload = ev => document.getElementById('t').value = ev.target.result;
+            r.readAsDataURL(e.target.files[0]);
+        };
+    </script>
+</body></html>
+

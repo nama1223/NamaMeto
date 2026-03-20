@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NamaMeto</title>
+    <style>
+        /* テーマカラー変数 */
+        :root {
+            --bg-color: #dccaaf; --surface-color: #fdf8f5; --text-color: #4a3f35; 
+            --primary-color: #c47640; --secondary-color: #e5b985;
+            --dot-bg: #e6d5c3; --dot-weak: #bda692; --flash-color: #ffffff;
+            --active-border: var(--text-color);
+        }
+        [data-theme="dark"] {
+            --bg-color: #121212; --surface-color: #2c2c2c; --text-color: #e0e0e0; 
+            --primary-color: #bb86fc; --secondary-color: #03dac6;
+            --dot-bg: #444; --dot-weak: #777; --flash-color: #444444;
+            --active-border: #ffffff;
+        }
+        [data-theme="light"] {
+            --bg-color: #e5e5e5; --surface-color: #d4d4d4; --text-color: #333333; 
+            --primary-color: #6200ee; --secondary-color: #018786;
+            --dot-bg: #bbb; --dot-weak: #888; --flash-color: #000000;
+            --active-border: var(--primary-color);
+        }
+        [data-theme="darkred"] {
+            --bg-color: #2b0f0f; --surface-color: #3d1a1a; --text-color: #fcdcdc; 
+            --primary-color: #e62e2e; --secondary-color: #ff9999;
+            --dot-bg: #4d2626; --dot-weak: #8a4848; --flash-color: #5c2020;
+            --active-border: #ffffff;
+        }
+        [data-theme="navy"] {
+            --bg-color: #111b2e; --surface-color: #1e293b; --text-color: #e2e8f0; 
+            --primary-color: #0ea5e9; --secondary-color: #a5b4fc;
+            --dot-bg: #334155; --dot-weak: #475569; --flash-color: #2a3b5c;
+            --active-border: #ffffff;
+        }
+
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; background-color: var(--bg-color); color: var(--text-color); display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; user-select: none; transition: background-color 0.1s ease-out, color 0.3s; }
+        body.flash-active { background-color: var(--flash-color) !important; }
+
+        .help-overlay-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1500; cursor: pointer; }
+        .help-wrapper { position: relative; width: 100%; }
+        .help-tip { display: none; position: absolute; background: var(--primary-color); color: #fff; padding: 8px 12px; border-radius: 8px; font-size: 0.8rem; font-weight: bold; z-index: 1600; box-shadow: 0 4px 10px rgba(0,0,0,0.5); pointer-events: none; white-space: nowrap; line-height: 1.4; }
+        .help-tip::after { content: ''; position: absolute; bottom: -6px; left: 20px; border-width: 6px 6px 0; border-style: solid; border-color: var(--primary-color) transparent transparent transparent; }
+        .help-tip.up-tip::after { top: -6px; bottom: auto; border-width: 0 6px 6px; border-color: transparent transparent var(--primary-color) transparent; }
+        @keyframes pop { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes pop-center { 0% { transform: translateX(-50%) scale(0.8); opacity: 0; } 100% { transform: translateX(-50%) scale(1); opacity: 1; } }
+        .help-tip.center-tip { transform: translateX(-50%); }
+        .help-tip.center-tip::after { left: 50%; transform: translateX(-50%); }
+        body.help-active .help-overlay-bg { display: block; }
+        body.help-active .help-tip { display: block; animation: pop 0.2s ease-out forwards; }
+        body.help-active .help-tip.center-tip { animation: pop-center 0.2s ease-out forwards; }
+        body.help-active .help-target { z-index: 1501; pointer-events: none; }
+        body.help-active .container { z-index: auto !important; }
+        body.help-active .bpm-display, body.help-active .bpm-content-wrapper { z-index: 1505 !important; }
+
+        .app-tabs { display: flex; gap: 5px; margin-top: 15px; width: 95%; max-width: 450px; }
+        .tab-btn { flex: 1; padding: 12px 5px; background: var(--dot-weak); color: #fff; border: none; border-radius: 12px 12px 0 0; cursor: pointer; font-weight: bold; font-size: 0.9rem; transition: background 0.2s; }
+        .tab-btn.active { background: var(--surface-color); color: var(--text-color); }
+
+        .container { background-color: var(--surface-color); padding: 1.5rem; border-radius: 0 0 16px 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.2); width: 95%; max-width: 450px; transition: background-color 0.3s; z-index: 10; box-sizing: border-box; position: relative; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .ad-spacer { height: 150px; width: 100%; pointer-events: none; flex-shrink: 0; }
+
+        .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .help-btn { width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--text-color); background: transparent; color: var(--text-color); font-weight: bold; font-size: 1.2rem; cursor: pointer; display: flex; justify-content: center; align-items: center; opacity: 0.7; z-index: 1600; position: relative; }
+        .help-btn:hover { opacity: 1; border-color: var(--secondary-color); color: var(--secondary-color); }
+        h1 { margin: 0; font-weight: 800; letter-spacing: 2px; }
+        .header-spacer { width: 32px; }
+
+        .control-label { display: block; font-size: 0.8rem; margin-bottom: 5px; opacity: 0.8; font-weight: bold; pointer-events: none; text-align: center; }
+        .scrollable-control { border: 2px solid transparent; border-radius: 8px; transition: border-color 0.2s, background-color 0.2s; cursor: ns-resize; touch-action: pan-x; }
+        .scrollable-control:hover, .scrollable-control.touch-active { border-color: var(--secondary-color); background-color: rgba(255, 255, 255, 0.1); }
+        select, input[type="number"], input[type="text"] { background: var(--bg-color); border: 1px solid var(--dot-weak); color: var(--text-color); padding: 10px; border-radius: 8px; font-size: 1.1rem; width: 100%; box-sizing: border-box; text-align: center; cursor: pointer; }
+        .scrollable-control select, .scrollable-control input { border: none; }
+
+        .top-settings { display: grid; grid-template-columns: 1.2fr 1.2fr 0.8fr; gap: 5px; margin-bottom: 15px; }
+        .stepper-ui { display: flex; align-items: center; justify-content: space-between; background: var(--bg-color); border-radius: 8px; overflow: hidden; height: 44px; }
+        .stepper-ui button { background: transparent; color: var(--text-color); border: none; width: 40px; height: 100%; font-size: 1.5rem; cursor: pointer; font-weight: bold; }
+        .stepper-ui button:active { background: var(--dot-weak); }
+        .stepper-ui span { font-weight: bold; font-size: 1.1rem; flex-grow: 1; text-align: center; pointer-events: none; }
+
+        .options-row { display: flex; justify-content: space-around; background: var(--bg-color); padding: 10px; border-radius: 8px; margin-bottom: 5px; border: 1px solid var(--dot-weak); }
+        .options-row label { margin-bottom: 0; display: flex; align-items: center; gap: 5px; cursor: pointer; font-size: 0.9rem; font-weight: bold;}
+        .offset-panel { background: var(--bg-color); border-radius: 8px; padding: 10px; margin-bottom: 20px; border: 1px solid var(--dot-weak); }
+        .offset-header { font-size: 0.8rem; font-weight: bold; cursor: pointer; display: flex; justify-content: space-between; }
+        .offset-body { display: none; margin-top: 10px; flex-direction: column; gap: 10px; }
+        .offset-body.open { display: flex; }
+        .offset-row { display: flex; align-items: center; justify-content: space-between; }
+        .offset-row input { width: 80px; padding: 5px; }
+
+        .accordion-panel { background: var(--bg-color); border-radius: 8px; margin-bottom: 20px; border: 1px solid var(--dot-weak); overflow: hidden; }
+        .accordion-header { padding: 10px; font-weight: bold; font-size: 0.9rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .accordion-header:hover { background: rgba(255,255,255,0.05); }
+        .accordion-body { padding: 15px; border-top: 1px solid var(--dot-weak); display: none; }
+        .accordion-body.open { display: block; }
+        .calc-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+        .calc-row select { font-size: 0.9rem; padding: 5px; }
+        .sheet-bpm-stepper { display: flex; align-items: center; background: var(--surface-color); border-radius: 8px; flex-grow: 1; }
+        .sheet-bpm-stepper button { background: transparent; border: none; color: var(--text-color); font-size: 1.2rem; cursor: pointer; width: 30px; font-weight: bold; }
+        .sheet-bpm-stepper input { flex-grow: 1; width: 60px; padding: 5px; border: none; background: transparent; }
+        .apply-btn { width: 100%; background: var(--secondary-color); color: #000; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 5px; }
+
+        .bpm-section { background: var(--bg-color); padding: 15px; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; gap: 15px; border: 1px solid var(--dot-weak); }
+        .bpm-display { text-align: center; flex-grow: 1; padding: 10px; position: relative; border-radius: 8px; }
+        .pendulum-container { position: absolute; bottom: -5px; left: 50%; width: 5px; height: 145px; transform-origin: bottom center; z-index: 0; pointer-events: none; opacity: 0.3; transform: translateX(-50%) rotate(0deg); }
+        .pendulum-stick { width: 100%; height: 100%; background-color: var(--text-color); border-radius: 4px; position: relative; transition: background-color 0.05s, box-shadow 0.05s; }
+        .pendulum-weight { position: absolute; top: 15%; left: -5.5px; width: 16px; height: 16px; background-color: var(--secondary-color); border-radius: 50%; box-shadow: 0 0 5px rgba(0,0,0,0.5); transition: background-color 0.05s, box-shadow 0.05s; }
+        .pendulum-stick.flash { background-color: #fff; box-shadow: 0 0 15px #fff, 0 0 20px var(--secondary-color); }
+        .pendulum-weight.flash { background-color: #fff; box-shadow: 0 0 15px #fff, 0 0 30px var(--secondary-color); }
+        .bpm-content-wrapper { position: relative; z-index: 2; }
+        .bpm-input-stepper { display: flex; align-items: center; justify-content: center; margin-bottom: 10px; }
+        .bpm-input-stepper button { background: transparent; border: none; color: var(--text-color); font-size: 2rem; cursor: pointer; padding: 0 10px; text-shadow: 0 0 5px var(--bg-color); }
+        .bpm-input-stepper input { font-size: 2.5rem; font-weight: bold; background: transparent; color: var(--primary-color); width: 100px; padding: 0; text-shadow: 0 0 5px var(--bg-color); }
+        .dial-container { width: 80px; height: 80px; border-radius: 50%; background: conic-gradient(from 180deg, var(--dot-weak), var(--surface-color)); position: relative; cursor: pointer; display: flex; justify-content: center; align-items: center; touch-action: none; flex-shrink: 0; border: 2px solid var(--dot-bg); }
+        .dial-indicator { width: 8px; height: 8px; background-color: var(--secondary-color); border-radius: 50%; position: absolute; top: 50%; left: 50%; margin-top: -4px; margin-left: -4px; box-shadow: 0 0 5px var(--secondary-color); }
+        .vertical-slider-container { height: 200px; display: flex; align-items: center; flex-shrink: 0; cursor: ns-resize; }
+        input[type="range"][orient="vertical"] { writing-mode: bt-lr; -webkit-appearance: slider-vertical; width: 25px; height: 180px; pointer-events: none; }
+        input[type="range"][orient="vertical"]::-webkit-slider-thumb { pointer-events: auto; }
+        input[type="range"][orient="vertical"]::-moz-range-thumb { pointer-events: auto; }
+        .jump-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; position: relative; width: 100%; }
+        .jump-btn { background: var(--surface-color); border: 1px solid var(--dot-weak); color: var(--text-color); padding: 10px 5px; border-radius: 6px; cursor: pointer; font-size: 1.1rem; font-weight: bold; opacity: 0.9; }
+        .jump-btn:active { background: var(--dot-weak); }
+
+        .sequencer-container { margin: 20px 0 30px 0; touch-action: none; }
+        .sequencer { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; align-items: flex-end; }
+        .beat-col { display: flex; flex-direction: column; align-items: center; width: 28px; cursor: pointer; }
+        .blocks { display: flex; flex-direction: column; gap: 3px; height: 45px; justify-content: flex-end; width: 100%; }
+        .block { width: 100%; height: 13px; border: 2px solid var(--dot-weak); border-radius: 2px; opacity: 0; box-sizing: border-box; transition: all 0.1s; }
+        .beat-col[data-state="1"] .b1 { opacity: 1; border-color: var(--text-color); }
+        .beat-col[data-state="2"] .b1, .beat-col[data-state="2"] .b2 { opacity: 1; border-color: var(--secondary-color); }
+        .beat-col[data-state="3"] .block { opacity: 1; border-color: var(--primary-color); }
+        .beat-line { width: 100%; height: 3px; background-color: var(--text-color); margin-top: 5px; border-radius: 2px; }
+        .beat-num { font-size: 0.9rem; font-weight: bold; margin-top: 3px; color: var(--text-color); }
+        .beat-col.active .b1 { border-color: var(--active-border); background-color: var(--active-border); transform: scale(1.1); box-shadow: 0 0 8px var(--active-border); }
+        .beat-col.active[data-state="2"] .b2 { border-color: var(--secondary-color); background-color: var(--secondary-color); transform: scale(1.1); box-shadow: 0 0 10px var(--secondary-color); }
+        .beat-col.active[data-state="3"] .b3, .beat-col.active[data-state="3"] .b2, .beat-col.active[data-state="3"] .b1 { border-color: var(--primary-color); background-color: var(--primary-color); transform: scale(1.1); box-shadow: 0 0 12px var(--primary-color); }
+
+        .preset-section { background: var(--bg-color); padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid var(--dot-weak); }
+        .preset-controls { display: flex; gap: 8px; align-items: center; }
+        .preset-select { flex-grow: 1; padding: 8px; font-size: 0.9rem; text-align: left; }
+        .preset-action-btn { padding: 8px 15px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.9rem; }
+        .load-btn { background: var(--secondary-color); color: #000; }
+        .save-btn { background: var(--primary-color); color: #fff; }
+
+        #playBtn { background: linear-gradient(45deg, var(--primary-color), var(--secondary-color)); border: none; color: #fff; padding: 40px 20px; font-size: 2rem; border-radius: 16px; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); cursor: pointer; width: 100%; font-weight: bold; letter-spacing: 3px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); margin-top: 10px; }
+        #playBtn:active { transform: translateY(2px); }
+        #playBtn.playing { background: #cf6679; box-shadow: 0 4px 15px rgba(207, 102, 121, 0.3); }
+
+        /* File Tab */
+        .file-section { background: var(--bg-color); border-radius: 12px; margin-bottom: 15px; border: 1px solid var(--dot-weak); overflow: hidden; }
+        .file-section h3 { margin: 0; font-size: 1.1rem; padding: 8px 15px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+        .file-section h3:hover { background: rgba(255,255,255,0.05); }
+        .custom-file-row { display: flex; gap: 10px; margin-bottom: 12px; background: var(--surface-color); padding: 8px; border-radius: 8px; align-items: stretch; }
+        .custom-file-left { display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 45px; border-right: 1px solid var(--dot-weak); padding-right: 5px; gap: 5px; }
+        .custom-file-left label { margin: 0; font-size: 0.85rem; font-weight: bold; }
+        .preview-btn { background: var(--secondary-color); color: #000; border: none; border-radius: 50%; width: 28px; height: 28px; display: flex; justify-content: center; align-items: center; cursor: pointer; font-size: 0.7rem; padding-left: 3px; font-weight:bold; transition: background 0.2s;}
+        .preview-btn.playing { background: var(--text-color); color: var(--surface-color); padding-left: 0; border-radius: 8px; } 
+        .file-input-wrapper { display: flex; flex-direction: column; gap: 8px; overflow: hidden; flex-grow: 1; justify-content: center; }
+        .file-top-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; overflow: hidden; }
+        .file-top-row input[type="file"] { display: none; }
+        .file-btn { background: var(--dot-weak); color: #fff; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; white-space: nowrap; flex-shrink: 0;}
+        .file-name-display { font-size: 0.8rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-grow: 1; text-align: left; opacity: 0.8;}
+        .timing-row { display: flex; align-items: center; gap: 5px; width: 100%; }
+        .timing-row input[type="range"] { flex-grow: 1; width: 10px; margin: 0; }
+        .timing-row input[type="number"] { width: 65px; padding: 3px; font-size: 0.8rem; text-align: center; flex-shrink: 0;}
+        .status-badge { padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; background: var(--dot-weak); color: #fff; pointer-events: none;}
+        .status-badge.loaded { background: var(--secondary-color); color: #000; }
+
+        /* 楽曲モード UI */
+        .song-mode-content { display: none; }
+        .song-mode-content.active { display: block; }
+        
+        /* 1線譜ビュー (縦スクロール・改行対応) */
+        .score-view-wrapper { overflow-y: auto; overflow-x: hidden; background: var(--bg-color); border-radius: 8px; border: 1px solid var(--dot-weak); padding: 10px; margin-bottom: 10px; min-height: 250px; max-height: 40vh; position: relative; }
+        .score-track { display: flex; flex-wrap: wrap; align-content: flex-start; gap: 8px; width: 100%; min-height: 100%; }
+        .score-block { display: inline-flex; flex-direction: column; justify-content: center; align-items: center; background: var(--surface-color); border: 2px solid var(--dot-weak); border-radius: 6px; min-width: 55px; padding: 5px 10px; cursor: pointer; position: relative; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-top: 15px; }
+        .score-block.active-play { border-color: var(--primary-color); background: var(--primary-color); color: #fff; transform: scale(1.05); }
+        .score-block.selected { border-color: var(--secondary-color); box-shadow: 0 0 8px var(--secondary-color); }
+        .block-bars { font-size: 1.2rem; font-weight: bold; }
+        .block-info { font-size: 0.65rem; opacity: 0.8; margin-top: 2px; }
+        .block-name { position: absolute; top: -18px; left: 50%; transform: translateX(-50%); font-size: 0.7rem; font-weight: bold; background: var(--dot-weak); color: #fff; padding: 1px 6px; border-radius: 4px; white-space: nowrap; }
+        
+        /* 楽曲モード切替ボタン */
+        .song-mode-switcher { display: flex; gap: 10px; margin-bottom: 15px; }
+        .mode-btn { flex: 1; padding: 10px; border-radius: 8px; border: 2px solid var(--dot-weak); background: transparent; color: var(--text-color); font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .mode-btn.active { background: var(--secondary-color); color: #000; border-color: var(--secondary-color); }
+
+        /* 楽曲編集フォーム */
+        .form-actions-top { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+        .form-actions-top button { flex: 1; padding: 8px; font-weight: bold; font-size: 0.85rem; border: 1px solid var(--dot-weak); border-radius: 6px; background: var(--surface-color); color: var(--text-color); cursor: pointer; }
+        .form-actions-top button:active { background: var(--dot-weak); color:#fff; }
+        
+        .song-edit-form { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: var(--bg-color); padding: 15px; border-radius: 8px; border: 1px solid var(--dot-weak); position: relative; }
+        .form-group { display: flex; flex-direction: column; gap: 3px; }
+        .form-group label { font-size: 0.75rem; font-weight: bold; opacity: 0.8; }
+        .form-group input, .form-group select { padding: 8px; font-size: 0.9rem; }
+        .full-width { grid-column: 1 / -1; }
+        .flex-row { display: flex; gap: 5px; align-items: center; }
+        .rit-panel { background: rgba(0,0,0,0.05); padding: 8px; border-radius: 6px; margin-top: 5px; display: none; }
+        .rit-panel.open { display: flex; flex-direction: column; gap: 8px; }
+        .action-btns { display: flex; gap: 10px; margin-top: 5px; }
+        .action-btns button { flex: 1; padding: 10px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; }
+        .btn-add { background: var(--secondary-color); color: #000; }
+        .btn-insert { background: var(--primary-color); color: #fff; }
+        .btn-del { background: #cf6679; color: #fff; }
+        
+        .song-play-settings { background: var(--bg-color); padding: 15px; border-radius: 8px; border: 1px solid var(--dot-weak); margin-bottom: 15px; }
+        
+        /* ドラムロール式ピッカー (高さ拡張＆ドラッグ対応準備) */
+        .picker-container { display: flex; justify-content: center; gap: 10px; height: 200px; position: relative; margin-bottom: 15px; background: var(--surface-color); border-radius: 8px; border: 1px solid var(--dot-weak); overflow: hidden; touch-action: pan-y; cursor: grab;}
+        .picker-container:active { cursor: grabbing; }
+        .picker-container::before { content: ''; position: absolute; top: 50%; left: 0; width: 100%; height: 40px; transform: translateY(-50%); background: rgba(0,0,0,0.05); pointer-events: none; border-top: 1px solid var(--secondary-color); border-bottom: 1px solid var(--secondary-color); z-index: 1; }
+        .picker-col { flex: 1; overflow-y: scroll; scroll-snap-type: y mandatory; -ms-overflow-style: none; scrollbar-width: none; padding: 80px 0; }
+        .picker-col::-webkit-scrollbar { display: none; }
+        .picker-item { height: 40px; display: flex; justify-content: center; align-items: center; scroll-snap-align: center; font-size: 1.1rem; font-weight: bold; opacity: 0.4; transition: opacity 0.2s; }
+        .picker-item.active { opacity: 1; color: var(--primary-color); }
+        
+        .fab-menu { position: absolute; bottom: 20px; right: 20px; width: 45px; height: 45px; border-radius: 50%; background: var(--text-color); color: var(--surface-color); border: none; font-size: 1.5rem; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); cursor: pointer; z-index: 100; }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 2000; }
+        .modal-overlay.active { display: flex; }
+        .modal-content { background: var(--surface-color); padding: 25px; border-radius: 16px; width: 85%; max-width: 320px; text-align: center; }
+        .modal-buttons { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+        .modal-buttons button { padding: 15px; border-radius: 8px; border: none; font-size: 1.1rem; cursor: pointer; font-weight: bold; }
+        .btn-save { background: var(--primary-color); color: #fff; }
+        .btn-clear { background: #cf6679; color: #fff; }
+        .btn-cancel { background: var(--dot-weak); color: #fff; }
+    </style>
+</head>
+<body data-theme="beige">
+
+    <div class="help-overlay-bg" onclick="toggleHelp()">
+        <div style="position: absolute; top: 20px; left: 50%; transform: translateX(-50%); color: #fff; font-weight: bold; letter-spacing: 2px;">画面をタップして閉じる</div>
+    </div>
+
+    <div class="app-tabs">
+        <button class="tab-btn active" onclick="switchTab('metro')">メトロノーム</button>
+        <button class="tab-btn" onclick="switchTab('file')">ファイル</button>
+        <button class="tab-btn" onclick="switchTab('song')">楽曲モード</button>
+    </div>
+
+    <div class="container">
+        <div class="header-row">
+            <button class="help-btn" onclick="toggleHelp()">?</button>
+            <h1>NamaMeto</h1>
+            <div class="header-spacer"></div>
+        </div>
+
+        <div id="tab-metro" class="tab-content active">
+            <div class="help-wrapper help-target">
+                <div class="help-tip" style="top: -25px; left: 10%;">👁️ 視覚や振動でリズムを取れます</div>
+                <div class="options-row">
+                    <label><input type="checkbox" id="flashToggle" onchange="saveCurrentState()"> フラッシュ</label>
+                    <label><input type="checkbox" id="vibrateToggle" onchange="saveCurrentState()"> バイブ</label>
+                </div>
+            </div>
+            
+            <div class="offset-panel help-wrapper help-target">
+                <div class="help-tip" style="top: -25px; left: 10%;">⚙️ 音と光・振動のタイミングを<br>ミリ秒単位で微調整できます</div>
+                <div class="offset-header" onclick="toggleAccordion('offsetBody', 'offsetArrow')">
+                    <span>⚙️ 視覚・振動のズレ補正 (ms)</span><span id="offsetArrow">▼</span>
+                </div>
+                <div class="offset-body" id="offsetBody">
+                    <div class="offset-row"><label style="font-size:0.8rem;">フラッシュ補正:</label><input type="number" id="flashOffset" class="scroll-number" value="0" step="10" onchange="saveCurrentState()"></div>
+                    <div class="offset-row"><label style="font-size:0.8rem;">バイブ補正:</label><input type="number" id="vibeOffset" class="scroll-number" value="0" step="10" onchange="saveCurrentState()"></div>
+                </div>
+            </div>
+
+            <div class="help-wrapper help-target">
+                <div class="help-tip" style="top: -25px; left: 10%;">👆 マウスホイール・スワイプで変更可能</div>
+                <div class="top-settings">
+                    <div class="scrollable-control" id="themeCtrl">
+                        <span class="control-label">Theme</span>
+                        <select id="themeSelect">
+                            <option value="beige">1. Beige</option><option value="dark">2. Dark</option><option value="light">3. Light</option><option value="darkred">4. Dark Red</option><option value="navy">5. Navy</option>
+                        </select>
+                    </div>
+                    <div class="scrollable-control" id="soundCtrl">
+                        <span class="control-label">Sound</span>
+                        <select id="soundSelect">
+                            <option value="beep">1. Digital Beep</option><option value="clave">2. Wood Clave</option><option value="metronome">3. Metronome</option>
+                            <option value="cowbell">4. Cowbell</option><option value="drums">5. Drums</option><option value="custom1">6. Custom 1</option>
+                            <option value="custom2">7. Custom 2</option><option value="custom3">8. Custom 3</option>
+                        </select>
+                    </div>
+                    <div class="scrollable-control" id="beatsCtrl">
+                        <span class="control-label">Beats</span>
+                        <div class="stepper-ui"><button onclick="adjustBeats(-1)">-</button><span id="beatsValDisplay">4</span><button onclick="adjustBeats(1)">+</button></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="help-wrapper help-target">
+                <div class="help-tip" style="top: -25px; left: 10%;">🎼 楽譜の指定からBPMを自動計算！</div>
+                <div class="accordion-panel">
+                    <div class="accordion-header" onclick="toggleAccordion('scoreCalcBody', 'calcArrow')">
+                        <span>🎼 楽譜テンポ換算 (分母指定)</span><span id="calcArrow">▼</span>
+                    </div>
+                    <div class="accordion-body" id="scoreCalcBody">
+                        <div class="calc-row">
+                            <select id="sheetNoteVal" onchange="saveCurrentState()"><option value="2">2分 (d)</option><option value="1.5">付点4分 (♩.)</option><option value="1" selected>4分 (♩)</option><option value="0.75">付点8分 (♪.)</option><option value="0.5">8分 (♪)</option></select>
+                            <span>=</span>
+                            <div class="sheet-bpm-stepper scrollable-control" id="sheetBpmCtrl"><button onclick="adjustSheetBpm(-1)">-</button><input type="number" id="sheetBpmVal" value="60" onchange="saveCurrentState()"><button onclick="adjustSheetBpm(1)">+</button></div>
+                        </div>
+                        <div class="calc-row">
+                            <span style="font-size:0.9rem;">刻む音符:</span>
+                            <select id="clickNoteVal" style="flex-grow:1;" onchange="saveCurrentState()"><option value="1.5">付点4分音符</option><option value="1">4分音符</option><option value="0.5" selected>8分音符</option><option value="0.25">16分音符</option><option value="0.3333">3連符</option></select>
+                        </div>
+                        <button class="apply-btn" onclick="applyScoreBpm()">メトロノームに反映</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bpm-section">
+                <div class="help-wrapper help-target" style="width: auto;">
+                    <div class="help-tip center-tip" style="top: -30px; left: 50%;">🔄 なぞって回せる！</div>
+                    <div class="dial-container" id="bpmDial"><div class="dial-indicator" id="dialIndicator"></div></div>
+                </div>
+                
+                <div class="bpm-display scrollable-control" id="bpmCtrl">
+                    <div id="pendulumContainer" class="pendulum-container"><div class="pendulum-stick" id="pendulumStick"><div class="pendulum-weight" id="pendulumWeight"></div></div></div>
+                    <div class="bpm-content-wrapper">
+                        <span class="control-label">BPM</span>
+                        <div class="bpm-input-stepper"><button onclick="adjustBPM(-1)">-</button><input type="number" id="bpmInput" value="120" min="20" max="600"><button onclick="adjustBPM(1)">+</button></div>
+                        <div class="jump-buttons help-wrapper help-target">
+                            <div class="help-tip center-tip" style="top: -35px; left: 50%;">⚡ 長押しで連続変化！</div>
+                            <button class="jump-btn" id="btnP10">+10</button><button class="jump-btn" id="btnP5">+5</button><button class="jump-btn" id="btnM10">-10</button><button class="jump-btn" id="btnM5">-5</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="vertical-slider-container" id="sliderCtrl"><input type="range" id="bpmSlider" value="120" min="20" max="300" orient="vertical"></div>
+            </div>
+
+            <div class="sequencer-container help-wrapper help-target">
+                <div class="help-tip center-tip" style="top: -30px; left: 50%;">👆 タップで音色（強・中・弱・無）を切り替えられます</div>
+                <div class="control-label">Beat Pattern (タップで変更)</div>
+                <div class="sequencer" id="sequencer"></div>
+            </div>
+
+            <div class="help-wrapper help-target">
+                <div class="help-tip" style="top: -10px; left: 10%;">💾 10枠まで設定を保存・呼出可能</div>
+                <div class="preset-section">
+                    <label class="control-label">Preset (設定の保存/読込)</label>
+                    <div class="preset-controls">
+                        <select id="presetSelect" class="preset-select"></select>
+                        <button class="preset-action-btn load-btn" onclick="loadPresetBtn()">読込</button>
+                        <button class="preset-action-btn save-btn" onclick="openModalForSave()">保存</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-file" class="tab-content">
+            <div class="help-wrapper help-target">
+                <div class="help-tip" style="top: 0px; left: 10%;">🎧 それぞれの拍の音を自由に設定・試聴</div>
+                <h2 style="font-size: 1.2rem; margin-top:0;">オリジナル音色の登録</h2>
+                <p style="font-size: 0.8rem; color:#888; line-height: 1.4;">端末内の音声ファイルをカスタム音色として設定できます。<br>（推奨: 1MB以下の短くカットされた .mp3 / .wav）</p>
+                <div id="custom-files-container"></div>
+                <p style="font-size: 0.8rem; color:#888; text-align:center;">※プロジェクトファイル共有機能は近日実装予定</p>
+            </div>
+        </div>
+
+        <div id="tab-song" class="tab-content">
+            <div class="score-view-wrapper" id="scoreView">
+                <div class="score-track" id="scoreTrack">
+                    </div>
+            </div>
+            
+            <div class="song-mode-switcher">
+                <button class="mode-btn active" id="btnPlayTab" onclick="switchSongTab('play')">▶ 再生</button>
+                <button class="mode-btn" id="btnEditTab" onclick="switchSongTab('edit')">✎ 作成編集</button>
+            </div>
+
+            <div id="song-play-mode" class="song-mode-content active">
+                <div class="control-label">▶ 再生開始位置（セット / 小節）</div>
+                <div class="picker-container" id="songPicker">
+                    <div class="picker-col" id="pickerSet" onscroll="onPickerScroll('set')"></div>
+                    <div class="picker-col" id="pickerBar" onscroll="onPickerScroll('bar')"></div>
+                </div>
+                
+                <div class="song-play-settings">
+                    <div class="form-group" style="margin-bottom: 10px;">
+                        <label>予備拍 (カウントイン)</label>
+                        <select id="precountMode" onchange="updatePrecountUI()">
+                            <option value="auto" selected>自動 (時間で計算)</option>
+                            <option value="manual">手動 (小節数指定)</option>
+                            <option value="off">オフ</option>
+                        </select>
+                    </div>
+                    <div class="flex-row" id="precountAutoSettings">
+                        <span style="font-size:0.8rem;">最低確保時間:</span>
+                        <input type="number" id="precountSec" value="1.5" step="0.5" style="width:60px;">
+                        <span style="font-size:0.8rem;">秒</span>
+                    </div>
+                    <div class="flex-row" id="precountManualSettings" style="display:none;">
+                        <span style="font-size:0.8rem;">予備拍:</span>
+                        <input type="number" id="precountBars" value="1" min="1" max="4" style="width:60px;">
+                        <span style="font-size:0.8rem;">小節</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="song-edit-mode" class="song-mode-content">
+                <div class="form-actions-top">
+                    <button onclick="loadSelectedToForm()" id="btnLoadToForm">↑ 選択中を読込</button>
+                    <button onclick="clearForm()">↺ クリア</button>
+                </div>
+                <div class="song-edit-form">
+                    <div class="form-group full-width">
+                        <label>セット名 <span style="font-weight:normal; font-size:0.65rem;">(※未入力時は開始小節番号になります)</span></label>
+                        <input type="text" id="editName" placeholder="A, B, Intro など">
+                    </div>
+                    <div class="form-group">
+                        <label>BPM基準</label>
+                        <select id="editNote">
+                            <option value="1" selected>4分音符</option><option value="1.5">付点4分</option><option value="0.5">8分音符</option><option value="0.75">付点8分</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>テンポ (BPM)</label>
+                        <input type="number" id="editBpm" value="120">
+                    </div>
+                    <div class="form-group">
+                        <label>拍子</label>
+                        <input type="text" id="editTimeSig" value="4/4" placeholder="4/4, 6/8+2/4">
+                    </div>
+                    <div class="form-group">
+                        <label>小節数</label>
+                        <input type="number" id="editBars" value="4" min="1">
+                    </div>
+                    <div class="form-group full-width">
+                        <label><input type="checkbox" id="editClick"> 刻み（8分音符等のガイド）を入れる</label>
+                    </div>
+                    <div class="form-group full-width">
+                        <label><input type="checkbox" id="editRitToggle" onchange="toggleRitPanel()"> rit. / accel. (テンポ変化)</label>
+                        <div class="rit-panel" id="editRitPanel">
+                            <div class="flex-row">
+                                <span style="font-size:0.8rem;">到着BPM:</span>
+                                <input type="number" id="editTargetBpm" value="100" style="width:80px;">
+                            </div>
+                            <div class="flex-row">
+                                <span style="font-size:0.8rem;">変化カーブ:</span>
+                                <select id="editCurve" style="flex-grow:1;">
+                                    <option value="linear">標準 (直線的)</option>
+                                    <option value="early">手前で強く変化</option>
+                                    <option value="late">後ろで強く変化</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="full-width action-btns">
+                        <button class="btn-insert" onclick="addSongSet(true)" id="btnInsert" style="opacity:0.5;" disabled>前に挿入</button>
+                        <button class="btn-add" onclick="addSongSet(false)" id="btnAdd">末尾に追加</button>
+                        <button class="btn-del" onclick="deleteSongSet()" id="btnDel" style="display:none;">削除</button>
+                    </div>
+                </div>
+                
+                <button class="fab-menu" onclick="openSongMenu()">≡</button>
+            </div>
+        </div>
+
+        <button id="playBtn">START</button>
+    </div>
+    <div class="ad-spacer"></div>
+
+    <div id="presetModal" class="modal-overlay"><div class="modal-content"><h2 id="modalTitle">Slot 1 に保存</h2><input type="text" id="presetName" placeholder="プリセット名"><div class="modal-buttons"><button class="btn-save" onclick="savePreset()">保存</button><button class="btn-clear" onclick="clearPreset()">削除</button><button class="btn-cancel" onclick="closeModal()">キャンセル</button></div></div></div>
+
+<script>
+    // ==============================================================
+    // 【音声データ 貼り付けエリア】
+    // 変換ツールの "data:audio/mpeg;base64,..." を "" 内に貼り付け。
+    // ==============================================================
+    const metronomeBase64Data = { 3: "", 2: "", 1: "" }; 
+    const cowbellBase64Data = { 3: "", 2: "", 1: "" };   
+    const drumsBase64Data = { 3: "", 2: "", 1: "" };     
+    // --------------------------------------------------------------
+
+    let audioCtx = null; let isPlaying = false; let currentBeat = 0; let nextNoteTime = 0.0; let timerID = null;
+    const lookahead = 25.0; const scheduleAheadTime = 1.5; 
+
+    let currentMode = 'metro'; 
+    let currentSongTab = 'play'; 
+
+    let bpm = 120; let totalBeats = 4; let beatPattern = [3, 1, 2, 1];
+    let soundSet = 'beep'; let currentTheme = 'beige';
+    let activeSlot = 1;
+    let dotQueue = [], flashQueue = [], vibeQueue = [], pendQueue = []; let pendTickIndex = 0; 
+    let activeAudioNodes = []; 
+    let currentPreviewNode = null; let currentPreviewBtnId = null;
+
+    const customAudioBuffers = { custom1: { 3: null, 2: null, 1: null }, custom2: { 3: null, 2: null, 1: null }, custom3: { 3: null, 2: null, 1: null } };
+    const builtinCustomBuffers = { metronome: {3:null,2:null,1:null}, cowbell: {3:null,2:null,1:null}, drums: {3:null,2:null,1:null} };
+
+    let songData = [
+        { id: 1, name: "1", bpmNote: 1, bpm: 120, timeSig: "4/4", bars: 4, click: true, rit: false, targetBpm: 120, curve: 'linear' },
+        { id: 2, name: "A", bpmNote: 1, bpm: 120, timeSig: "4/4", bars: 8, click: false, rit: false, targetBpm: 120, curve: 'linear' }
+    ];
+    let selectedSetId = null; let compiledSongNotes = []; let currentSongNoteIndex = 0; let songStartingSetIndex = 0; let songStartingBarIndex = 0;
+
+    const playBtn = document.getElementById('playBtn'); const bpmInput = document.getElementById('bpmInput');
+    const bpmSlider = document.getElementById('bpmSlider'); const beatsValDisplay = document.getElementById('beatsValDisplay');
+    const soundSelect = document.getElementById('soundSelect'); const themeSelect = document.getElementById('themeSelect');
+    const sequencer = document.getElementById('sequencer'); const bpmDial = document.getElementById('bpmDial');
+    const dialIndicator = document.getElementById('dialIndicator'); const flashToggle = document.getElementById('flashToggle');
+    const vibrateToggle = document.getElementById('vibrateToggle'); const flashOffsetInput = document.getElementById('flashOffset');
+    const vibeOffsetInput = document.getElementById('vibeOffset'); const presetSelect = document.getElementById('presetSelect');
+    const pendulumContainer = document.getElementById('pendulumContainer'); const pendulumStick = document.getElementById('pendulumStick');
+    const pendulumWeight = document.getElementById('pendulumWeight');
+
+    function init() {
+        renderCustomSoundUI(); restoreCustomAudioFromStorage();
+        loadCurrentState(); updatePresetOptions();
+        
+        bpmInput.addEventListener('change', (e) => setBPM(e.target.value)); bpmSlider.addEventListener('input', (e) => setBPM(e.target.value));
+        soundSelect.addEventListener('change', (e) => { soundSet = e.target.value; saveCurrentState(); });
+        themeSelect.addEventListener('change', (e) => { currentTheme = e.target.value; document.body.setAttribute('data-theme', currentTheme); saveCurrentState(); });
+        playBtn.addEventListener('click', togglePlay);
+        
+        setupDial(); setupScrollAndSwipeControls(); setupHoldButtons();
+        makeScrollableDrag(document.getElementById('pickerSet')); makeScrollableDrag(document.getElementById('pickerBar'));
+        updateEditPlaceholder(); renderSongScore(); renderPicker();
+        visualSyncLoop();
+    }
+
+    async function loadBuiltinSounds() {
+        ensureAudioContext(); const sources = { metronome: metronomeBase64Data, cowbell: cowbellBase64Data, drums: drumsBase64Data };
+        for (const [key, b64] of Object.entries(sources)) {
+            for (let level of [1, 2, 3]) {
+                if (b64[level] && b64[level].startsWith('data:audio')) {
+                    try { const res = await fetch(b64[level]); const ab = await res.arrayBuffer(); builtinCustomBuffers[key][level] = await audioCtx.decodeAudioData(ab); } catch(e) {}
+                }
+            }
+        }
+    }
+
+    // --- UI State ---
+    function switchTab(tabId) {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+        document.getElementById('tab-' + tabId).classList.add('active');
+        event.target.classList.add('active');
+        currentMode = tabId === 'song' ? 'song' : 'metro';
+        if(isPlaying) togglePlay();
+        playBtn.style.display = tabId === 'file' ? 'none' : 'block';
+        if(tabId === 'song') { compileSong(); renderPicker(); }
+    }
+    
+    function switchSongTab(subTabId) {
+        document.querySelectorAll('.song-mode-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.mode-btn').forEach(el => el.classList.remove('active'));
+        document.getElementById('song-' + subTabId + '-mode').classList.add('active');
+        document.getElementById(subTabId === 'play' ? 'btnPlayTab' : 'btnEditTab').classList.add('active');
+        currentSongTab = subTabId;
+    }
+
+    function toggleHelp() { document.body.classList.toggle('help-active'); }
+    function toggleAccordion(bodyId, arrowId) { const b=document.getElementById(bodyId), a=document.getElementById(arrowId); if(b.classList.contains('open')){b.classList.remove('open');a.textContent='▼';}else{b.classList.add('open');a.textContent='▲';} }
+
+    // --- メトロノーム UI処理 ---
+    function saveCurrentState() {
+        const state = { bpm, totalBeats, beatPattern, soundSet, currentTheme, flash: flashToggle.checked, vibrate: vibrateToggle.checked, fOffset: flashOffsetInput.value, vOffset: vibeOffsetInput.value, sheetNote: document.getElementById('sheetNoteVal').value, sheetBpm: document.getElementById('sheetBpmVal').value, clickNote: document.getElementById('clickNoteVal').value };
+        localStorage.setItem('namameto_current_state', JSON.stringify(state));
+    }
+    function loadCurrentState() {
+        const dStr = localStorage.getItem('namameto_current_state');
+        if(dStr) {
+            try { const d = JSON.parse(dStr); bpm = d.bpm||120; totalBeats = d.totalBeats||4; if(d.beatPattern) beatPattern = d.beatPattern; soundSet = d.soundSet||'beep'; currentTheme = d.currentTheme||'beige'; if(d.flash!==undefined) flashToggle.checked = d.flash; if(d.vibrate!==undefined) vibrateToggle.checked = d.vibrate; if(d.fOffset!==undefined) flashOffsetInput.value = d.fOffset; if(d.vOffset!==undefined) vibeOffsetInput.value = d.vOffset; if(d.sheetNote) document.getElementById('sheetNoteVal').value = d.sheetNote; if(d.sheetBpm) document.getElementById('sheetBpmVal').value = d.sheetBpm; if(d.clickNote) document.getElementById('clickNoteVal').value = d.clickNote; } catch(e){}
+        }
+        bpmInput.value = bpm; bpmSlider.value = Math.min(300, bpm); beatsValDisplay.textContent = totalBeats; soundSelect.value = soundSet; themeSelect.value = currentTheme; document.body.setAttribute('data-theme', currentTheme); updateDialVisual(); renderSequencer();
+    }
+    
+    function setupScrollAndSwipeControls() {
+        const bindNode = (el, actUp, actDn, sens=1) => {
+            if(!el) return; let wAcc=0, tY=0;
+            el.addEventListener('wheel', e => { e.preventDefault(); wAcc += e.deltaY; const thr=50*sens; if(wAcc>thr){actDn();wAcc=0;}else if(wAcc<-thr){actUp();wAcc=0;} });
+            el.addEventListener('touchstart', e => { tY = e.touches[0].clientY; el.classList.add('touch-active'); }, {passive:true});
+            el.addEventListener('touchmove', e => { const cY = e.touches[0].clientY, diff = tY - cY; const thr=20*sens; if(Math.abs(diff)>thr){if(diff>0)actUp();else actDn(); tY=cY; if(e.cancelable)e.preventDefault();} }, {passive:false});
+            el.addEventListener('touchend', () => el.classList.remove('touch-active'));
+        };
+        const sSel = (id, dir) => { const s=document.getElementById(id); let i=s.selectedIndex+dir; if(i>=0&&i<s.options.length){s.selectedIndex=i;s.dispatchEvent(new Event('change'));} };
+        bindNode(document.getElementById('themeCtrl'), ()=>sSel('themeSelect',-1), ()=>sSel('themeSelect',1), 3);
+        bindNode(document.getElementById('soundCtrl'), ()=>sSel('soundSelect',-1), ()=>sSel('soundSelect',1), 3);
+        bindNode(document.getElementById('beatsCtrl'), ()=>adjustBeats(1), ()=>adjustBeats(-1), 2);
+        bindNode(document.getElementById('bpmCtrl'), ()=>adjustBPM(1), ()=>adjustBPM(-1), 1);
+        bindNode(document.getElementById('sheetBpmCtrl'), ()=>adjustSheetBpm(1), ()=>adjustSheetBpm(-1), 1);
+        document.getElementById('sliderCtrl').addEventListener('wheel', e=>{ e.preventDefault(); if(e.deltaY<0)adjustBPM(1);else if(e.deltaY>0)adjustBPM(-1); });
+        document.querySelectorAll('.scroll-number').forEach(el=>{ el.classList.add('scrollable-control'); const step=parseInt(el.step)||1; bindNode(el,()=>{el.value=Number(el.value)+step;el.dispatchEvent(new Event('change'));},()=>{el.value=Number(el.value)-step;el.dispatchEvent(new Event('change'));},3); });
+    }
+    function setupHoldButtons() {
+        const att = (id, amt) => {
+            const btn=document.getElementById(id); let tm, iv;
+            const st=e=>{ if(e.cancelable)e.preventDefault(); adjustBPM(amt); tm=setTimeout(()=>{iv=setInterval(()=>adjustBPM(amt),300);},300); }; const sp=()=>{clearTimeout(tm);clearInterval(iv);};
+            btn.addEventListener('mousedown',st);btn.addEventListener('touchstart',st,{passive:false});btn.addEventListener('mouseup',sp);btn.addEventListener('mouseleave',sp);btn.addEventListener('touchend',sp);btn.addEventListener('touchcancel',sp);
+        };
+        att('btnP10',10);att('btnP5',5);att('btnM10',-10);att('btnM5',-5);
+    }
+    function adjustSheetBpm(amt) { const inp=document.getElementById('sheetBpmVal'); inp.value=Math.max(1,parseInt(inp.value)+amt); saveCurrentState(); }
+    function applyScoreBpm() { const sn=parseFloat(document.getElementById('sheetNoteVal').value), sb=parseFloat(document.getElementById('sheetBpmVal').value), cn=parseFloat(document.getElementById('clickNoteVal').value); if(!sb)return; setBPM(Math.round(sb*(sn/cn))); toggleAccordion('scoreCalcBody','calcArrow'); }
+    function adjustBeats(amt) { totalBeats=Math.max(1,Math.min(16,totalBeats+amt)); beatsValDisplay.textContent=totalBeats; let n=[]; for(let i=0;i<totalBeats;i++)n.push(i<beatPattern.length?beatPattern[i]:1); beatPattern=n; renderSequencer(); saveCurrentState(); }
+    function setBPM(val) { bpm=Math.max(20,Math.min(600,parseInt(val))); bpmInput.value=bpm; bpmSlider.value=Math.min(300,bpm); updateDialVisual(); saveCurrentState(); }
+    function adjustBPM(amt) { setBPM(bpm+amt); }
+    function setupDial() {
+        let isD=false, lA=0, aA=0, sB=bpm;
+        const getA=e=>{ const r=bpmDial.getBoundingClientRect(), cx=r.left+r.width/2, cy=r.top+r.height/2, px=e.touches?e.touches[0].clientX:e.clientX, py=e.touches?e.touches[0].clientY:e.clientY; return Math.atan2(py-cy,px-cx)*(180/Math.PI); };
+        const st=e=>{ isD=true; lA=getA(e); sB=bpm; aA=0; e.preventDefault(); };
+        const mv=e=>{ if(!isD)return; let cA=getA(e), d=cA-lA; if(d>180)d-=360;else if(d<-180)d+=360; aA+=d; setBPM(Math.round(sB+(aA/4))); lA=cA; }; const sp=()=>{isD=false;};
+        bpmDial.addEventListener('mousedown',st);document.addEventListener('mousemove',mv);document.addEventListener('mouseup',sp);bpmDial.addEventListener('touchstart',st,{passive:false});document.addEventListener('touchmove',mv,{passive:false});document.addEventListener('touchend',sp);
+    }
+    function updateDialVisual() { if(dialIndicator) dialIndicator.style.transform = `rotate(${bpm*4}deg) translateY(-32px)`; }
+    function cycleBeatState(i) { beatPattern[i]=(beatPattern[i]+1)%4; renderSequencer(); saveCurrentState(); }
+    function renderSequencer() {
+        sequencer.innerHTML=''; beatPattern.forEach((s,i)=>{
+            const col=document.createElement('div'); col.className='beat-col'; col.dataset.state=s; col.dataset.index=i; col.onclick=()=>cycleBeatState(i);
+            col.innerHTML=`<div class="blocks"><div class="block b3"></div><div class="block b2"></div><div class="block b1"></div></div><div class="beat-line"></div><div class="beat-num">${i+1}</div>`;
+            sequencer.appendChild(col);
+        });
+    }
+
+    // --- Preset ---
+    function updatePresetOptions() {
+        const ls=presetSelect.value; presetSelect.innerHTML='';
+        for(let i=1;i<=10;i++) { const dStr=localStorage.getItem(`namameto_slot_${i}`); let txt=`Slot ${i}: (未設定)`; if(dStr){try{const d=JSON.parse(dStr);txt=`Slot ${i}: ${d.name} (${d.bpm}BPM, ${d.totalBeats}拍)`;}catch(e){}} presetSelect.innerHTML+=`<option value="${i}">${txt}</option>`; }
+        if(ls&&ls<=10)presetSelect.value=ls;
+    }
+    function loadPresetBtn() {
+        activeSlot=presetSelect.value; const dStr=localStorage.getItem(`namameto_slot_${activeSlot}`);
+        if(dStr){ try{const d=JSON.parse(dStr);bpm=d.bpm;totalBeats=d.totalBeats;beatPattern=d.beatPattern;soundSet=d.soundSet||'beep';currentTheme=d.theme||'beige';flashToggle.checked=d.flash||false;vibrateToggle.checked=d.vibrate||false;flashOffsetInput.value=d.fOffset||0;vibeOffsetInput.value=d.vOffset||0; bpmInput.value=bpm;bpmSlider.value=Math.min(300,bpm);beatsValDisplay.textContent=totalBeats;soundSelect.value=soundSet;themeSelect.value=currentTheme;document.body.setAttribute('data-theme',currentTheme); updateDialVisual();renderSequencer();saveCurrentState();alert(`Slot ${activeSlot} を読込ました。`);}catch(e){alert("読込失敗");} }else{alert("データがありません");}
+    }
+    function openModalForSave() { activeSlot=presetSelect.value; document.getElementById('modalTitle').textContent=`Slot ${activeSlot} に保存`; const dStr=localStorage.getItem(`namameto_slot_${activeSlot}`); if(dStr){try{document.getElementById('presetName').value=JSON.parse(dStr).name||`Preset ${activeSlot}`;}catch(e){}}else document.getElementById('presetName').value=''; document.getElementById('presetModal').classList.add('active'); }
+    function closeModal() { document.getElementById('presetModal').classList.remove('active'); }
+    function savePreset() { const d={name:document.getElementById('presetName').value||`Preset ${activeSlot}`,bpm,totalBeats,beatPattern,soundSet,theme:currentTheme,flash:flashToggle.checked,vibrate:vibrateToggle.checked,fOffset:flashOffsetInput.value,vOffset:vibeOffsetInput.value}; localStorage.setItem(`namameto_slot_${activeSlot}`,JSON.stringify(d)); updatePresetOptions(); closeModal(); }
+    function clearPreset() { localStorage.removeItem(`namameto_slot_${activeSlot}`); updatePresetOptions(); closeModal(); }
+
+    // --- File UI ---
+    function renderCustomSoundUI() {
+        const c=document.getElementById('custom-files-container');
+        ['c1','c2','c3'].forEach((k,i)=>{
+            const id=`custom${i+1}`; let h=`<div class="file-section accordion-panel"><div class="accordion-header" onclick="toggleAccordion('${k}_b','${k}_a')"><h3 style="margin:0;font-size:1.1rem;flex-grow:1;">Custom ${i+1} <span class="status-badge" id="${k}_s">0/3 設定済</span></h3><span id="${k}_a">▼</span></div><div class="accordion-body" id="${k}_b">`;
+            [3,2,1].forEach(l=>{ h+=`<div class="custom-file-row"><div class="custom-file-left"><label>${l===3?'強':l===2?'中':'弱'}拍</label><button class="preview-btn" id="prevBtn_${id}_${l}" onclick="previewCustomSound('${id}',${l})" title="試聴">▶</button></div><div class="file-input-wrapper"><div class="file-top-row"><input type="file" id="f_${id}_${l}" accept="audio/*" onchange="loadCustomAudio(event,'${id}',${l})"><button class="file-btn" onclick="document.getElementById('f_${id}_${l}').click()">選択</button><span class="file-name-display" id="fn_${id}_${l}">未選択</span></div><div class="timing-row"><span style="font-size:0.75rem;color:#888;flex-shrink:0;">補正:</span><input type="range" id="sl_${id}_${l}" min="-1000" max="1000" step="10" value="0" oninput="syncCustomOffset('${id}',${l},true)"><input type="number" id="num_${id}_${l}" class="scroll-number" value="0" step="10" onchange="syncCustomOffset('${id}',${l},false);saveCurrentState();"><span style="font-size:0.75rem;flex-shrink:0;">ms</span></div></div></div>`; });
+            c.innerHTML+=h+`</div></div>`;
+        });
+    }
+    function syncCustomOffset(id,l,fromSl) { const sl=document.getElementById(`sl_${id}_${l}`), num=document.getElementById(`num_${id}_${l}`); if(fromSl)num.value=sl.value; else sl.value=num.value; localStorage.setItem(`nama_off_${id}_${l}`,num.value); }
+    function loadCustomAudio(evt,id,l) { const f=evt.target.files[0]; if(!f)return; ensureAudioContext(); document.getElementById(`fn_${id}_${l}`).textContent=f.name; localStorage.setItem(`nama_fn_${id}_${l}`,f.name); const r=new FileReader(); r.readAsDataURL(f); r.onload=async(e)=>{const d=e.target.result;try{const ab=await fetch(d).then(res=>res.arrayBuffer());customAudioBuffers[id][l]=await audioCtx.decodeAudioData(ab);localStorage.setItem(`nama_dat_${id}_${l}`,d);updateCustomStatus(id);}catch(err){alert("デコード失敗");}}; }
+    async function restoreCustomAudioFromStorage() { ['custom1','custom2','custom3'].forEach(async(id)=>{ for(let l=1;l<=3;l++){const fn=localStorage.getItem(`nama_fn_${id}_${l}`); if(fn)document.getElementById(`fn_${id}_${l}`).textContent=fn; const off=localStorage.getItem(`nama_off_${id}_${l}`); if(off){document.getElementById(`sl_${id}_${l}`).value=off;document.getElementById(`num_${id}_${l}`).value=off;} const d=localStorage.getItem(`nama_dat_${id}_${l}`); if(d){try{ensureAudioContext();const ab=await fetch(d).then(res=>res.arrayBuffer());customAudioBuffers[id][l]=await audioCtx.decodeAudioData(ab);}catch(e){}} } updateCustomStatus(id); }); }
+    function updateCustomStatus(id) { const k=id==='custom1'?'c1':id==='custom2'?'c2':'c3'; const b=document.getElementById(`${k}_s`); let c=0; [1,2,3].forEach(l=>{if(customAudioBuffers[id][l])c++;}); b.textContent=`${c}/3 設定済`; if(c>0)b.classList.add('loaded');else b.classList.remove('loaded'); }
+    function previewCustomSound(id,l) { const bid=`prevBtn_${id}_${l}`, btn=document.getElementById(bid); if(currentPreviewNode&&currentPreviewBtnId===bid){try{currentPreviewNode.stop();}catch(e){}return;} if(currentPreviewNode){try{currentPreviewNode.stop();}catch(e){}} ensureAudioContext(); const buf=customAudioBuffers[id][l]; if(buf){const src=audioCtx.createBufferSource();src.buffer=buf;const g=audioCtx.createGain();src.connect(g);g.connect(audioCtx.destination);g.gain.value=l===3?1.0:l===2?0.7:0.4;btn.textContent="■";btn.classList.add("playing");currentPreviewNode=src;currentPreviewBtnId=bid;src.onended=()=>{btn.textContent="▶";btn.classList.remove("playing");if(currentPreviewBtnId===bid){currentPreviewNode=null;currentPreviewBtnId=null;}};src.start(0);}else{alert("未設定です。");} }
+
+    // =========================================================
+    // 楽曲モード (シーケンサー)
+    // =========================================================
+    function getAbsoluteBar(targetIdx) { let b=1; for(let i=0;i<targetIdx;i++){b+=songData[i].bars;} return b; }
+    function updateEditPlaceholder() { 
+        let idx = songData.length;
+        if(selectedSetId) { const found = songData.findIndex(x=>x.id===selectedSetId); if(found!==-1) idx = found; }
+        document.getElementById('editName').placeholder = "例: " + getAbsoluteBar(idx); 
+    }
+    
+    function renderSongScore() {
+        const tr = document.getElementById('scoreTrack'); tr.innerHTML = '';
+        songData.forEach((s) => {
+            const b = document.createElement('div'); b.className = `score-block ${selectedSetId === s.id ? 'selected' : ''}`;
+            b.onclick = () => selectSongSet(s.id);
+            b.innerHTML = `<div class="block-name">${s.name}</div><div class="block-bars">┠ ${s.bars} ┨</div><div class="block-info">${s.timeSig} | ${s.bpm} ${s.rit ? '→'+s.targetBpm : ''}</div>`;
+            tr.appendChild(b);
+        });
+        updateEditPlaceholder(); renderPicker();
+    }
+    
+    function selectSongSet(id) {
+        selectedSetId = id; renderSongScore();
+        document.getElementById('btnDel').style.display = id ? 'block' : 'none';
+        const insBtn = document.getElementById('btnInsert');
+        if(id) { insBtn.disabled = false; insBtn.style.opacity = '1'; } else { insBtn.disabled = true; insBtn.style.opacity = '0.5'; }
+    }
+    
+    function loadSelectedToForm() {
+        if(!selectedSetId) return;
+        const s = songData.find(x => x.id === selectedSetId); if(!s) return;
+        document.getElementById('editName').value = s.name; document.getElementById('editNote').value = s.bpmNote;
+        document.getElementById('editBpm').value = s.bpm; document.getElementById('editTimeSig').value = s.timeSig;
+        document.getElementById('editBars').value = s.bars; document.getElementById('editClick').checked = s.click;
+        document.getElementById('editRitToggle').checked = s.rit; document.getElementById('editTargetBpm').value = s.targetBpm;
+        document.getElementById('editCurve').value = s.curve; toggleRitPanel();
+    }
+    
+    function clearForm() {
+        document.getElementById('editName').value = ''; document.getElementById('editNote').value = "1";
+        document.getElementById('editBpm').value = 120; document.getElementById('editTimeSig').value = "4/4";
+        document.getElementById('editBars').value = 4; document.getElementById('editClick').checked = true;
+        document.getElementById('editRitToggle').checked = false; toggleRitPanel();
+        selectSongSet(null); updateEditPlaceholder();
+    }
+    
+    function toggleRitPanel() { document.getElementById('editRitPanel').style.display = document.getElementById('editRitToggle').checked ? 'flex' : 'none'; }
+    
+    function getFormData(insertIndex) {
+        return {
+            id: Date.now(), name: document.getElementById('editName').value || getAbsoluteBar(insertIndex).toString(),
+            bpmNote: parseFloat(document.getElementById('editNote').value), bpm: parseInt(document.getElementById('editBpm').value),
+            timeSig: document.getElementById('editTimeSig').value || "4/4", bars: parseInt(document.getElementById('editBars').value) || 1,
+            click: document.getElementById('editClick').checked, rit: document.getElementById('editRitToggle').checked,
+            targetBpm: parseInt(document.getElementById('editTargetBpm').value), curve: document.getElementById('editCurve').value
+        };
+    }
+    
+    function addSongSet(isInsert) {
+        let idx = songData.length; if(isInsert && selectedSetId) { const f = songData.findIndex(x=>x.id===selectedSetId); if(f!==-1) idx = f; }
+        const d = getFormData(idx);
+        if(isInsert) songData.splice(idx, 0, d); else songData.push(d);
+        compileSong(); renderSongScore(); clearForm();
+    }
+    function deleteSongSet() { if(!selectedSetId) return; songData = songData.filter(x => x.id !== selectedSetId); clearForm(); compileSong(); renderSongScore(); }
+    function openSongMenu() { alert('小節番号シフト等のメニューは今後のアップデートで実装予定です。'); }
+    function updatePrecountUI() { const m=document.getElementById('precountMode').value; document.getElementById('precountAutoSettings').style.display=m==='auto'?'flex':'none'; document.getElementById('precountManualSettings').style.display=m==='manual'?'flex':'none'; }
+
+    // --- ピッカー (ドラッグ対応) ---
+    function makeScrollableDrag(el) {
+        let isDown = false, startY, sTop;
+        el.addEventListener('mousedown', e => { isDown=true; startY=e.pageY-el.offsetTop; sTop=el.scrollTop; el.style.scrollSnapType='none'; });
+        el.addEventListener('mouseleave', () => { if(isDown){isDown=false; el.style.scrollSnapType='y mandatory'; onPickerScroll(el.id==='pickerSet'?'set':'bar');} });
+        el.addEventListener('mouseup', () => { if(isDown){isDown=false; el.style.scrollSnapType='y mandatory'; onPickerScroll(el.id==='pickerSet'?'set':'bar');} });
+        el.addEventListener('mousemove', e => { if(!isDown)return; e.preventDefault(); const y=e.pageY-el.offsetTop, w=(y-startY)*1.5; el.scrollTop=sTop-w; });
+    }
+    function renderPicker() {
+        const pSet=document.getElementById('pickerSet'); pSet.innerHTML='<div class="picker-item"></div><div class="picker-item"></div>';
+        songData.forEach((s,i) => { pSet.innerHTML+=`<div class="picker-item" data-idx="${i}">${s.name}</div>`; });
+        pSet.innerHTML+='<div class="picker-item"></div><div class="picker-item"></div>';
+        updateBarPicker(0); highlightPicker('set');
+    }
+    function updateBarPicker(setIdx) {
+        const pBar=document.getElementById('pickerBar'); pBar.innerHTML='<div class="picker-item"></div><div class="picker-item"></div>';
+        if(songData[setIdx]){ for(let b=1;b<=songData[setIdx].bars;b++){ pBar.innerHTML+=`<div class="picker-item" data-idx="${b-1}">${b}小節目</div>`; } }
+        pBar.innerHTML+='<div class="picker-item"></div><div class="picker-item"></div>'; pBar.scrollTop=0; highlightPicker('bar');
+    }
+    function onPickerScroll(type) {
+        clearTimeout(window[`${type}ScrollTimer`]);
+        window[`${type}ScrollTimer`]=setTimeout(()=>{
+            highlightPicker(type);
+            if(type==='set') { const act=document.querySelector('#pickerSet .active'); if(act){songStartingSetIndex=parseInt(act.dataset.idx);updateBarPicker(songStartingSetIndex);songStartingBarIndex=0;} }
+            else { const act=document.querySelector('#pickerBar .active'); if(act)songStartingBarIndex=parseInt(act.dataset.idx); }
+        }, 150);
+    }
+    function highlightPicker(type) {
+        const el=document.getElementById(type==='set'?'pickerSet':'pickerBar'), items=el.querySelectorAll('.picker-item[data-idx]'), center=el.scrollTop+100;
+        let mDiff=999, aItem=null;
+        items.forEach(i=>{ i.classList.remove('active'); const diff=Math.abs(i.offsetTop+20-center); if(diff<mDiff){mDiff=diff;aItem=i;} });
+        if(aItem)aItem.classList.add('active');
+    }
+
+    // --- コンパイラ ---
+    function parseTimeSig(ts, click) {
+        const parts=ts.split('+'); let pattern=[];
+        parts.forEach((p,i)=>{
+            const[num,den]=p.split('/').map(Number); if(!num||!den)return;
+            if(!click) { for(let j=0;j<num;j++)pattern.push(j===0?(i===0?3:2):1); }
+            else { if(den===4){for(let j=0;j<num;j++){pattern.push(j===0?(i===0?3:2):2);pattern.push(1);}} else {for(let j=0;j<num;j++)pattern.push(j===0?(i===0?3:2):1);} }
+        });
+        return pattern;
+    }
+    function compileSong() {
+        compiledSongNotes=[];
+        songData.forEach((s,sIdx) => {
+            const qS=s.bpm*s.bpmNote, qE=s.rit?(s.targetBpm*s.bpmNote):qS, pat=parseTimeSig(s.timeSig,s.click);
+            for(let b=0;b<s.bars;b++){
+                let prog=s.bars>1?(b/(s.bars-1)):1; if(s.curve==='early')prog=1-Math.pow(1-prog,2); else if(s.curve==='late')prog=Math.pow(prog,2);
+                const cQBpm=qS+(qE-qS)*prog, [num,den]=s.timeSig.split('+')[0].split('/').map(Number);
+                const bDur=(60/cQBpm)*(4/den)*num, nDur=bDur/pat.length;
+                pat.forEach((lvl,nIdx)=>{ compiledSongNotes.push({setIndex:sIdx,barIndex:b,level:lvl,duration:nDur,isBarStart:nIdx===0}); });
+            }
+        });
+    }
+
+    // --- Audio Engine ---
+    function ensureAudioContext() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+    function playSound(time, level) {
+        if (level===0) return; ensureAudioContext();
+        if (soundSet.startsWith('custom')) { const b=customAudioBuffers[soundSet][level], off=parseInt(document.getElementById(`num_${soundSet}_${level}`)?.value)||0; if(b){const s=audioCtx.createBufferSource(),g=audioCtx.createGain();s.buffer=b;s.connect(g);g.connect(audioCtx.destination);g.gain.setValueAtTime(level===3?1.0:level===2?0.7:0.4,time);let pt=time+(off/1000);if(pt<audioCtx.currentTime)pt=audioCtx.currentTime;activeAudioNodes.push(s);s.onended=()=>{activeAudioNodes=activeAudioNodes.filter(n=>n!==s);};s.start(pt);return;} }
+        if (['metronome','cowbell','drums'].includes(soundSet) && builtinCustomBuffers[soundSet][level]) { const s=audioCtx.createBufferSource(),g=audioCtx.createGain();s.buffer=builtinCustomBuffers[soundSet][level];s.connect(g);g.connect(audioCtx.destination);g.gain.setValueAtTime(1.0,time);activeAudioNodes.push(s);s.onended=()=>{activeAudioNodes=activeAudioNodes.filter(n=>n!==s);};s.start(time);return; }
+        const osc=audioCtx.createOscillator(), g=audioCtx.createGain(); osc.connect(g); g.connect(audioCtx.destination); let f,v,t='sine',d=0.1;
+        switch(soundSet){
+            case 'clave': t='triangle';f=level===3?2500:level===2?1800:1200;v=level===3?1.5:level===2?0.8:0.4;d=0.03;osc.frequency.setValueAtTime(f,time);break;
+            case 'metronome':case 'click': f=level===3?2400:level===2?1200:600;v=level===3?1.0:level===2?0.7:0.4;d=level===3?0.05:0.03;osc.frequency.setValueAtTime(f,time);osc.frequency.exponentialRampToValueAtTime(10,time+d);break;
+            case 'cowbell': t='square';f=level===3?800:level===2?540:400;v=level===3?0.2:level===2?0.1:0.05;osc.frequency.setValueAtTime(f,time);break;
+            case 'drums':case 'kickhat': if(level===3){t='sine';f=150;v=1.0;d=0.1;osc.frequency.setValueAtTime(f,time);osc.frequency.exponentialRampToValueAtTime(0.01,time+d);}else if(level===2){t='triangle';f=400;v=0.6;d=0.15;osc.frequency.setValueAtTime(f,time);osc.frequency.exponentialRampToValueAtTime(800,time+d);}else{t='square';f=8000;v=0.05;d=0.03;osc.frequency.setValueAtTime(f,time);}break;
+            default: t='square';f=level===3?1760:level===2?880:440;v=level===3?0.4:level===2?0.25:0.15;osc.frequency.setValueAtTime(f,time);break;
+        }
+        osc.type=t; g.gain.setValueAtTime(v,time); g.gain.exponentialRampToValueAtTime(0.001,time+d); activeAudioNodes.push(osc); osc.onended=()=>{activeAudioNodes=activeAudioNodes.filter(n=>n!==osc);}; osc.start(time); osc.stop(time+d);
+    }
+
+    // --- Scheduler ---
+    function scheduler() {
+        while (nextNoteTime < audioCtx.currentTime + scheduleAheadTime) {
+            if(currentMode==='metro'){ scheduleNote(currentBeat,nextNoteTime); nextNoteTime+=60.0/bpm; currentBeat=(currentBeat+1)%totalBeats; }
+            else if(currentMode==='song'){ if(currentSongNoteIndex<compiledSongNotes.length){const n=compiledSongNotes[currentSongNoteIndex];scheduleSongNote(n,nextNoteTime);nextNoteTime+=n.duration;currentSongNoteIndex++;}else{togglePlay();break;} }
+        }
+        timerID = window.setTimeout(scheduler, lookahead);
+    }
+    function scheduleNote(bNum, time) { playSound(time,beatPattern[bNum]); pushVisualQueues(time,bNum,beatPattern[bNum]); }
+    function scheduleSongNote(n, time) { playSound(time,n.level); pushVisualQueues(time,n.barIndex,n.level,n.setIndex,n.isBarStart); }
+    function pushVisualQueues(time, bNum, lvl, setIdx=-1, isBarStart=false) { const fOff=(parseInt(flashOffsetInput.value)||0)/1000, vOff=(parseInt(vibeOffsetInput.value)||0)/1000; dotQueue.push({time,beatNumber:bNum,level:lvl,setIndex:setIdx,isBarStart}); flashQueue.push({time:time+fOff,level:lvl}); vibeQueue.push({time:time+vOff,level:lvl}); pendQueue.push({time,index:pendTickIndex++}); }
+
+    function visualSyncLoop() {
+        requestAnimationFrame(visualSyncLoop); if(!isPlaying||!audioCtx){if(pendulumContainer)pendulumContainer.style.transform=`translateX(-50%) rotate(0deg)`;return;}
+        const cT = audioCtx.currentTime;
+        while(dotQueue.length&&dotQueue[0].time<=cT){
+            const n=dotQueue.shift(); if(n.level>0){
+                if(currentMode==='metro'){document.querySelectorAll('.beat-col').forEach(d=>d.classList.remove('active'));const a=document.querySelector(`.beat-col[data-index="${n.beatNumber}"]`);if(a)a.classList.add('active');}
+                else if(currentMode==='song'&&n.isBarStart){const b=document.querySelectorAll('.score-block');b.forEach(x=>x.classList.remove('active-play'));if(b[n.setIndex])b[n.setIndex].classList.add('active-play');}
+                if(pendulumStick)pendulumStick.classList.add('flash');if(pendulumWeight)pendulumWeight.classList.add('flash');setTimeout(()=>{if(pendulumStick)pendulumStick.classList.remove('flash');if(pendulumWeight)pendulumWeight.classList.remove('flash');},50);
+            }
+        }
+        while(flashQueue.length&&flashQueue[0].time<=cT){const n=flashQueue.shift();if(n.level>0&&flashToggle.checked){document.body.classList.add('flash-active');setTimeout(()=>document.body.classList.remove('flash-active'),50);}}
+        while(vibeQueue.length&&vibeQueue[0].time<=cT){const n=vibeQueue.shift();if(n.level>0&&vibrateToggle.checked&&navigator.vibrate){navigator.vibrate(n.level===3?50:n.level===2?30:15);}}
+        while(pendQueue.length>2&&pendQueue[1].time<=cT){pendQueue.shift();}
+        if(pendQueue.length>=2&&pendulumContainer){const p0=pendQueue[0],p1=pendQueue[1];if(cT>=p0.time&&cT<=p1.time){const prog=(cT-p0.time)/(p1.time-p0.time),dir=(p0.index%2===0)?1:-1,ang=40*Math.sin(prog*Math.PI)*dir;pendulumContainer.style.transform=`translateX(-50%) rotate(${ang}deg)`;}}
+    }
+
+    async function togglePlay() {
+        if(!isPlaying) await loadBuiltinSounds();
+        isPlaying = !isPlaying;
+        if (isPlaying) {
+            ensureAudioContext(); if(audioCtx.state==='suspended')audioCtx.resume();
+            nextNoteTime=audioCtx.currentTime+0.1; dotQueue=[]; flashQueue=[]; vibeQueue=[]; pendQueue=[]; pendTickIndex=0;
+            if(currentMode==='metro') currentBeat=0;
+            else {
+                compileSong(); currentSongNoteIndex=compiledSongNotes.findIndex(n=>n.setIndex===songStartingSetIndex&&n.barIndex===songStartingBarIndex)||0;
+                const pM=document.getElementById('precountMode').value;
+                if(pM!=='off'&&compiledSongNotes[currentSongNoteIndex]) {
+                    const bn=songData[songStartingSetIndex].bpmNote, bv=songData[songStartingSetIndex].bpm, [num,den]=songData[songStartingSetIndex].timeSig.split('+')[0].split('/').map(Number), bDur=(60/(bv*bn))*(4/den)*num;
+                    let pB=0; if(pM==='manual')pB=parseInt(document.getElementById('precountBars').value);else if(pM==='auto')pB=Math.ceil(parseFloat(document.getElementById('precountSec').value)/bDur)||1;
+                    let pN=[]; for(let b=0;b<pB;b++){for(let i=0;i<num;i++)pN.push({setIndex:-1,barIndex:-1,level:i===0?3:1,duration:bDur/num,isBarStart:i===0});} compiledSongNotes=pN.concat(compiledSongNotes.slice(currentSongNoteIndex)); currentSongNoteIndex=0;
+                }
+            }
+            playBtn.textContent="STOP"; playBtn.classList.add('playing'); scheduler();
+        } else {
+            window.clearTimeout(timerID); playBtn.textContent="START"; playBtn.classList.remove('playing');
+            document.querySelectorAll('.beat-col').forEach(d=>d.classList.remove('active')); document.querySelectorAll('.score-block').forEach(d=>d.classList.remove('active-play')); document.body.classList.remove('flash-active');
+            activeAudioNodes.forEach(n=>{try{n.stop();}catch(e){}}); activeAudioNodes=[];
+        }
+    }
+    init();
+</script>
+</body>
+</html>
