@@ -1,0 +1,294 @@
+<!DOCTYPE html><html lang="ja"><br>
+<link rel="icon" type="image/png" href="favicon.png"><link rel="apple-touch-icon" href="favicon.png">
+Geminiさんに依頼してAIぱぅわーで高機能メトロノームを作ってみた！<BR>
+…というのを、履歴を残しながらリアルタイムで更新していくページです。上が最新。<BR>
+構造が複雑になるにつれ、Geminiさんが余計な改変をしてバグりやすくなったのでClaude Codeさんに鞍替え。<BR>
+<br>
+【はじめに】<br>
+スマートフォンで開いた時、「PC版で開く」設定にした方が見やすいはずです。<a href="https://appllio.com/how-to-view-pc-websites-on-smartphone">やり方の参考サイト</A><BR>
+なお、LINEのリンクをタップで開いたりした場合、「LINEの中のブラウザ」で開かれちゃっているので、まず「デフォルトのブラウザで開く」的な操作が必要となります。
+<br><HR><br><br>
+
+<a href="indexZ271C.html">メトロノームZ271C</a>　リピート記号実装との激しい闘い、たぶん終了。あっ、アプリ内更新履歴に愚痴を入れちゃってた、後で直そうかな…。
+<br><br>
+<a href="indexZ226C.html">メトロノームZ226C</a>　ひとくぎり。再生中にテンポを変えてもスムーズに繋がる仕様にチャレンジ。やはり難航し、指示役としてGeminiさんやGPTさんを仰ぐ形に。あと実際の使用体験からボリューム調節やテンポ記号閲覧機能を追加。
+<br><br>
+<a href="indexZ199C.html">メトロノームZ199C</a>　もう直すとこないよなー、と思っても実際に使ったり24時間くらい寝かせると何かしら出て来る現象。
+<br><br>
+<a href="indexZ186C.html">メトロノームZ186C</a>　内容の更新履歴は公式実装したのでここは愚痴コーナーにしますね！…ビートの枠が重なる問題の修正でこんなにバージョンが増えました。そして逐一更新履歴に自動報告してて読みにくかったので省略内容を指示しました。
+<br><br>
+<a href="indexZ174C.html">メトロノームZ174C</a>　公式更新履歴を実装。過去の分はここの文章を読ませたら愚痴とか全部省略された…。
+<br><br>
+<a href="indexZ172C.html">メトロノームZ172C</a>　Claudeさんのチャット一回の容量がいっぱいいっぱいにつき第二会話へ移行。むしろ160回くらいよく保った。リロードでビートが壊れるバグ修正と英訳漏れ修正。
+<br><br>
+<a href="indexZ170C.html">メトロノームZ170C</a>　「刻む」機能関連の表示や挙動やプリセット保存方面を修正。
+<br><br>
+<a href="indexZ165C.html">メトロノームZ165C</a>　ボタンの位置をちょっと下にずらしたかっただけでものっそい回数必要でした…。ついでにこれまでの工程で生まれていたゴミデータの掃除を依頼。
+<br><br>
+<a href="indexZ137C.html">メトロノームZ137C</a>　バグ直ってから掲載しようと思ったら無限に直らず。操作性、操作音、誤操作防止調整、わかりやすさ調整、表示位置修正など。
+<br><br>
+<a href="indexZ122C.html">メトロノームZ122C</a>　アンケート設置、操作音の鳴る/鳴らないに統一感がないのをしつこく修正(途中)、操作性の調整。
+<br><br>
+<a href="indexZ114C.html">メトロノームZ114C</a>　短文ツッコミを繰り返したら番号が飛びました。解説追加、日本語表記と細部の挙動と表示色の微調整。
+<br><br>
+<a href="indexZ101C.html">メトロノームZ101C</a>　「はじめに」調整。
+<br><br>
+<a href="indexZ100C.html">メトロノームZ100C</a>　100記念実装！　「はじめに」メッセージ。
+<br><br>
+<a href="indexZ99C.html">メトロノームZ99C</a>　音色スワイプの上下が逆だったり反応がしぶいので。
+<br><br>
+<a href="indexZ98C.html">メトロノームZ98C</a>　音色スワイプが壊されてたので。
+<br><br>
+<a href="indexZ97C.html">メトロノームZ97C</a>　無限に続く使用感調整。古いの開いてみると「使いにくっ！」となるので進化はしているらしい。作成中は実感しにくいけど。
+<br><br>
+<a href="indexZ95C.html">メトロノームZ95C</a>　しばらく通し番号を変えてくれなかったので見た目と操作がそこそこ変わっている。操作音機能追加、意外とたのしい。
+<br><br>
+<a href="indexZ93C.html">メトロノームZ93C</a>　続・修正失敗された点の再修正。ほか。
+<br><br>
+<a href="indexZ90C.html">メトロノームZ90C</a>　修正失敗された点の再修正。
+<br><br>
+<a href="indexZ89C.html">メトロノームZ89C</a>　表記や表示を色々と微調整。
+<br><br>
+<a href="indexZ88C.html">メトロノームZ88C</a>　アプリhtmlダウンロード、ヘルプ追加、複数選択機能の移動、ほか細部の改修。
+<br><br>
+<a href="indexZ86C.html">メトロノームZ86C</a>　サンプル楽曲搭載、ほしリス表示修正、小節番号をいつでも表示。
+<br><br>
+<a href="indexZ85C.html">メトロノームZ85C</a>　色々と操作性の改善、ほしいものリストの実装テスト。
+<br><br>
+<a href="indexZ80C.html">メトロノームZ80C</a>　楽曲の時間表示(現在位置/残り/合計)を実装。バグ取り数回、レイアウト指示のトンチンカンな解釈でバージョンが飛びました…。
+<br><br>
+<a href="indexZ71C.html">メトロノームZ71C</a>　mp3出力のたまに中身がない問題の修正。
+<br><br>
+<a href="indexZ70C.html">メトロノームZ70C</a>　読み上げバグ直す指示忘れてたのと、利便性向上。
+<br><br>
+<a href="indexZ69C.html">メトロノームZ69C</a>　設定の並べ替え。
+<br><br>
+<a href="indexZ67C.html">メトロノームZ67C</A>　楽曲ファイル管理機能。
+<br><br>
+<a href="indexZ66C.html">メトロノームZ66C</A>　そこに直れ。
+<br><br>
+<a href="indexZ65C.html">メトロノームZ65C</A>　なんか難しい処理が必要だったらしい…で、直ったんですかね？
+<br><br>
+<a href="indexZ64C.html">メトロノームZ64C</A>　むしろバグが増えたので再修正。
+<br><br>
+<a href="indexZ63C.html">メトロノームZ63C</A>　細かいバグあるけどまあまあいけてた…こわ。そしてバグとり。
+<br><br>
+<a href="indexZ62C.html">メトロノームZ62C</A>　ＵＩ絡みで挙動確認まで行けなかったので再挑戦。さあさあ。
+<br><br>
+<a href="indexZ61C.html">メトロノームZ61C</A>　作った楽曲をｍｐ３で出力出来ますか？ってダメ元で聞いたら軽い感じで納品。…ほんと？ほんとに動く？
+<br><br>
+<a href="indexZ60C.html">メトロノームZ60C</A>　英語モードのカウントが日本語だった(音声データは入れてあるのに)ので修正。
+<br><br>
+<a href="indexZ59C.html">メトロノームZ59C</A>　カウントインの最終小節に読み上げ機能を追加。
+<br><br>
+<a href="indexZ57C.html">メトロノームZ57C</A>　文字かぶり修正と細かい機能追加とエクスポート内容の確認や調整と。
+<br><br>
+<a href="indexZ51C.html">メトロノームZ51C</A>　音量調節の細分化。文字にかぶる…。
+<br><br>
+<a href="indexZ48C.html">メトロノームZ48C</A>　英語モードを実装した後に追加したものが英語に変換されない所だらけだったので一掃。
+><br><br>
+<a href="indexZ46C.html">メトロノームZ46C</A>　機能としては完成と言えるレベルなので、わかりやすさと使いやすさを改善してゆく所存。あとバグ探し。
+<br><br>
+<a href="indexZ45C.html">メトロノームZ45C</A>　Z44Cで全く改善されてないやん！と思ったらZ45Cが最新なのにZ44Cのダウンロードボタンを出されていた…。
+<br><br>
+<a href="indexZ44C.html">メトロノームZ44C</A>　フキダシの描画方式を根本から変更して調整しやすくしてもらっていました。
+<br><br>
+<a href="indexZ37C.html">メトロノームZ37C</A>　カウント音声のクレジット表記と、フキダシの微調整…できてない…！これよく失敗します。
+<br><br>
+<a href="indexZ36C.html">メトロノームZ36C</A>　rit.とaccel.の挙動がおかしすぎたので修正。いい感じに。
+<br><br>
+<a href="indexZ34C.html">メトロノームZ34C</A>　拍のカウント読み上げ実装チャレンジ！失敗！と思ったらプレビューで出来てないだけで成功してた。
+<br><br>
+<a href="indexZ33C.html">メトロノームZ33C</A>
+<br><br>
+<a href="indexZ32C.html">メトロノームZ32C</A>　ヘルプの配置成功が見えてきた。ついでに色とか微調整。
+<br><br>
+<a href="indexZ31C.html">メトロノームZ31C</A>　ヘルプ（解説）の表示位置がずっと路頭に迷っています。
+<br><br>
+<a href="indexZ30C.html">メトロノームZ30C</A>　そこそこ安定版。
+<br><br>
+<a href="indexZ25C.html">メトロノームZ25C</A>　よし、いま思いつけてる機能は全部終わった！
+<br><br>
+<a href="indexZ24C.html">メトロノームZ24C</A>　
+<br><br>
+<a href="indexZ23C.html">メトロノームZ23C</A>　大きいバグは取れたっぽいけど細かい指示無視が目立つ。
+<br><br>
+<a href="indexZ22C.html">メトロノームZ22C</A>　バグを直すと別のバグぅ。
+<br><br>
+<a href="indexZ21C.html">メトロノームZ21C</A>
+<br><br>
+メトロノームZ20C　再生モードと作成編集モード、切り替えボタンが後者に二重に表示される→消させると前者から一個もなくなる…を何度も繰り返しています。またか。
+<br><br>
+<a href="indexZ19C.html">メトロノームZ19C</A>　一気に機能追加しようとしたら派手にぶっ壊れたため、軽めのを中心にして小刻みに第一弾。
+<br><br>
+<a href="indexZ18C.html">メトロノームZ18C</A>　有料アカウントじゃないので2日目の利用量がここでおしまい。音色内蔵処理で容量が一気に死んだ…。
+<br><br>
+<a href="indexZ17C.html">メトロノームZ17C</A>　連続しての指示出しだとGeminiさんみたいに１から全部やり直さないので短く終わることに気づく。
+<br><br>
+<a href="indexZ16C.html">メトロノームZ16C</A>
+<br><br>
+<a href="indexZ15C.html">メトロノームZ15C</A><BR>　Geminiさんと比べると、処理遅め、バグ少なめ、指示の理解が弱め、デザインセンス低め、な印象。<BR>でも余計な改変しないの嬉しすぎるのとプレビューあるのが強い。
+<br><br>
+<a href="indexZ14C.html">メトロノームZ14C</A>
+<br><br>
+<a href="indexZ12C.html">メトロノームZ12C</A>　Geminiさんがあまりに失敗するからClaudeさんに同じ指示を出してみたやつ<BR>
+<a href="indexZ12.html">メトロノームZ12</A>
+<br><br>
+<a href="indexZ11.html">メトロノームZ11</A>　仮完成版
+<br><br>
+<a href="indexZ10.html">メトロノームZ10</A>
+<BR><BR>
+<a href="indexZ9.html">メトロノームZ9</A>
+<BR><BR>
+<a href="indexZ8.html">メトロノームZ8</A>
+<BR><BR>
+<a href="indexZ7.html">メトロノームZ7</A>
+<BR><BR>
+<a href="indexZ6.html">メトロノームZ6</A>
+<BR><BR>
+<a href="indexZ5.html">メトロノームZ5</A>
+<BR><BR>
+<a href="indexZ4.html">メトロノームZ4</A>
+<BR><BR>
+<a href="indexZ3.html">メトロノームZ3</A>
+<BR><BR>
+<a href="indexZ2.html">メトロノームZ2</A>
+<BR><BR>
+<a href="indexZ1.html">メトロノームZ1</A>
+<BR><BR>
+<a href="indexZ.html">メトロノームZ</A>
+<BR><BR>
+<a href="indexY.html">メトロノームY</A>
+<BR><BR>
+<a href="indexX.html">メトロノームX</A>
+<BR><BR>
+<a href="indexW.html">メトロノームW</A>
+<BR><BR>
+<a href="indexV.html">メトロノームV</A>
+<BR><BR>
+<a href="indexU.html">メトロノームU</A>
+<BR><BR>
+<a href="indexT.html">メトロノームT</A>
+<BR><BR>
+<a href="indexS.html">メトロノームS</A>
+<BR><BR>
+<a href="indexR.html">メトロノームR</A>
+<BR><BR>
+<a href="indexQ.html">メトロノームQ</A>（動作不可）
+<BR><BR>
+<a href="indexP.html">メトロノームP</A>
+<a href="tool.html">音声ファイル → Base64変換ツール</A><BR>
+<BR><BR>
+<a href="indexO.html">メトロノームO</A>
+<BR><BR>
+<a href="indexN.html">メトロノームN</A>
+<BR><BR>
+<a href="indexM.html">メトロノームM</A>
+<BR><BR>
+<a href="indexL.html">メトロノームL</A>
+<BR><BR>
+<a href="indexK.html">メトロノームK</A>（動作不可）
+<BR><BR>
+<a href="indexJ.html">メトロノームJ</A>
+<BR><BR>
+<a href="indexI.html">メトロノームI</A>
+<BR><BR>
+<a href="indexH.html">メトロノームH</A>
+<BR><BR>
+<a href="indexG.html">メトロノームG</A>
+<BR><BR>
+<a href="indexF.html">メトロノームF</A>
+<BR><BR>
+<a href="indexE.html">メトロノームE</A>
+<BR><BR>
+<a href="indexD.html">メトロノームD</A>
+<BR><BR>
+<a href="indexC.html">メトロノームC</A>
+<BR><BR>
+<a href="indexB.html">メトロノームB</A>
+<BR><BR>
+<a href="indexA.html">メトロノームA</A>
+
+
+
+
+
+<!--▼ デザイン改善　▼-->
+<style>
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:linear-gradient(135deg,#f5f7fa,#e4ecf7);margin:0;padding:40px 20px;line-height:1.7;color:#333}
+a{display:inline-block;text-decoration:none;padding:6px 12px;margin:2px 6px 2px 0;border-radius:16px;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.08);transition:.2s;color:#333;font-size:14px}
+a:hover{transform:translateY(-2px);box-shadow:0 6px 14px rgba(0,0,0,.15)}
+br{line-height:12px}
+/* 検索中点滅 */
+@keyframes blinkSearch{0%{opacity:1}50%{opacity:.2}100%{opacity:1}}
+.searching{animation:blinkSearch 1s infinite;font-weight:bold}
+.searchDone{color:#d40000;font-weight:bold}
+}
+/* 色スロット */
+.ver0{color:#ff0000;font-weight:bold;}
+.ver1{color:#ff8800;font-weight:bold;}
+.ver2{color:#0080ff;font-weight:bold;}
+}
+</style>
+<!--▲ デザイン改善　▲-->
+
+
+<!--▼ ChatGPTによる、リンクを標準ブラウザで開かせるオプション自動付加　▼-->
+<script>
+document.addEventListener("DOMContentLoaded",async()=>{
+const PARAM="openExternalBrowser=1",MISS_LIMIT=30;
+function addParam(u){if(u.includes("openExternalBrowser"))return u;return u+(u.includes("?")?"&":"?")+PARAM}
+</script>
+<!--▲ ChatGPTによる、リンクを標準ブラウザで開かせるオプション自動付加　▲-->
+
+<!--▼ ChatGPTによる、最新ファイル自動表示プログラム
+<script>
+/* 色プール */
+const colorPool=["#ff0000","#ff8800","#0080ff","#00aa00","#aa00aa","#009999","#cc5500"];
+let colorSlots=[colorPool[0],colorPool[1],colorPool[2]],nextColorIndex=3;
+
+/* 既存リンク取得 */
+let links=[...document.querySelectorAll("a[href^='indexZ']")];
+let versions=links.map(a=>{let m=a.href.match(/indexZ(\d+)C\.html/i);if(!m)return null;return{num:parseInt(m[1]),href:a.getAttribute("href")}}).filter(v=>v);
+versions.sort((a,b)=>b.num-a.num);
+
+/* 表示位置 */
+const hr=document.querySelector("hr");if(!hr)return;
+const box=document.createElement("div"),status=document.createElement("div"),list=document.createElement("div");
+
+status.textContent="＜自動で最新バージョンを検索中…＞";status.className="searching";
+box.appendChild(document.createElement("hr"));box.appendChild(status);box.appendChild(document.createElement("br"));box.appendChild(list);box.appendChild(document.createElement("hr"));
+hr.insertAdjacentElement("afterend",box);
+
+/* 描画 */
+function render(){list.innerHTML="";versions.slice(0,3).forEach((v,i)=>{const a=document.createElement("a");a.href=addParam(v.href);a.textContent="メトロノームZ"+v.num+"C";a.style.color=colorSlots[i];a.style.fontWeight="bold";list.appendChild(a);list.appendChild(document.createElement("br"))})}
+render();
+
+/* 存在チェック */
+async function exists(u){try{let r=await fetch(u,{method:"HEAD",cache:"no-cache"});return r.ok}catch{return false}}
+
+/* 新バージョン探索 */
+let current=versions[0].num+1,miss=0;
+while(miss<MISS_LIMIT){
+let file=`indexZ${current}C.html`;
+if(await exists(file)){
+versions.push({num:current,href:file});
+versions.sort((a,b)=>b.num-a.num);
+colorSlots.unshift(colorPool[nextColorIndex%colorPool.length]);nextColorIndex++;colorSlots=colorSlots.slice(0,3);
+render();miss=0;
+}else{miss++}
+current++;
+}
+
+/* 検索終了 */
+status.textContent="＜最新バージョン検索終了＞";status.className="searchDone";
+
+/* 既存リンクにもパラメータ付与 */
+document.querySelectorAll("a[href^='indexZ']").forEach(a=>{a.href=addParam(a.getAttribute("href"))});
+});
+</script>
+▲ ChatGPTによる、リンクを標準ブラウザで開かせるオプション自動付加　＆　最新ファイル自動表示プログラム　▲-->
+
+
+</html>
+

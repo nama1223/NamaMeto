@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>コーダ記号 サンプル（CSS + Unicode）</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&display=swap'); /* フォント読み込み（単一HTMLでも動作確認用。実際のアプリでは不要なら削除可） */
+
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #f8f8f8;
+            font-family: 'Noto Serif JP', serif;
+            color: #333;
+        }
+
+        .symbol-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 400px;
+            height: 400px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .coda {
+            font-size: var(--symbol-size, 260px);
+            line-height: 1;
+            color: #000;
+            transition: font-size 0.2s ease;
+            /* 音楽記号が最も美しく描画されるフォント設定（システムフォントで十分リアル） */
+            font-family: system-ui, -apple-system, "Segoe UI Symbol", "Noto Music", serif;
+            user-select: none;
+        }
+
+        .controls {
+            margin-top: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        label {
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        input[type="range"] {
+            width: 300px;
+            accent-color: #000;
+        }
+
+        .size-value {
+            font-family: monospace;
+            font-size: 1.3rem;
+            background: #fff;
+            padding: 4px 12px;
+            border-radius: 6px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+
+        .info {
+            margin-top: 30px;
+            max-width: 500px;
+            text-align: center;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <h1>コーダ（Coda）記号</h1>
+    
+    <div class="symbol-container">
+        <span class="coda">𝄌</span>
+    </div>
+
+    <div class="controls">
+        <label for="size-slider">サイズ調整（px）</label>
+        <input type="range" id="size-slider" min="80" max="500" value="260" step="10">
+        <span class="size-value" id="size-value">260px</span>
+    </div>
+
+    <div class="info">
+        <strong>使い方：</strong><br>
+        この<span class="coda" style="font-size:24px;">𝄌</span> をコピーしてアプリ内で使用してください。<br>
+        CSS変数 <code>--symbol-size</code> で自由にサイズ変更、<code>position: absolute</code> などで自由に配置できます。<br>
+        完全にベクター（フォントベース）なので拡大しても綺麗。リアルな公式音楽記号です。
+    </div>
+
+    <script>
+        const slider = document.getElementById('size-slider');
+        const valueDisplay = document.getElementById('size-value');
+        const coda = document.querySelector('.coda');
+
+        slider.addEventListener('input', () => {
+            const size = slider.value;
+            document.documentElement.style.setProperty('--symbol-size', size + 'px');
+            valueDisplay.textContent = size + 'px';
+        });
+    </script>
+</body>
+</html>

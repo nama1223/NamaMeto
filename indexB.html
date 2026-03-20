@@ -1,0 +1,121 @@
+<!DOCTYPE html><html lang="ja"><br>
+<link rel="icon" type="image/png" href="favicon.png"><link rel="apple-touch-icon" href="favicon.png">
+Geminiさんに依頼してAIぱぅわーで高機能メトロノームを作ってみた！<BR>
+…というのを、履歴を残しながらリアルタイムで更新していくページです。上が最新。<BR>
+構造が複雑になるにつれ、Geminiさんが余計な改変をしてバグりやすくなったのでClaude Codeさんに鞍替え。<BR>
+<br>
+【はじめに】<br>
+スマートフォンで開いた時、「PC版で開く」設定にした方が見やすいはずです。<a href="https://appllio.com/how-to-view-pc-websites-on-smartphone">やり方の参考サイト</A><BR>
+なお、LINEのリンクをタップで開いたりした場合、「LINEの中のブラウザ」で開かれちゃっているので、まず「デフォルトのブラウザで開く」的な操作が必要となります。
+<br><HR><br><br>
+
+<div id="autoLatest"></div>
+
+<!-- 既存リンクはそのまま -->
+<a href="indexZ226C.html">メトロノームZ226C</a>
+<br><br>
+
+<a href="indexZ199C.html">メトロノームZ199C</a>
+<br><br>
+
+<a href="indexZ186C.html">メトロノームZ186C</a>
+<br><br>
+
+<a href="indexZ174C.html">メトロノームZ174C</a>
+<br><br>
+
+<a href="indexZ172C.html">メトロノームZ172C</a>
+<br><br>
+
+<a href="indexZ170C.html">メトロノームZ170C</a>
+<br><br>
+
+<a href="indexZ165C.html">メトロノームZ165C</a>
+<br><br>
+
+<a href="indexZ137C.html">メトロノームZ137C</a>
+<br><br>
+
+<a href="indexZ122C.html">メトロノームZ122C</a>
+<br><br>
+
+<a href="indexZ114C.html">メトロノームZ114C</a>
+<br><br>
+
+<a href="indexZ101C.html">メトロノームZ101C</a>
+<br><br>
+
+<a href="indexZ100C.html">メトロノームZ100C</a>
+<br><br>
+
+<style>
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:linear-gradient(135deg,#f5f7fa,#e4ecf7);margin:0;padding:40px 20px;line-height:1.7;color:#333}
+a{display:inline-block;text-decoration:none;padding:6px 12px;margin:2px 6px 2px 0;border-radius:16px;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.08);transition:.2s;color:#333;font-size:14px}
+a:hover{transform:translateY(-2px);box-shadow:0 6px 14px rgba(0,0,0,.15)}
+br{line-height:12px}
+</style>
+
+<script>
+/* -------------------------
+   全リンクに ?openExternalBrowser=1 を追加
+------------------------- */
+
+document.querySelectorAll("a[href]").forEach(a=>{
+  try{
+    let url=new URL(a.getAttribute("href"),location.href)
+
+    if(!url.searchParams.has("openExternalBrowser")){
+      url.searchParams.set("openExternalBrowser","1")
+      a.href=url
+    }
+  }catch(e){}
+})
+
+/* -------------------------
+   最新バージョン自動検出
+------------------------- */
+
+async function fileExists(url){
+
+  try{
+    let res=await fetch(url,{method:"HEAD"})
+    return res.ok
+  }catch{
+    return false
+  }
+
+}
+
+async function detectLatest(){
+
+  let max=400
+  let latest=null
+
+  for(let i=max;i>=1;i--){
+
+    let file=`indexZ${i}C.html`
+
+    if(await fileExists(file)){
+      latest=i
+      break
+    }
+
+  }
+
+  if(latest){
+
+    let box=document.getElementById("autoLatest")
+
+    box.innerHTML=
+    `<b>【自動検出された最新バージョン】</b><br><br>
+    <a href="indexZ${latest}C.html">メトロノームZ${latest}C</a>
+    <br><br><hr><br>`
+
+  }
+
+}
+
+detectLatest()
+</script>
+
+</html>
