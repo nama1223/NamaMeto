@@ -5,8 +5,11 @@ const CACHE_NAME = 'namameto-cache-auto';
 const urlsToCache = [
   './NamaMeto.html',
   './manifest.json',
+  './manifest-en.json',
   './NamaMetoLogo192.png',
-  './NamaMetoLogo512.png'
+  './NamaMetoLogo512.png',
+  './NamaMetroLogo192.png',
+  './NamaMetroLogo512.png'
 ];
 
 // 1. インストール時の処理
