@@ -1,29 +1,32 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=450">
-    <title>NamaMeto</title>
-		<script>
-		  // ユーザーのブラウザの言語設定を取得(PWAアプリ名とロゴを日本語以外ではNamaMetroに)
-		  const userLang = navigator.language || navigator.userLanguage;
-		  
-		  // マニフェストを読み込むためのタグを生成
-		  const manifestLink = document.createElement('link');
-		  manifestLink.rel = 'manifest';
-		  
-		  // 言語が「ja」から始まる（日本語）ならja用、それ以外ならen用をセット
-		  if (userLang.startsWith('ja')) {
-		    manifestLink.href = './manifest.json';
-		  } else {
-		    manifestLink.href = './manifest-en.json';
-		  }
-		  
-		  // <head> の中にタグを挿入
-		  document.head.appendChild(manifestLink);
-		</script>
-    <link rel="icon" type="image/png" href="favicon.png">
-    <link rel="apple-touch-icon" href="favicon.png">
+	<script>
+      // ユーザーのブラウザ言語を取得
+      const userLang = navigator.language || navigator.userLanguage;
+      const isJapanese = userLang.startsWith('ja');
+
+      // 1. マニフェストの動的読み込み
+      const manifestLink = document.createElement('link');
+      manifestLink.rel = 'manifest';
+      manifestLink.href = isJapanese ? './manifest.json' : './manifest-en.json';
+      document.head.appendChild(manifestLink);
+
+      // 2. ファビコンとiOS用アイコンの動的読み込み
+      // （※画像ファイル名は実際にアップロードした大文字・小文字に合わせてください）
+      const iconFile = isJapanese ? 'NamaMetoLogo192.png' : 'NamaMetroLogo192.png';
+
+      const faviconLink = document.createElement('link');
+      faviconLink.rel = 'icon';
+      faviconLink.type = 'image/png';
+      faviconLink.href = iconFile;
+      document.head.appendChild(faviconLink);
+
+      const appleIconLink = document.createElement('link');
+      appleIconLink.rel = 'apple-touch-icon';
+      appleIconLink.href = iconFile;
+      document.head.appendChild(appleIconLink);
+    </script>
     <style>
         :root { --bg-color: #dccaaf; --surface-color: #fdf8f5; --text-color: #4a3f35; --primary-color: #c47640; --secondary-color: #e5b985; --dot-bg: #e6d5c3; --dot-weak: #bda692; --flash-color: #ffffff; --active-border: var(--text-color); --highlight-color: #d94a38; --bubble-color: #4a7c8e; }
         [data-theme="dark"] { --bg-color: #121212; --surface-color: #2c2c2c; --text-color: #e0e0e0; --primary-color: #bb86fc; --secondary-color: #03dac6; --dot-bg: #444; --dot-weak: #777; --flash-color: #444444; --active-border: #ffffff; --highlight-color: #ff80ab;  --bubble-color: #4caf72; }
