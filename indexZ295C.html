@@ -1,29 +1,32 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=450">
-    <title>NamaMeto</title>
-		<script>
-		  // ユーザーのブラウザの言語設定を取得(PWAアプリ名とロゴを日本語以外ではNamaMetroに)
-		  const userLang = navigator.language || navigator.userLanguage;
-		  
-		  // マニフェストを読み込むためのタグを生成
-		  const manifestLink = document.createElement('link');
-		  manifestLink.rel = 'manifest';
-		  
-		  // 言語が「ja」から始まる（日本語）ならja用、それ以外ならen用をセット
-		  if (userLang.startsWith('ja')) {
-		    manifestLink.href = './manifest.json';
-		  } else {
-		    manifestLink.href = './manifest-en.json';
-		  }
-		  
-		  // <head> の中にタグを挿入
-		  document.head.appendChild(manifestLink);
-		</script>
-    <link rel="icon" type="image/png" href="favicon.png">
-    <link rel="apple-touch-icon" href="favicon.png">
+	<script>
+      // ユーザーのブラウザ言語を取得
+      const userLang = navigator.language || navigator.userLanguage;
+      const isJapanese = userLang.startsWith('ja');
+
+      // 1. マニフェストの動的読み込み
+      const manifestLink = document.createElement('link');
+      manifestLink.rel = 'manifest';
+      manifestLink.href = isJapanese ? './manifest.json' : './manifest-en.json';
+      document.head.appendChild(manifestLink);
+
+      // 2. ファビコンとiOS用アイコンの動的読み込み
+      // （※画像ファイル名は実際にアップロードした大文字・小文字に合わせてください）
+      const iconFile = isJapanese ? 'NamaMetoLogo192.png' : 'NamaMetroLogo192.png';
+
+      const faviconLink = document.createElement('link');
+      faviconLink.rel = 'icon';
+      faviconLink.type = 'image/png';
+      faviconLink.href = iconFile;
+      document.head.appendChild(faviconLink);
+
+      const appleIconLink = document.createElement('link');
+      appleIconLink.rel = 'apple-touch-icon';
+      appleIconLink.href = iconFile;
+      document.head.appendChild(appleIconLink);
+    </script>
     <style>
         :root { --bg-color: #dccaaf; --surface-color: #fdf8f5; --text-color: #4a3f35; --primary-color: #c47640; --secondary-color: #e5b985; --dot-bg: #e6d5c3; --dot-weak: #bda692; --flash-color: #ffffff; --active-border: var(--text-color); --highlight-color: #d94a38; --bubble-color: #4a7c8e; }
         [data-theme="dark"] { --bg-color: #121212; --surface-color: #2c2c2c; --text-color: #e0e0e0; --primary-color: #bb86fc; --secondary-color: #03dac6; --dot-bg: #444; --dot-weak: #777; --flash-color: #444444; --active-border: #ffffff; --highlight-color: #ff80ab;  --bubble-color: #4caf72; }
@@ -498,7 +501,7 @@
         <div style="text-align: center; margin-bottom: 10px;">
             <div class="header-row">
                 <button class="help-btn" onclick="toggleHelp()">?</button>
-                <h1>NamaMeto<span style="font-size:0.62rem; font-weight:400; opacity:0.6; letter-spacing:0.5px; vertical-align:baseline; margin-left:6px; line-height:1;">Z295C</span></h1>
+                <h1><span data-i18n="appTitleText"></span><span style="font-size:0.62rem; font-weight:400; opacity:0.6; letter-spacing:0.5px; vertical-align:baseline; margin-left:6px; line-height:1;">Z295C</span></h1>
                 <button id="headerVolBtn" style="width:36px; background:none; border:none; padding:2px 0; display:flex; flex-direction:column; align-items:center; cursor:pointer; user-select:none; -webkit-user-select:none; touch-action:none; -webkit-tap-highlight-color:transparent; position:relative; outline:none;">
                     <span id="headerVolIcon" style="font-size:1.3rem; line-height:1; pointer-events:none;">🔊</span>
                     <span id="headerVolPct" style="font-size:0.62rem; color:var(--primary-color); font-weight:bold; margin-top:1px; line-height:1; pointer-events:none;">100%</span>
@@ -516,10 +519,10 @@
         <!-- ===== メトロノームタブ ===== -->
         <div id="tab-metro" class="tab-content active">
             <div class="help-wrapper help-target" data-help="help_scroll_input" data-help-pos="上">
-                <div class="help-tip center-tip" style="top: -25px;" data-i18n="help_scroll_input">👆 マウスホイール・スワイプで変更可能</div>
+                <div class="help-tip center-tip" style="top: -25px;" data-i18n="help_scroll_input"></div>
                 <div class="top-settings">
                     <div class="scrollable-control" id="soundCtrl">
-                        <span class="control-label" data-i18n="label_sound">音色 (Sound)</span>
+                        <span class="control-label" data-i18n="label_sound"></span>
                         <select id="soundSelect" onchange="syncSound(this.value)" style="text-align:left;">
                             <option value="beep">1. Digital Beep 📟</option><option value="clave">2. Wood Clave ‼</option><option value="metronome">3. Metronome 🅰</option>
                             <option value="cowbell">4. Cowbell 🐮</option><option value="drums">5. Drums 🥁</option>
@@ -529,7 +532,7 @@
                         </select>
                     </div>
                     <div class="scrollable-control" id="beatsCtrl">
-                        <span class="control-label" data-i18n="label_beats">拍子 (Beats)</span>
+                        <span class="control-label" data-i18n="label_beats"></span>
                         <div class="stepper-ui"><button onclick="adjustBeats(-1)">-</button><span id="beatsValDisplay">4</span><button onclick="adjustBeats(1)">+</button></div>
                     </div>
                 </div>
@@ -1133,21 +1136,21 @@
         <!-- スタートボタン直上の独立したモード切替スイッチャー（楽曲タブ時のみ表示） -->
         <hr id="songModeSwitcherSep" class="action-btns-separator" style="display:none;">
         <div id="songModeSwitcher" class="song-mode-switcher" style="display:none; margin-top:8px;">
-            <button class="mode-btn active" id="btnPlayTab" onclick="switchSongTab('play')" data-i18n="tab_play_mode">▶ 再生モード</button>
-            <button class="mode-btn" id="btnEditTab" onclick="switchSongTab('edit')" data-i18n="tab_edit_mode">✎ 作成編集モード</button>
+            <button class="mode-btn active" id="btnPlayTab" onclick="switchSongTab('play')" data-i18n="tab_play_mode"></button>
+            <button class="mode-btn" id="btnEditTab" onclick="switchSongTab('edit')" data-i18n="tab_edit_mode"></button>
         </div>
 
         <div class="bottom-controls" id="bottomControls">
             <div class="fab-menu-wrapper help-target" id="playFabWrapper" style="display:none;" data-help="help_ratio_btn" data-help-pos="上">
-                <div class="help-tip center-tip" style="top:-35px;" data-i18n="help_ratio_btn">練習用に再生速度を変更できます</div>
+                <div class="help-tip center-tip" style="top:-35px;" data-i18n="help_ratio_btn"></div>
                 <button class="fab-menu" id="tempoRatioBtn" onclick="openTempoRatioModal()" style="font-size:1.3rem; line-height:1.35; display:flex; flex-direction:column; align-items:center; justify-content:center;">
-                    <span data-i18n="label_ratio_btn">倍率</span>
+                    <span data-i18n="label_ratio_btn"></span>
                     <span id="tempoRatioDisp" style="font-size:0.95rem; opacity:0.85;">100%</span>
                 </button>
             </div>
-            <button id="playBtn" data-i18n="btn_start">スタート</button>
+            <button id="playBtn" data-i18n="btn_start"></button>
             <div class="fab-menu-wrapper help-target" id="fabMenuWrapper" style="display:none;" data-help="help_menu_fab" data-help-pos="上">
-                <div class="help-tip center-tip" style="top: -35px;" data-i18n="help_menu_fab">楽曲の保存・読込等</div>
+                <div class="help-tip center-tip" style="top: -35px;" data-i18n="help_menu_fab"></div>
                 <button class="fab-menu" onclick="openModal('songMenuModal')">≡</button>
             </div>
         </div>
@@ -1162,7 +1165,7 @@
         <a href="https://www.amazon.jp/hz/wishlist/ls/21PS61YG1P32B?ref_=wl_share" target="_blank" rel="noreferrer noopener" style="display:flex; align-items:center; gap:8px; text-decoration:none; opacity:0.75; transition:opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.75'">
             <span style="display:inline-block; width:85px; height:35px; background-image:url('https://m.media-amazon.com/images/G/09/gno/sprites/nav-sprite-global-1x-reorg-privacy._CB546377955_.png'); background-position:-5px -85px; background-repeat:no-repeat; background-size:auto; flex-shrink:0; background-color:#000;"></span>
         </a>
-        <span id="wishlistLabel" style="font-size:0.8rem; font-weight:bold; color:var(--text-color); opacity:0.75;">ほしいものリスト</span>
+        <span id="wishlistLabel" style="font-size:0.8rem; font-weight:bold; color:var(--text-color); opacity:0.75;"></span>
     </div>
     <div style="padding:2px 0 4px; width:95%; max-width:450px; margin:0 auto;">
         <a href="https://forms.gle/Hb9jwX5PYtZXjrX68" target="_blank" rel="noopener"
@@ -1208,90 +1211,54 @@
     <div id="changelogOverlay">
         <div class="intro-close"><button onclick="toggleChangelog()">✕ 閉じる</button></div>
         <div class="cl-body">
+
+            <p class="cl-ver">Z295C</p>
+            <p class="cl-desc">Claudeさんが一回更新で利用制限多発中。「プロジェクト」に入れると負荷が大きいのかも。英語版をNamaMetroに名称変更、言語を自動判定させたり表示関係やアイコン等色々いじる(Geminiさんに聞きつつ手動)。ついでにZ272C以降の更新履歴の整理や気になっていた表記の修正も手動で行う。やればできた。</p>
+
             <p class="cl-ver">Z294C</p>
-            <p class="cl-desc">作成編集フォームのレイアウト変更：「BPM基準」「テンポ(BPM)」を1行横並び（拍・テンポ [音符選択] = [BPM数値]）に統合、「拍子」「小節数」もラベルと入力欄を同じ行に並べて縦幅を節約。「複雑な拍子」ON時の拍子行をvisibility:hiddenで位置固定（以前は小節数が左詰めになっていた）。</p>
+            <p class="cl-desc">作成編集モード入力欄の縦幅を整理してコンパクト化。</p>
 
             <p class="cl-ver">Z293C</p>
-            <p class="cl-desc">スクロールインジケーターの最小right値を2px→13pxに修正（スマートフォンで三角形が画面端から切れていたため、実機2台確認済み）。</p>
-
-            <p class="cl-ver">Z292C</p>
-            <p class="cl-desc">スクロールインジケーターの位置をmax()で最低右端2pxを保証（スマートフォンでは画面外に出ていたため）。</p>
-
-            <p class="cl-ver">Z291C</p>
-            <p class="cl-desc">スクロールインジケーターの位置修正：leftベースをrightベースに変更し、30px余白の中央に正しく収まるよう計算式を修正（right:calc(50%-225px-15px)、translateX(50%)で中央揃え）。</p>
-
-            <p class="cl-ver">Z290C</p>
-            <p class="cl-desc">スクロールインジケーターの位置をアプリ枠右外側に変更（left:calc(50%+225px-26px)）。三角サイズを約1.6倍に拡大（border 7x10px → 11x16px）。</p>
+            <p class="cl-desc">Z289Cの▲▼の位置が良くないのが直らないので自力でテストして改修、Claudeさんにそのまま記載依頼。</p>
 
             <p class="cl-ver">Z289C</p>
-            <p class="cl-desc">スクロール余白インジケーター追加：画面右端の縦スクロール用余白に上下三角アニメーションを表示。内側から外側へ時間差でフェードアウトし、消えたらループ。色はdot-weak、最大不透明度38%。</p>
+            <p class="cl-desc">アプリ枠の右の余白で動く▲▼をうっすら追加。</p>
 
             <p class="cl-ver">Z288C</p>
-            <p class="cl-desc">①changelog/バージョン番号置換をheader spanのみ対象に変更（changelog混入防止）。②changelogのUnicode音楽記号を撤去。③全FABアニメーションをfabShimmerに統一・速度1.5倍（0.73s）。④複数選択→コピー時に両ボタン同時アニメーション。⑤repeatBtnを不透明化・使用中はfilter:brightnessで濃く・アイコン1.2倍（1.56rem）。</p>
+            <p class="cl-desc">更新履歴にセーニョ／コーダ記号があるとAIさんが追記失敗しまくっていて改善しないので記号を撤去。</p>
 
             <p class="cl-ver">Z287C</p>
-            <p class="cl-desc">①コピーモード開始時にsongData.findがundefinedを返すとJSON.parseがエラーになるバグを修正。②複数選択・リピート設定・コピーモードの各FABボタンがアクティブ時にアニメーションするよう追加。同時アクティブ時は両方アニメーション。</p>
-
-<p class="cl-ver">Z286C</p>
-            <p class="cl-desc">「新」バッジのshift-left不要コード削除（刻みと新の同時表示は起こらないため）。バッジの色をtext-colorに変更（視認性改善）。</p>
+            <p class="cl-desc">複数選択・リピート設定・コピーモードのボタン使用中にアニメーションを追加。</p>
 
             <p class="cl-ver">Z285C</p>
-            <p class="cl-desc">①新規挿入小節群の右上に「新」バッジを表示（□囲み）。②リピート設定操作をアンドゥ対象に追加（同一IDへの連続変更は1回扱い）。③リピート設定操作を新規判定の解除トリガーに追加。</p>
+            <p class="cl-desc">新規挿入小節群の右上に「新」と表示。リピート設定をいじった時も変更判定に入れたり「元に戻す」対象にしたり。</p>
 
             <p class="cl-ver">Z284C</p>
-            <p class="cl-desc">楽譜表示エリアの縦幅をドラッグで自由調整できるリサイズハンドルを追加。マウス・タッチ両対応。設定はlocalStorageに保存し次回起動時も維持（最小80px〜最大600px）。</p>
-
-            <p class="cl-ver">Z283C</p>
-            <p class="cl-desc">セーニョを通常テキスト配置に戻す（絶対配置は不要）。コーダ記号のサイズを2.2rem→1.6remに縮小・位置微調整。</p>
-
-            <p class="cl-ver">Z282C</p>
-            <p class="cl-desc">コーダ・セーニョ記号をposition:absoluteで浮かせる構造に変更し、ラベルテキストへの縦方向干渉を解消。i18n文字列からspanを除去してHTML側で記号を管理。</p>
-
-            <p class="cl-ver">Z281C</p>
-            <p class="cl-desc">①コーダ記号の表示位置ズレを修正（vertical-align:-0.6em / display:inline-block）。②viewportをwidth=450に戻す（スマートフォン表示の調整）。</p>
-
-            <p class="cl-ver">Z280C</p>
-            <p class="cl-desc">①挿入ボタンのHTML初期テキスト除去（i18nとの二重管理を解消）。②削除確認モーダルのボタン間隔を更に拡大（誤操作防止）。③リピートオーバーレイのコーダ記号を2倍サイズに拡大。④セーニョ説明を「着地点」に修正。</p>
+            <p class="cl-desc">楽譜表示エリアに縦幅の自由調整機能を追加。</p>
 
             <p class="cl-ver">Z279C</p>
-            <p class="cl-desc">①英語版i18nの翻訳品質改善（label_tts/curve_early-late/acc_custom_sound/help_score_view等）。②help_song_textの英語版に後半説明を追加。③英語化されていなかった箇所にi18n対応：新規挿入ボタン・リピート設定オーバーレイ・削除確認モーダルボタン・音声カウントラベル・操作音ラベル。④setLangでupdateInsertBtnLabelsが呼ばれておらず言語切替時に挿入ボタンが更新されなかったバグを修正。⑤コーダ記号をオーバーレイに追記。⑥削除確認モーダルのボタンを大きく・丸みを付け・間隔を広げて誤操作防止。⑦viewportをwidth=device-widthに変更（スマートフォンでの初期表示改善）。</p>
-
-            <p class="cl-ver">Z278C</p>
-            <p class="cl-desc">①複数選択ON時にリピートモードを解除する排他制御を追加（Z277Cで抜けていた方向）。②ヘルプ「ここで設定を入力し〜」→「ここで小節群の内容を入力します」に変更。③コピーモードオーバーレイ「貼り付けは下部ボタン」→「貼り付けは上の挿入ボタン」に変更。</p>
+            <p class="cl-desc">英語翻訳の抜けをまとめて修正。</p>
 
             <p class="cl-ver">Z277C</p>
-            <p class="cl-desc">①リピート・コピー・複数選択の排他制御：リピートON時はコピー・複数選択を解除、コピーON時はリピートを解除（複数選択とコピーは共存可）。②ヘルプオーバーレイCSS修正：::before廃止・直接background設定、score-view-wrapperにposition:relative追加でオーバーレイ位置を正常化。③設定タブとのpadding-right差は実際にはなし（統一済みと確認）。</p>
-
-            <p class="cl-ver">Z276C</p>
-            <p class="cl-desc">Z275CでのHTML構造バグ修正：score-view-wrapperの開きタグが欠落していたのを復元。楽譜エリアが正常表示されない問題を解消。</p>
+            <p class="cl-desc">リピート・コピー・複数選択が同時に押せてしまうのを修正。</p>
 
             <p class="cl-ver">Z275C</p>
-            <p class="cl-desc">①更新履歴を番号順に正しく並べ替え。②ファブボタン4つを10px右に移動(right:10→0)、右余白を20→30pxに拡大。③楽譜エリア縦幅190→220px。④楽譜ヘルプをオーバーレイ方式に変更（楽譜エリア内に配置、背景半透明）。⑤インストール説明に「ネット接続時は自動更新」の一文追記。⑥バージョン更新通知トーストを追加（前回バージョンと違う場合に4秒表示）。</p>
-
-            <p class="cl-ver">Z274C</p>
-            <p class="cl-desc">①音色セット例リンクの(Google Drive)重複テキスト削除。②右余白を40px→20pxに縮小。③楽譜エリアの左padding 18px→9pxに半減し小節群表示スペースを拡張。</p>
+            <p class="cl-desc">アプリ版の自動更新時にバージョン通知を追加。</p>
 
             <p class="cl-ver">Z273C</p>
-            <p class="cl-desc">①音色セット例のダウンロードリンクに「(Google Drive)」を追記（アカウント選択画面への警戒を軽減するため）。②bodyにpadding-right:40pxを追加、スマートフォンでアプリ右側に縦スクロール用の余白を確保。</p>
+            <p class="cl-desc">音色ダウンロードリンクに「(Google Drive)」を追記。いきなりアカウントを聞かれる警戒心を解くため。②アプリ枠の右に余白を追加、指でスクロールしやすく。</p>
 
             <p class="cl-ver">Z272C</p>
-            <p class="cl-desc">PWA化対応：manifest.jsonリンク・serviceWorker登録追加。バージョン表記をヘッダーに追加。配布URLを新サーバーに更新。「このアプリをダウンロード」ボタン削除、インストール手順をPWA用に全面書き換え（安定版NamaMeto.htmlへのリンク付き）。はじめにのオフライン説明も更新。</p>
+            <p class="cl-desc">アプリとしてインストール出来るようになりました。(詳しくは「設定」下段から)</p>
 
             <p class="cl-ver">Z269C</p>
             <p class="cl-desc">デバッグログを元に再生ロール完成。変数を飛ばしてなかったぽい。</p>
 
             <p class="cl-ver">Z267C</p>
-            <p class="cl-desc">「リピートの閉じ括弧がある小節群は2回目以降飛ばす」とかアホな事を言っていたのでもうこちらからリピートの設計論理を文面で解説して修正実装、ついに初めての正常っぽいリピート動作。更新40回かかりましたね。</p>
+            <p class="cl-desc">こちらからリピート理論を細かく解説して初めての正常っぽいリピート動作。</p>
 
             <p class="cl-ver">Z266C</p>
             <p class="cl-desc">デバッグログを元に修正したが生成中の文面で怪しい発言があり、別の楽譜設定で再生したらやはりダメだったので指摘(267Cに続く)。</p>
-
-            <p class="cl-ver">Z265C</p>
-            <p class="cl-desc">キレるその2。「コードは正しい。楽譜の設定が間違っています。データ修正してください。」とか言われたので「間違ってるのはお前や。音楽記号を勉強し直して来い。」とだけ返す。そしたら更にトンチンカンな解釈と修正のZ266Cを出されたのでZ265Cに戻り、2行目以降に詳しい解説を足して再出力し、半歩改善。</p>
-
-
-            <p class="cl-ver">Z263C</p>
-            <p class="cl-desc">キレるその1。リピート2周目がおかしいって言ってるのに1周目を検証して「正しい動作」とか言うので…。</p>
 
             <p class="cl-ver">Z261C</p>
             <p class="cl-desc">再生ロールで2回目以降から再生開始することに初成功。なお表示は「1回目」に固定されているので修正続行。</p>
@@ -2003,9 +1970,10 @@
 
     const i18n = {
         ja: {
+            appTitleText: "NamaMeto",
             help_close: "画面をタップして閉じる", tab_metro: "メトロノーム", tab_setting: "設定", tab_song: "楽曲モード",
             help_flash_vibe: "👁️ 視覚や振動でリズムを取れます", opt_flash: "フラッシュ", opt_vibrate: "バイブ", offset_flash: "フラッシュ補正:", offset_vibe: "バイブ補正:",
-            help_scroll_input: "👆 マウスホイール・スワイプで変更可能", label_sound: "音色 (Sound)", label_beats: "拍子 (Beats)",
+            help_scroll_input: "👆 マウスホイール・スワイプで変更可能", label_sound: "音色", label_beats: "拍子",
             help_score_calc: "🎼 楽譜の指定からBPMを自動計算！", calc_title: "🎼 楽譜テンポ換算 (分母指定)", note_dot_half: "付点2分音符 (d.)", note_half: "2分音符 (d)", note_dot_quarter: "付点4分 (♩.)", note_quarter: "4分音符 (♩)", note_dot_eighth: "付点8分 (♪.)", note_eighth: "8分音符 (♪)",
             calc_target: "刻む音符:", note_dot_quarter_f: "付点4分音符", note_quarter_f: "4分音符", note_eighth_f: "8分音符", note_sixteenth_f: "16分音符", note_triplet_f: "3連符", calc_apply: "メトロノームに反映",
             help_dial: "🔄 なぞって回せる！", help_longpress: "⚡ 長押しで連続変化！",
@@ -2144,10 +2112,11 @@
             ro_close: "✕ 閉じる"
         },
         en: {
+            appTitleText: "NamaMetro",
             help_close: "Tap screen to close", tab_metro: "Metronome", tab_setting: "Settings", tab_song: "Song Mode",
             help_flash_vibe: "👁️ Feel the rhythm with visuals & vibration", opt_flash: "Flash", opt_vibrate: "Vibrate", offset_flash: "Flash Offset:", offset_vibe: "Vibe Offset:",
             help_scroll_input: "👆 Scroll or swipe to change values", label_sound: "Sound", label_beats: "Beats",
-            help_score_calc: "🎼 Auto-calculate BPM from sheet music!", calc_title: "🎼 BPM Calculator (Note Value)", note_dot_half: "Dot Half d.", note_half: "Half (d)", note_dot_quarter: "Dot Quarter (♩.)", note_quarter: "Quarter (♩)", note_dot_eighth: "Dot Eighth (♪.)", note_eighth: "Eighth (♪)",
+            help_score_calc: "🎼 Auto-calculate BPM from sheet music!", calc_title: "🎼 BPM Calculator (Note Value)", note_dot_half: "Dot Half (d.)", note_half: "Half (d)", note_dot_quarter: "Dot Quarter (♩.)", note_quarter: "Quarter (♩)", note_dot_eighth: "Dot Eighth (♪.)", note_eighth: "Eighth (♪)",
             calc_target: "Click Base:", note_dot_quarter_f: "Dot Quarter", note_quarter_f: "Quarter", note_eighth_f: "Eighth", note_sixteenth_f: "16th", note_triplet_f: "Triplet", calc_apply: "Apply to Metronome",
             help_dial: "🔄 Swipe to rotate!", help_longpress: "⚡ Long press to adjust fast!",
             help_tap_tempo: "👆 Tap to measure tempo\nfrom your tap intervals", btn_tap_tempo: "Tap Tempo",
@@ -6886,7 +6855,7 @@ function playSoundOffline(offCtx, time, level, isCountIn, offBuiltinBufs, offCus
 
 <script>
 window.addEventListener('DOMContentLoaded', () => {
-  const versionSpan = document.querySelector('h1 span');
+  const versionSpan = document.querySelector('h1 span:last-child');
   if (!versionSpan) return;
   const currentVersion = versionSpan.textContent.trim();
   const previousVersion = localStorage.getItem('namameto_saved_version');

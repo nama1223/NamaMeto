@@ -1,32 +1,11 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-	<script>
-      // ユーザーのブラウザ言語を取得
-      const userLang = navigator.language || navigator.userLanguage;
-      const isJapanese = userLang.startsWith('ja');
-
-      // 1. マニフェストの動的読み込み
-      const manifestLink = document.createElement('link');
-      manifestLink.rel = 'manifest';
-      manifestLink.href = isJapanese ? './manifest.json' : './manifest-en.json';
-      document.head.appendChild(manifestLink);
-
-      // 2. ファビコンとiOS用アイコンの動的読み込み
-      // （※画像ファイル名は実際にアップロードした大文字・小文字に合わせてください）
-      const iconFile = isJapanese ? 'NamaMetoLogo192.png' : 'NamaMetroLogo192.png';
-
-      const faviconLink = document.createElement('link');
-      faviconLink.rel = 'icon';
-      faviconLink.type = 'image/png';
-      faviconLink.href = iconFile;
-      document.head.appendChild(faviconLink);
-
-      const appleIconLink = document.createElement('link');
-      appleIconLink.rel = 'apple-touch-icon';
-      appleIconLink.href = iconFile;
-      document.head.appendChild(appleIconLink);
-    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=450, initial-scale=1.0, maximum-scale=3.0">
+    <title>NamaMeto</title>
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="apple-touch-icon" href="favicon.png">
     <style>
         :root { --bg-color: #dccaaf; --surface-color: #fdf8f5; --text-color: #4a3f35; --primary-color: #c47640; --secondary-color: #e5b985; --dot-bg: #e6d5c3; --dot-weak: #bda692; --flash-color: #ffffff; --active-border: var(--text-color); --highlight-color: #d94a38; --bubble-color: #4a7c8e; }
         [data-theme="dark"] { --bg-color: #121212; --surface-color: #2c2c2c; --text-color: #e0e0e0; --primary-color: #bb86fc; --secondary-color: #03dac6; --dot-bg: #444; --dot-weak: #777; --flash-color: #444444; --active-border: #ffffff; --highlight-color: #ff80ab;  --bubble-color: #4caf72; }
@@ -38,39 +17,7 @@
         /* ダブルタップ拡大禁止（ピンチは許可） */
         .container, .app-tabs { touch-action: pan-x pan-y pinch-zoom; }
 
-
-        /* ===== スクロール余白インジケーター ===== */
-        #scrollIndicator {
-            position: fixed;
-            /* 30px余白の中央。画面幅が狭い時でも最低2px右端から表示 */
-            right: max(13px, calc(50% - 225px - 15px));
-            top: 50%;
-            transform: translateY(-50%) translateX(50%);
-            width: 26px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 5px;
-            pointer-events: none;
-            z-index: 1;
-        }
-        #scrollIndicator .si-arrow {
-            width: 0; height: 0;
-            border-left: 11px solid transparent;
-            border-right: 11px solid transparent;
-            opacity: 0;
-        }
-        #scrollIndicator .si-up {
-            border-bottom: 16px solid var(--dot-weak);
-        }
-        #scrollIndicator .si-down {
-            border-top: 16px solid var(--dot-weak);
-        }
-        #scrollIndicator .si-gap {
-            height: 16px;
-        }
-        body { font-family: 'Helvetica Neue', Arial, sans-serif; background-color: var(--bg-color); color: var(--text-color); display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; padding-right: 30px; user-select: none; transition: background-color 0.1s, color 0.3s; }
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; background-color: var(--bg-color); color: var(--text-color); display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; user-select: none; transition: background-color 0.1s, color 0.3s; }
         body.flash-active { background-color: var(--flash-color) !important; }
 
         .help-overlay-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1500; cursor: pointer; }
@@ -106,8 +53,9 @@
         @keyframes popLeft { 0% { transform: scale(0.8) translateY(-50%); opacity: 0; } 100% { transform: scale(1) translateY(-50%); opacity: 1; } }
 
         /* score-container の help-tip: 小節群説明を含む大きめフキダシ */
-        .score-view-help-tip { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--bubble-color); color: #fff; padding: 12px 14px; border-radius: 8px; font-size: 0.78rem; z-index: 20; pointer-events: none; line-height: 1.5; box-sizing: border-box; overflow-y: auto; opacity: 0.95; }
-        body.help-active .score-view-help-tip { display: block; }
+        .score-view-help-tip { display: none; position: absolute; background: var(--bubble-color, var(--primary-color)); color: #fff; padding: 12px 14px; border-radius: 10px; font-size: 0.78rem; z-index: 1700 !important; box-shadow: 0 4px 12px rgba(0,0,0,0.4); pointer-events: none; line-height: 1.5; width: min(300px, 85vw); box-sizing: border-box; top: -10px; left: 0; transform: translateY(-100%); }
+        .score-view-help-tip::after { content: ''; position: absolute; top: 20px; left: 100%; border-width: 6px 0 6px 6px; border-style: solid; border-color: transparent transparent transparent var(--primary-color); }
+        body.help-active .score-view-help-tip { display: block; animation: popCenter 0.2s ease-out forwards; }
         @keyframes popDesc { 0% { transform: scale(0.95) translateY(-100%); opacity: 0; } 100% { transform: scale(1) translateY(-100%); opacity: 1; } }
 
         .app-tabs { display: flex; gap: 5px; margin-top: 10px; width: 95%; max-width: 450px; }
@@ -252,10 +200,7 @@
         .song-mode-content.active { display: block; }
         
         .score-container { position: relative; margin-bottom: 10px; width: 100%; }
-        .score-view-wrapper { height: 220px; overflow-y: auto; overflow-x: hidden; background: var(--bg-color); border-radius: 8px; border: 1px solid var(--dot-weak); padding: 10px 10px 20px 9px; padding-bottom: 20px; scroll-behavior: smooth; position: relative; }
-        .score-resize-handle { height: 10px; background: transparent; cursor: ns-resize; display: flex; align-items: center; justify-content: center; margin-top: 2px; border-radius: 0 0 8px 8px; touch-action: none; user-select: none; -webkit-user-select: none; }
-        .score-resize-handle::before { content: ''; display: block; width: 36px; height: 4px; border-radius: 2px; background: var(--dot-weak); opacity: 0.7; transition: opacity 0.15s; }
-        .score-resize-handle:hover::before, .score-resize-handle.dragging::before { opacity: 1; background: var(--primary-color); }
+        .score-view-wrapper { height: 190px; overflow-y: auto; overflow-x: hidden; background: var(--bg-color); border-radius: 8px; border: 1px solid var(--dot-weak); padding: 10px 10px 20px 18px; padding-bottom: 20px; scroll-behavior: smooth; }
         .score-track { display: flex; flex-wrap: wrap; align-content: flex-start; gap: 8px; width: 100%; min-width: 100%; min-height: 100%; padding-bottom: 30px; box-sizing: border-box; }
         .score-block { display: inline-flex; flex-direction: column; justify-content: center; align-items: center; background: var(--surface-color); border: 2px solid var(--dot-weak); border-radius: 6px; min-width: 48px; padding: 4px 6px; cursor: pointer; position: relative; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-top: 15px; }
         /* 長押しプレビュー */
@@ -286,7 +231,6 @@
         .score-block.copy-source.selected { border-style: solid !important; border-width: 3px !important; border-color: var(--highlight-color) !important; background: rgba(255,128,171,0.18) !important; box-shadow: 0 0 10px var(--highlight-color) !important; opacity: 1 !important; }
         @keyframes copyDash { 0%, 100% { opacity: 0.55; border-color: var(--dot-weak); } 50% { opacity: 1; border-color: var(--text-color); } }
 
-        .unedited-badge { position: absolute; top: -10px; right: -5px; width: 16px; height: 16px; border-radius: 3px; border: 1.5px solid var(--text-color); background: var(--surface-color); display: flex; justify-content: center; align-items: center; font-size: 0.58rem; font-weight: bold; color: var(--text-color); opacity: 0.8; z-index: 2; pointer-events: none; box-shadow: 0 1px 3px rgba(0,0,0,0.2); letter-spacing: -0.5px; }
         .click-icon { position: absolute; top: -10px; right: -5px; width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid var(--secondary-color); background: var(--surface-color); display: flex; justify-content: center; align-items: center; font-size: 0.65rem; font-weight: bold; color: var(--text-color); z-index: 2; pointer-events: none; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
         .click-icon::after { content: ''; position: absolute; width: 1.5px; height: 8px; background: var(--text-color); transform: rotate(45deg); top: 3px; left: 7px; }
 
@@ -307,20 +251,14 @@
         #scrollArrowUp { top: 5px; }
         #scrollArrowDn { bottom: 5px; }
         
-        .score-fab-group { position: absolute; bottom: 10px; right: 0px; display: none; flex-direction: column; gap: 8px; z-index: 10; }
+        .score-fab-group { position: absolute; bottom: 10px; right: 10px; display: none; flex-direction: column; gap: 8px; z-index: 10; }
         .score-fab { width: 40px; height: 40px; border-radius: 50%; border: none; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); cursor: pointer; font-size: 1.2rem; }
         .multi-sel-fab { background: var(--text-color); color: var(--surface-color); font-size: 1.1rem; }
         .multi-sel-fab.active { background: var(--highlight-color); color: #fff; }
         .copy-fab { background: var(--secondary-color); color: #000; font-weight: bold; }
-        .repeat-fab { background: var(--secondary-color); opacity: 1; }
-        .repeat-fab.repeat-active { filter: brightness(0.78); }
         .trash-fab { background: #e08b98; color: #fff; }
         .trash-fab.blinking { animation: trashBlink 1s infinite; }
         @keyframes trashBlink { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.6; transform: scale(0.95); } }
-        @keyframes fabShimmer { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(1.4); } }
-        .score-fab.fab-active-multi  { animation: fabShimmer 0.73s ease-in-out infinite; }
-        .score-fab.fab-active-repeat { animation: fabShimmer 0.73s ease-in-out infinite; }
-        .score-fab.fab-active-copy   { animation: fabShimmer 0.73s ease-in-out infinite; }
 
         .song-mode-switcher { display: flex; flex-direction: row; gap: 10px; margin: 0 0 10px 0; width: 100%; box-sizing: border-box; }
         /* 作成編集モード内からアクションボタン直後に点線 */
@@ -340,8 +278,6 @@
         #repeatOverlay .ro-title { font-size: 0.85rem; color: var(--secondary-color); margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
         #repeatOverlay .ro-close { font-size: 0.8rem; padding: 3px 10px; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); border-radius: 4px; cursor: pointer; color: #fff; font-weight: normal; }
         #repeatOverlay label { font-size: 0.8rem; display: flex; align-items: center; gap: 7px; cursor: pointer; padding: 4px 0; font-weight: bold; }
-        #repeatOverlay .ro-sym-wrap { position: relative; display: inline-flex; align-items: center; }
-        #repeatOverlay .ro-sym { position: absolute; left: 50%; transform: translateX(-50%) translateY(-40%); top: 0; font-size: 1.6rem; color: var(--secondary-color); font-family: system-ui,-apple-system,"Segoe UI Symbol",serif; line-height: 1; pointer-events: none; user-select: none; }
         #repeatOverlay input[type=radio], #repeatOverlay input[type=checkbox] { accent-color: var(--secondary-color); width: 16px; height: 16px; cursor: pointer; }
         #repeatOverlay .ro-bracket-opts { padding-left: 22px; margin-top: 4px; }
         #repeatOverlay .ro-bracket-opts .ro-pass-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 6px; }
@@ -501,7 +437,7 @@
         <div style="text-align: center; margin-bottom: 10px;">
             <div class="header-row">
                 <button class="help-btn" onclick="toggleHelp()">?</button>
-                <h1><span data-i18n="appTitleText"></span><span style="font-size:0.62rem; font-weight:400; opacity:0.6; letter-spacing:0.5px; vertical-align:baseline; margin-left:6px; line-height:1;">Z295C</span></h1>
+                <h1>NamaMeto</h1>
                 <button id="headerVolBtn" style="width:36px; background:none; border:none; padding:2px 0; display:flex; flex-direction:column; align-items:center; cursor:pointer; user-select:none; -webkit-user-select:none; touch-action:none; -webkit-tap-highlight-color:transparent; position:relative; outline:none;">
                     <span id="headerVolIcon" style="font-size:1.3rem; line-height:1; pointer-events:none;">🔊</span>
                     <span id="headerVolPct" style="font-size:0.62rem; color:var(--primary-color); font-weight:bold; margin-top:1px; line-height:1; pointer-events:none;">100%</span>
@@ -519,10 +455,10 @@
         <!-- ===== メトロノームタブ ===== -->
         <div id="tab-metro" class="tab-content active">
             <div class="help-wrapper help-target" data-help="help_scroll_input" data-help-pos="上">
-                <div class="help-tip center-tip" style="top: -25px;" data-i18n="help_scroll_input"></div>
+                <div class="help-tip center-tip" style="top: -25px;" data-i18n="help_scroll_input">👆 マウスホイール・スワイプで変更可能</div>
                 <div class="top-settings">
                     <div class="scrollable-control" id="soundCtrl">
-                        <span class="control-label" data-i18n="label_sound"></span>
+                        <span class="control-label" data-i18n="label_sound">音色 (Sound)</span>
                         <select id="soundSelect" onchange="syncSound(this.value)" style="text-align:left;">
                             <option value="beep">1. Digital Beep 📟</option><option value="clave">2. Wood Clave ‼</option><option value="metronome">3. Metronome 🅰</option>
                             <option value="cowbell">4. Cowbell 🐮</option><option value="drums">5. Drums 🥁</option>
@@ -532,7 +468,7 @@
                         </select>
                     </div>
                     <div class="scrollable-control" id="beatsCtrl">
-                        <span class="control-label" data-i18n="label_beats"></span>
+                        <span class="control-label" data-i18n="label_beats">拍子 (Beats)</span>
                         <div class="stepper-ui"><button onclick="adjustBeats(-1)">-</button><span id="beatsValDisplay">4</span><button onclick="adjustBeats(1)">+</button></div>
                     </div>
                 </div>
@@ -700,7 +636,7 @@
                     <p style="font-size:0.8rem; color:#888; line-height:1.4; margin-top:0;" data-i18n="desc_custom_sound">端末内の音声ファイルをカスタム音色として設定できます。<br>（推奨: 1MB以下の短くカットされた .mp3 / .wav）</p>
                     <div id="custom-files-container" style="width:100%; box-sizing:border-box;"></div>
                     <div style="text-align:center; margin-top:8px; font-size:0.85rem;">
-                        <a href="https://drive.google.com/drive/folders/1uftx_yTjGCWsNSE_bHz-2QX7BZl-wYjD?usp=sharing" target="_blank" style="color:var(--primary-color);" data-i18n="label_dl_sound_set">音色セット例のダウンロード (Google Drive)</a>
+                        <a href="https://drive.google.com/drive/folders/1uftx_yTjGCWsNSE_bHz-2QX7BZl-wYjD?usp=sharing" target="_blank" style="color:var(--primary-color);" data-i18n="label_dl_sound_set">音色セット例のダウンロード</a>
                     </div>
                 </div>
             </div>
@@ -799,7 +735,7 @@
 
                         <hr style="border:none; border-top:1px solid var(--dot-weak); margin:0;">
 
-                        <p style="text-align:center; font-size:0.78rem; font-weight:bold; opacity:0.6; margin:10px 0 4px; letter-spacing:0.05em;" data-i18n="tts_voice_count_label">１、２、３、４…の音声カウント</p>
+                        <p style="text-align:center; font-size:0.78rem; font-weight:bold; opacity:0.6; margin:10px 0 4px; letter-spacing:0.05em;">１、２、３、４…の音声カウント</p>
                         <label style="display:flex; align-items:flex-start; gap:8px; cursor:pointer; font-size:0.9rem;">
                             <input type="checkbox" id="ttsCountPrecountEnabled" style="width:18px;height:18px;flex-shrink:0;margin-top:2px;" onchange="saveTtsDetail()">
                             <span data-i18n="tts_count_precount">カウントイン(予備拍)で開始１小節前に読み上げ</span>
@@ -875,7 +811,7 @@
                     </div>
                     <!-- 操作音 -->
                     <div class="tts-setting-row" style="margin-top:12px;">
-                        <label style="width:100px; flex-shrink:0; font-size:0.8rem; font-weight:bold;" data-i18n="vol_ui_sound">🖱️ 操作音</label>
+                        <label style="width:100px; flex-shrink:0; font-size:0.8rem; font-weight:bold;">🖱️ 操作音</label>
                         <input type="range" id="uiSoundSlider" min="0" max="10" step="1" value="1" oninput="onUiSoundInput(this)" style="flex:1; accent-color:#e07040;">
                         <span id="uiSoundLabel" style="min-width:42px; text-align:right;">1</span>
                     </div>
@@ -883,12 +819,17 @@
             </div>
             </div><!-- /settingsPanelContainer -->
 
-            <!-- インストール案内 -->
+            <!-- ダウンロード / ホーム画面追加 -->
             <div style="margin-top:18px; padding:0 2px 10px; display:flex; flex-direction:column; gap:10px;">
+                <a href="#" onclick="downloadThisApp(); return false;"
+                   style="display:inline-flex; align-items:center; gap:6px; font-size:0.82rem; color:var(--primary-color); text-decoration:underline; text-underline-offset:3px; cursor:pointer; width:fit-content;">
+                    <span style="font-size:1rem;">⬇️</span>
+                    <span data-i18n="link_dl_app">このアプリ(html)をダウンロード</span>
+                </a>
                 <a href="#" onclick="openModal('addToHomeModal'); return false;"
                    style="display:inline-flex; align-items:center; gap:6px; font-size:0.82rem; color:var(--primary-color); text-decoration:underline; text-underline-offset:3px; cursor:pointer; width:fit-content;">
                     <span style="font-size:1rem;">📲</span>
-                    <span data-i18n="link_add_home">このメトロノームをアプリとしてインストールするには</span>
+                    <span data-i18n="link_add_home">ダウンロードしたhtmlをホーム画面に追加するには</span>
                 </a>
             </div>
         </div>
@@ -896,12 +837,12 @@
         <!-- ===== 楽曲モードタブ ===== -->
         <div id="tab-song" class="tab-content">
             <div class="score-container help-wrapper help-target" id="score-container-song">
+                <div class="score-view-help-tip" data-is-scoreview="1">
+                    <div style="font-weight:bold; margin-bottom:6px;" data-i18n="help_score_view">🎼 作成した小節群が並びます。タップで選択！長押しで内容確認！</div>
+                    <div style="font-weight:bold;" data-i18n="help_song_title">※ 小節群とは：</div>
+                    <span data-i18n="help_song_text">同じテンポや拍子が続く、ひとまとまりの区間のことです。小節群を組み合わせることで一曲まるまる練習できるメトロノームを作成できます。小節群ごとに名前をつける事ができ、リハーサルマーク(練習記号)やAメロなどの目印をつけられ、再生モードで「読み上げ」をオンにすると声の合図も入ります。名前が未入力なら小節番号が自動で入ります。</span>
+                </div>
                 <div class="score-view-wrapper" id="scoreView" onscroll="checkScrollArrows()" style="position:relative;">
-                    <div class="score-view-help-tip" data-is-scoreview="1">
-                        <div style="font-weight:bold; margin-bottom:6px;" data-i18n="help_score_view">🎼 作成した小節群が並びます。タップで選択！長押しで内容確認！</div>
-                        <div style="font-weight:bold;" data-i18n="help_song_title">※ 小節群とは：</div>
-                        <span data-i18n="help_song_text">同じテンポや拍子が続く、ひとまとまりの区間のことです。小節群を組み合わせることで一曲まるまる練習できるメトロノームを作成できます。小節群ごとに名前をつける事ができ、リハーサルマーク(練習記号)やAメロなどの目印をつけられ、再生モードで「読み上げ」をオンにすると声の合図も入ります。名前が未入力なら小節番号が自動で入ります。</span>
-                    </div>
                     <!-- 3つ横並びの上矢印 -->
                     <div id="scrollArrowUp" class="scroll-arrow-group" style="top:5px;">
                         <span>▲</span><span>▲</span><span>▲</span>
@@ -912,19 +853,18 @@
                         <span>▼</span><span>▼</span><span>▼</span>
                     </div>
                 </div>
-                <div id="scoreResizeHandle" class="score-resize-handle" title="ドラッグして縦幅を調整"></div>
                 
                 <div class="score-fab-group" id="scoreFabGroup">
                     <button id="multiSelBtn" class="score-fab multi-sel-fab" onclick="enterMultiSelectMode()" title="複数選択モード">☑</button>
-                    <button id="repeatBtn" class="score-fab repeat-fab" onclick="toggleRepeatEditMode()" title="リピート設定" style="font-size:1.56rem; line-height:1; display:flex; align-items:center; justify-content:center;">𝄆</button>
+                    <button id="repeatBtn" class="score-fab" onclick="toggleRepeatEditMode()" title="リピート設定" style="background:var(--secondary-color); font-size:1.3rem; line-height:1;">𝄆</button>
                     <button id="copyBtn" class="score-fab copy-fab" onclick="toggleCopyMode()">📄</button>
                     <button id="trashBtn" class="score-fab trash-fab" onclick="handleTrashClick()">🗑️</button>
                 </div>
             </div>
             <!-- 新規挿入ボタン：作成編集モード時のみ表示 -->
             <div id="newSetBtns" style="display:none; gap:6px; margin-bottom:6px; width:100%; box-sizing:border-box;">
-                <button id="btnInsertBefore" style="flex:2; padding:8px 5px; font-weight:bold; font-size:0.82rem; border:none; border-radius:8px; cursor:pointer; background:var(--text-color); color:var(--surface-color); white-space:nowrap;" onclick="insertNewSet('before')"></button>
-                <button id="btnInsertAdd" style="flex:2; padding:8px 5px; font-weight:bold; font-size:0.82rem; border:none; border-radius:8px; cursor:pointer; background:var(--secondary-color); color:#000; white-space:nowrap;" onclick="insertNewSet('add')"></button>
+                <button id="btnInsertBefore" style="flex:2; padding:8px 5px; font-weight:bold; font-size:0.82rem; border:none; border-radius:8px; cursor:pointer; background:var(--text-color); color:var(--surface-color); white-space:nowrap;" onclick="insertNewSet('before')">新規挿入(前)</button>
+                <button id="btnInsertAdd" style="flex:2; padding:8px 5px; font-weight:bold; font-size:0.82rem; border:none; border-radius:8px; cursor:pointer; background:var(--secondary-color); color:#000; white-space:nowrap;" onclick="insertNewSet('add')">新規挿入(末尾)</button>
                 <button id="btnUndo" style="flex:1; padding:8px 4px; font-weight:bold; font-size:0.85rem; border:none; border-radius:8px; cursor:pointer; background:var(--dot-weak); color:var(--text-color); opacity:0.35; position:relative;" onclick="undoSong()" title="アンドゥ">↩<span id="undoCount" style="display:none; position:absolute; bottom:2px; left:4px; font-size:0.55rem; font-weight:bold; opacity:0.8; line-height:1;"></span></button>
                 <button id="btnRedo" style="flex:1; padding:8px 4px; font-weight:bold; font-size:0.85rem; border:none; border-radius:8px; cursor:pointer; background:var(--dot-weak); color:var(--text-color); opacity:0.35; position:relative;" onclick="redoSong()" title="リドゥ">↪<span id="redoCount" style="display:none; position:absolute; bottom:2px; left:4px; font-size:0.55rem; font-weight:bold; opacity:0.8; line-height:1;"></span></button>
             </div>
@@ -1002,36 +942,36 @@
                 <!-- リピート設定オーバーレイ：song-edit-mode全体を覆う -->
                 <div id="repeatOverlay">
                     <div class="ro-title">
-                        <span data-i18n="ro_title">𝄆 リピート設定</span>　<span id="roSelectedName" style="font-size:0.75rem; opacity:0.75; font-weight:normal;"></span></span>
-                        <button class="ro-close" onclick="toggleRepeatEditMode()" data-i18n="ro_close">✕ 閉じる</button>
+                        <span>𝄆 リピート設定　<span id="roSelectedName" style="font-size:0.75rem; opacity:0.75; font-weight:normal;"></span></span>
+                        <button class="ro-close" onclick="toggleRepeatEditMode()">✕ 閉じる</button>
                     </div>
-                    <label><input type="radio" name="roRepeatType" id="roTypeNone" value="none" checked onchange="onRoTypeChange()"><span data-i18n="ro_none">なし（通常）</span></label>
-                    <label><input type="radio" name="roRepeatType" id="roTypeRepeatLeft" value="repeat_left" onchange="onRoTypeChange()"><span><span data-i18n="ro_repeat_left">リピート左括弧</span>　<span style="font-size:1.1rem;color:var(--secondary-color);">𝄆</span></span></label>
+                    <label><input type="radio" name="roRepeatType" id="roTypeNone" value="none" checked onchange="onRoTypeChange()"><span>なし（通常）</span></label>
+                    <label><input type="radio" name="roRepeatType" id="roTypeRepeatLeft" value="repeat_left" onchange="onRoTypeChange()"><span>リピート左括弧　<span style="font-size:1.1rem;color:var(--secondary-color);">𝄆</span></span></label>
                     <div id="roRepeatLeftOpts" class="ro-bracket-opts" style="display:none;">
-                        <div style="font-size:0.72rem;opacity:0.8;margin-bottom:5px;" data-i18n="ro_repeat_left_desc">演奏回数（このブロックを合計何回演奏するか）</div>
+                        <div style="font-size:0.72rem;opacity:0.8;margin-bottom:5px;">演奏回数（このブロックを合計何回演奏するか）</div>
                         <div class="ro-maxpass-row">
-                            <span data-i18n="ro_repeat_times_prefix">合計</span>
+                            <span>合計</span>
                             <input type="number" id="roRepeatTimes" value="2" min="2" max="9" step="1" onchange="applyRepeatSettingDirect()">
-                            <span style="font-size:0.72rem;opacity:0.8;" data-i18n="ro_repeat_times_suffix">回演奏</span>
+                            <span style="font-size:0.72rem;opacity:0.8;">回演奏</span>
                         </div>
                     </div>
-                    <label><input type="radio" name="roRepeatType" id="roTypeRepeatRight" value="repeat_right" onchange="onRoTypeChange()"><span><span data-i18n="ro_repeat_right">リピート右括弧</span>　<span style="font-size:1.1rem;color:var(--secondary-color);">𝄇</span></span></label>
-                    <label><input type="radio" name="roRepeatType" id="roTypeVolta" value="volta" onchange="onRoTypeChange()"><span data-i18n="ro_volta">反復番号括弧</span></label>
+                    <label><input type="radio" name="roRepeatType" id="roTypeRepeatRight" value="repeat_right" onchange="onRoTypeChange()"><span>リピート右括弧　<span style="font-size:1.1rem;color:var(--secondary-color);">𝄇</span></span></label>
+                    <label><input type="radio" name="roRepeatType" id="roTypeVolta" value="volta" onchange="onRoTypeChange()"><span>反復番号括弧</span></label>
                     <div id="roVoltaOpts" class="ro-bracket-opts" style="display:none;">
-                        <div style="font-size:0.72rem;opacity:0.8;margin-bottom:5px;" data-i18n="ro_volta_desc_num">番号（何回目の通過で演奏するか）</div>
+                        <div style="font-size:0.72rem;opacity:0.8;margin-bottom:5px;">番号（何回目の通過で演奏するか）</div>
                         <div class="ro-pass-row" id="roVoltaChecks"></div>
                         <div class="ro-maxpass-row">
-                            <span data-i18n="ro_volta_max_label">最大番号:</span>
+                            <span>最大番号:</span>
                             <input type="number" id="roVoltaMax" value="2" min="1" max="8" step="1" onchange="onRoVoltaMaxChange()">
                         </div>
                     </div>
-                    <label><input type="radio" name="roRepeatType" id="roTypeSegno" value="segno" onchange="onRoTypeChange()"><span><span data-i18n="ro_segno">セーニョ（着地点）</span>　<span style="font-size:1.3rem;color:var(--secondary-color);font-family:system-ui,-apple-system,'Segoe UI Symbol',serif;">𝄋</span></span></label>
-                    <label><input type="radio" name="roRepeatType" id="roTypeDalSegno" value="dalSegno" onchange="onRoTypeChange()"><span data-i18n="ro_dal_segno">D.S.（セーニョに戻る）</span></label>
-                    <label><input type="radio" name="roRepeatType" id="roTypeToCoda" value="toCoda" onchange="onRoTypeChange()"><span class="ro-sym-wrap" style="padding-left:2.0rem;"><span class="ro-sym">𝄌</span><span data-i18n="ro_to_coda">to コーダ（コーダへ飛ぶ）</span></span></label>
-                    <label><input type="radio" name="roRepeatType" id="roTypeCoda" value="coda" onchange="onRoTypeChange()"><span class="ro-sym-wrap" style="padding-left:2.0rem;"><span class="ro-sym">𝄌</span><span data-i18n="ro_coda">コーダ（着地点）</span></span></label>
+                    <label><input type="radio" name="roRepeatType" id="roTypeSegno" value="segno" onchange="onRoTypeChange()"><span>セーニョ　<span style="font-size:1.3rem;color:var(--secondary-color);font-family:system-ui,-apple-system,'Segoe UI Symbol',serif;">𝄋</span></span></label>
+                    <label><input type="radio" name="roRepeatType" id="roTypeDalSegno" value="dalSegno" onchange="onRoTypeChange()"><span>D.S.（セーニョに戻る）</span></label>
+                    <label><input type="radio" name="roRepeatType" id="roTypeToCoda" value="toCoda" onchange="onRoTypeChange()"><span>to コーダ（コーダへ飛ぶ）</span></label>
+                    <label><input type="radio" name="roRepeatType" id="roTypeCoda" value="coda" onchange="onRoTypeChange()"><span>コーダ（着地点）</span></label>
                 </div>
                 <div class="help-wrapper help-target" data-help="help_song_form" data-help-pos="上">
-                    <div class="help-tip center-tip" style="top: -25px;" data-i18n="help_song_form">ここで小節群の内容を入力します</div>
+                    <div class="help-tip center-tip" style="top: -25px;" data-i18n="help_song_form">ここで設定を入力し、「追加」で楽譜を作ります</div>
                     <div class="form-inputs-wrapper">
                         <div id="multiSelectOverlay" class="dark-overlay" onclick="enterMultiSelectMode()">
                             <span data-i18n="overlay_multi_mode">複数選択モード中</span><br>
@@ -1040,7 +980,7 @@
                         
                         <div id="copyOverlay" class="dark-overlay" onclick="cancelCopyMode()">
                             <span data-i18n="overlay_copy_mode">📄 コピーモード中</span><br>
-                            <span style="font-size:0.8rem;font-weight:normal;margin-top:5px;" data-i18n="overlay_tap_cancel_copy">ここをタップで解除（貼り付けは上の挿入ボタン）</span>
+                            <span style="font-size:0.8rem;font-weight:normal;margin-top:5px;" data-i18n="overlay_tap_cancel_copy">ここをタップで解除（貼り付けは下部ボタン）</span>
                         </div>
 
                         <!-- 長押しプレビューオーバーレイ -->
@@ -1053,35 +993,31 @@
                                     <button class="complex-sig-clear" onclick="document.getElementById('editName').value=''; onFormChange();" style="position:relative; top:0; right:0; padding:8px 12px; font-size:1rem;" title="クリア">✖</button>
                                 </div>
                             </div>
-                            <!-- 拍・テンポ行（full-widthで2カラム占有、flex-rowで横並び） -->
-                            <div class="full-width" style="display:flex; flex-direction:row; align-items:center; gap:6px;">
-                                <span style="font-size:0.75rem; font-weight:bold; white-space:nowrap; flex-shrink:0;" data-i18n="label_bpm_base_short">拍・テンポ</span>
-                                <select id="editNote" onchange="onFormChange()" style="background:var(--surface-color); color:var(--text-color); flex:2; min-width:0; font-size:0.82rem; padding:7px 4px;">
+                            <div class="form-group">
+                                <label data-i18n="label_bpm_base">BPM基準</label>
+                                <select id="editNote" onchange="onFormChange()" style="background:var(--surface-color); color:var(--text-color);">
                                     <option value="0.5" data-i18n="note_eighth">8分音符 ♪</option>
                                     <option value="1" selected data-i18n="note_quarter">4分音符 ♩</option>
                                     <option value="1.5" data-i18n="note_dot_quarter">付点4分音符 ♩.</option>
                                     <option value="2" data-i18n="note_half">2分音符 d</option>
-                                    <option value="3" data-i18n="note_dot_half">付点2分音符 d.</option>
                                 </select>
-                                <span style="font-size:0.85rem; opacity:0.7; flex-shrink:0;">=</span>
-                                <input type="number" id="editBpm" class="scroll-number" oninput="onFormChange()" value="120" min="20" max="600" step="1" style="background:var(--surface-color); color:var(--text-color); flex:1; min-width:0;">
                             </div>
-
-                            <!-- 拍子行：複雑な拍子ON時はvisibility:hiddenで位置を保持 -->
-                            <div class="form-group" id="standardSigRow" style="position: relative;">
-                                <div id="standardSigPanel" style="display:flex; align-items:center; gap:4px;">
-                                    <span style="font-size:0.75rem; font-weight:bold; white-space:nowrap; flex-shrink:0;" data-i18n="label_time_sig">拍子</span>
-                                    <input type="number" id="editTimeSigNum" class="scroll-number" oninput="onFormChange()" value="4" min="1" style="background:var(--surface-color); color:var(--text-color); flex:1; min-width:0;">
-                                    <span style="flex-shrink:0;">/</span>
-                                    <input type="number" id="editTimeSigDen" class="scroll-number" oninput="onFormChange()" value="4" min="1" style="background:var(--surface-color); color:var(--text-color); flex:1; min-width:0;">
-                                </div>
-                            </div>
-                            <!-- 小節数行 -->
                             <div class="form-group">
-                                <div style="display:flex; align-items:center; gap:4px;">
-                                    <span style="font-size:0.75rem; font-weight:bold; white-space:nowrap; flex-shrink:0;" data-i18n="label_bar_count">小節数</span>
-                                    <input type="number" id="editBars" class="scroll-number" oninput="onFormChange()" value="4" min="1" style="background:var(--surface-color); color:var(--text-color); flex:1; min-width:0;">
+                                <label data-i18n="label_tempo">テンポ (BPM)</label>
+                                <input type="number" id="editBpm" class="scroll-number" oninput="onFormChange()" value="120" min="20" max="600" step="1" style="background:var(--surface-color); color:var(--text-color);">
+                            </div>
+                            
+                            <div class="form-group" style="position: relative;">
+                                <label data-i18n="label_time_sig">拍子</label>
+                                <div id="standardSigPanel" class="flex-row">
+                                    <input type="number" id="editTimeSigNum" class="scroll-number" oninput="onFormChange()" value="4" min="1" style="background:var(--surface-color); color:var(--text-color);">
+                                    <span>/</span>
+                                    <input type="number" id="editTimeSigDen" class="scroll-number" oninput="onFormChange()" value="4" min="1" style="background:var(--surface-color); color:var(--text-color);">
                                 </div>
+                            </div>
+                            <div class="form-group">
+                                <label data-i18n="label_bar_count">小節数</label>
+                                <input type="number" id="editBars" class="scroll-number" oninput="onFormChange()" value="4" min="1" style="background:var(--surface-color); color:var(--text-color);">
                             </div>
                             
                             <div class="form-group full-width" style="display:flex; flex-direction:row; justify-content:space-between; align-items:center; flex-wrap: wrap; gap: 8px;">
@@ -1136,21 +1072,21 @@
         <!-- スタートボタン直上の独立したモード切替スイッチャー（楽曲タブ時のみ表示） -->
         <hr id="songModeSwitcherSep" class="action-btns-separator" style="display:none;">
         <div id="songModeSwitcher" class="song-mode-switcher" style="display:none; margin-top:8px;">
-            <button class="mode-btn active" id="btnPlayTab" onclick="switchSongTab('play')" data-i18n="tab_play_mode"></button>
-            <button class="mode-btn" id="btnEditTab" onclick="switchSongTab('edit')" data-i18n="tab_edit_mode"></button>
+            <button class="mode-btn active" id="btnPlayTab" onclick="switchSongTab('play')" data-i18n="tab_play_mode">▶ 再生モード</button>
+            <button class="mode-btn" id="btnEditTab" onclick="switchSongTab('edit')" data-i18n="tab_edit_mode">✎ 作成編集モード</button>
         </div>
 
         <div class="bottom-controls" id="bottomControls">
             <div class="fab-menu-wrapper help-target" id="playFabWrapper" style="display:none;" data-help="help_ratio_btn" data-help-pos="上">
-                <div class="help-tip center-tip" style="top:-35px;" data-i18n="help_ratio_btn"></div>
+                <div class="help-tip center-tip" style="top:-35px;" data-i18n="help_ratio_btn">練習用に再生速度を変更できます</div>
                 <button class="fab-menu" id="tempoRatioBtn" onclick="openTempoRatioModal()" style="font-size:1.3rem; line-height:1.35; display:flex; flex-direction:column; align-items:center; justify-content:center;">
-                    <span data-i18n="label_ratio_btn"></span>
+                    <span data-i18n="label_ratio_btn">倍率</span>
                     <span id="tempoRatioDisp" style="font-size:0.95rem; opacity:0.85;">100%</span>
                 </button>
             </div>
-            <button id="playBtn" data-i18n="btn_start"></button>
+            <button id="playBtn" data-i18n="btn_start">スタート</button>
             <div class="fab-menu-wrapper help-target" id="fabMenuWrapper" style="display:none;" data-help="help_menu_fab" data-help-pos="上">
-                <div class="help-tip center-tip" style="top: -35px;" data-i18n="help_menu_fab"></div>
+                <div class="help-tip center-tip" style="top: -35px;" data-i18n="help_menu_fab">楽曲の保存・読込等</div>
                 <button class="fab-menu" onclick="openModal('songMenuModal')">≡</button>
             </div>
         </div>
@@ -1165,7 +1101,7 @@
         <a href="https://www.amazon.jp/hz/wishlist/ls/21PS61YG1P32B?ref_=wl_share" target="_blank" rel="noreferrer noopener" style="display:flex; align-items:center; gap:8px; text-decoration:none; opacity:0.75; transition:opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.75'">
             <span style="display:inline-block; width:85px; height:35px; background-image:url('https://m.media-amazon.com/images/G/09/gno/sprites/nav-sprite-global-1x-reorg-privacy._CB546377955_.png'); background-position:-5px -85px; background-repeat:no-repeat; background-size:auto; flex-shrink:0; background-color:#000;"></span>
         </a>
-        <span id="wishlistLabel" style="font-size:0.8rem; font-weight:bold; color:var(--text-color); opacity:0.75;"></span>
+        <span id="wishlistLabel" style="font-size:0.8rem; font-weight:bold; color:var(--text-color); opacity:0.75;">ほしいものリスト</span>
     </div>
     <div style="padding:2px 0 4px; width:95%; max-width:450px; margin:0 auto;">
         <a href="https://forms.gle/Hb9jwX5PYtZXjrX68" target="_blank" rel="noopener"
@@ -1211,107 +1147,132 @@
     <div id="changelogOverlay">
         <div class="intro-close"><button onclick="toggleChangelog()">✕ 閉じる</button></div>
         <div class="cl-body">
+            <p style="font-weight:bold; font-size:1rem; text-align:center; margin-bottom:12px;">📋 更新履歴</p>
 
-            <p class="cl-ver">Z295C</p>
-            <p class="cl-desc">Claudeさんが一回更新で利用制限多発中。「プロジェクト」に入れると負荷が大きいのかも。英語版をNamaMetroに名称変更、言語を自動判定させたり表示関係やアイコン等色々いじる(Geminiさんに聞きつつ手動)。ついでにZ272C以降の更新履歴の整理や気になっていた表記の修正も手動で行う。やればできた。</p>
+            <p class="cl-ver">Z265C</p>
+            <p class="cl-desc">expandRepeatの根本的な設計修正。repeat_right通過時にスタックをpopしないよう変更。これにより2カッコ等がrepeat_rightの後に来る正しい楽譜構造（1カッコ→右括弧→2カッコ）が機能するようになった。スタックのpopは次のrepeat_leftに到達した時（通過済みのもののみ）に実施。</p>
 
-            <p class="cl-ver">Z294C</p>
-            <p class="cl-desc">作成編集モード入力欄の縦幅を整理してコンパクト化。</p>
+            <p class="cl-ver">Z265C</p>
+            <p class="cl-desc">デバッグログ強化：[songData全順序]でsongDataの配列インデックスと全小節のIDとmarkTypeを出力。repeat_right/voltaの配置順序の確認用。</p>
 
-            <p class="cl-ver">Z293C</p>
-            <p class="cl-desc">Z289Cの▲▼の位置が良くないのが直らないので自力でテストして改修、Claudeさんにそのまま記載依頼。</p>
+            <p class="cl-ver">Z264C</p>
+            <p class="cl-desc">リピートバグ2点修正。①applyRepeatSettingDirectで設定変更時にrepeatTimes/voltaNums/repeatPassesをdeleteで完全クリア（旧データ混入防止）。②expandRepeat内でbracket（旧markType）はrepeat_leftスタックがアクティブな時のみvolta扱い、スタック外では通常演奏（ブロック外に残った旧bracket設定を無視）。</p>
 
-            <p class="cl-ver">Z289C</p>
-            <p class="cl-desc">アプリ枠の右の余白で動く▲▼をうっすら追加。</p>
+            <p class="cl-ver">Z263C</p>
+            <p class="cl-desc">デバッグログ追加：[songData repeat]でmarkType/repeatTimes/voltaNumsを、[expand結果]で展開後のID→pass順序をコンソール出力。リピート動作不具合の原因特定用。</p>
 
-            <p class="cl-ver">Z288C</p>
-            <p class="cl-desc">更新履歴にセーニョ／コーダ記号があるとAIさんが追記失敗しまくっていて改善しないので記号を撤去。</p>
-
-            <p class="cl-ver">Z287C</p>
-            <p class="cl-desc">複数選択・リピート設定・コピーモードのボタン使用中にアニメーションを追加。</p>
-
-            <p class="cl-ver">Z285C</p>
-            <p class="cl-desc">新規挿入小節群の右上に「新」と表示。リピート設定をいじった時も変更判定に入れたり「元に戻す」対象にしたり。</p>
-
-            <p class="cl-ver">Z284C</p>
-            <p class="cl-desc">楽譜表示エリアに縦幅の自由調整機能を追加。</p>
-
-            <p class="cl-ver">Z279C</p>
-            <p class="cl-desc">英語翻訳の抜けをまとめて修正。</p>
-
-            <p class="cl-ver">Z277C</p>
-            <p class="cl-desc">リピート・コピー・複数選択が同時に押せてしまうのを修正。</p>
-
-            <p class="cl-ver">Z275C</p>
-            <p class="cl-desc">アプリ版の自動更新時にバージョン通知を追加。</p>
-
-            <p class="cl-ver">Z273C</p>
-            <p class="cl-desc">音色ダウンロードリンクに「(Google Drive)」を追記。いきなりアカウントを聞かれる警戒心を解くため。②アプリ枠の右に余白を追加、指でスクロールしやすく。</p>
-
-            <p class="cl-ver">Z272C</p>
-            <p class="cl-desc">アプリとしてインストール出来るようになりました。(詳しくは「設定」下段から)</p>
-
-            <p class="cl-ver">Z269C</p>
-            <p class="cl-desc">デバッグログを元に再生ロール完成。変数を飛ばしてなかったぽい。</p>
-
-            <p class="cl-ver">Z267C</p>
-            <p class="cl-desc">こちらからリピート理論を細かく解説して初めての正常っぽいリピート動作。</p>
-
-            <p class="cl-ver">Z266C</p>
-            <p class="cl-desc">デバッグログを元に修正したが生成中の文面で怪しい発言があり、別の楽譜設定で再生したらやはりダメだったので指摘(267Cに続く)。</p>
+            <p class="cl-ver">Z262C</p>
+            <p class="cl-desc">①再生中に◀▶ボタンを非表示、停止後に編集タブなら復元。②ピッカーpass同期：syncPickerTo内で再生中はsongStartingPassをリセットしない。passアクティブ表示をvisibility問わず毎回更新。③getVoltaNumsForNoneのブロック終端判定を修正：repeat_rightがなくてもよい（次のrepeat_left/repeat_rightまでがブロック）。</p>
 
             <p class="cl-ver">Z261C</p>
-            <p class="cl-desc">再生ロールで2回目以降から再生開始することに初成功。なお表示は「1回目」に固定されているので修正続行。</p>
+            <p class="cl-desc">①再生中の選択枠：dotQueue消化時にselected/playback-targetを同時付け替え。停止時にもrenderSongScoreで選択枠を正しく復元。②ピッカーpass指定：カウントイン完了後の本編開始位置にpassScheduleTableを使いpassを考慮。③編集タブ切替時に選択中小節群の内容を即読み込み。④expandRepeat修正：volta後のnone小節は直前voltaと同じ周回のみ演奏（getVoltaNumsForNone関数で判定）。</p>
 
             <p class="cl-ver">Z260C</p>
-            <p class="cl-desc">いつの間にか増えていた枠選択の表示バグ修正。再生ロールで「◯回目」を指定しても1回目から始まるのと表示が正しくないのの修正、長期継続中。</p>
+            <p class="cl-desc">①再生モードの選択枠表示修正：playback-target CSSを追加、renderSongScoreでselectedクラスも付与。②再生中のピッカーpass同期：dotQueueの消化時にsongStartingPassをn.passで更新してからsyncPickerTo呼び出し。syncPickerTo末尾にpassアクティブ表示の毎回更新を追加。③繰り返し回数表記修正：UI入力を「合計演奏回数」に変更(min=2)、保存値repeatTimesはUI-1（戻り回数）、楽譜上の×N表示もrepeatTimes+1で統一。</p>
 
             <p class="cl-ver">Z259C</p>
-            <p class="cl-desc">リピート機能を定義し直して改修。(閉じ括弧と数字つきの上括弧をセットにしていたのをやめた)</p>
+            <p class="cl-desc">リピート機能を大幅改修。①markType新定義：repeat_left(リピート左括弧、repeatTimes=繰り返し回数)/repeat_right(リピート右括弧)/volta(反復番号括弧、voltaNums=番号配列)。旧repeat_start/bracket/repeatPassesは後方互換で維持。②リピート設定UI刷新：左括弧に回数指定、右括弧を独立、反復番号括弧に番号チェック。③反復番号括弧の見た目を┌──(右閉じなし)に変更。④expandRepeatを新仕様で全面書き換え：repeat_rightで折り返し、voltaは番号で通過/スキップのみ(分岐開始地点)。⑤ピッカー表示を新markTypeに対応。</p>
 
             <p class="cl-ver">Z258C</p>
-            <p class="cl-desc">一部状況で「元に戻す」がループするバグ修正。</p>
+            <p class="cl-desc">loadSelectedToForm中にonFormChangeが呼ばれてアンドゥが積まれるバグを修正。_loadingFormフラグをtry-finallyで管理し、読み込み中はonFormChangeを無視する。</p>
+
+            <p class="cl-ver">Z258C</p>
+            <p class="cl-desc">複雑な拍子設定済み小節群を選択するとアンドゥが増えるバグ修正。loadSelectedToForm冒頭で残存デバウンスタイマーをクリアし_undoPendingIdをリセット。これにより前の編集タイマーが別小節群選択後に発火してアンドゥを積む問題を解消。</p>
 
             <p class="cl-ver">Z257C</p>
-            <p class="cl-desc">「元に戻す」「やり直し」に回数表示を追加。今どこだっけー？という迷子の防止！</p>
+            <p class="cl-desc">アンドゥ/リドゥボタンの左下に回数バッジ（小文字）を追加。0の時は非表示、1以上の時に表示。ボタン中央の矢印アイコンはそのまま維持。</p>
 
             <p class="cl-ver">Z256C</p>
-            <p class="cl-desc">各種微調整。作成編集モードに「元に戻す」「やり直し」ボタンを実装。最大30回らしい。</p>
+            <p class="cl-desc">①コピーモード中の新規挿入ボタンを「挿入(前)」「挿入(末尾)」に変更。②新規挿入時のclickデフォルトをoffに変更。③複数選択解除後もfabGroupを表示維持。④削除確認をブラウザconfirmからカスタムモーダルに変更。⑤click-iconサイズを縮小(22px→16px)。⑥アンドゥ/リドゥ機能実装(最大30回、新規挿入/削除/並び替え/コピー/内容編集をスナップショット管理、同一小節群の連続編集は1スナップにまとめる)。ボタンを新規挿入行右側に2:2:1:1比率で配置。</p>
 
             <p class="cl-ver">Z255C</p>
-            <p class="cl-desc">前回のバグ修正。</p>
+            <p class="cl-desc">Z254Cで発生したHTMLエスケープバグ修正（str_replace時の\\\"二重エスケープ）。scoreFabGroup・ボタン類が正常動作しない問題を解消。selectSongSetにnewSetBtns表示制御を追加し再生モードでも表示される問題を修正。</p>
 
             <p class="cl-ver">Z254C</p>
-            <p class="cl-desc">小節群の左右並べ替えが壊れていたので修理。前回の変更に伴いボタンの位置変更…したら見た目がバグって動作もしなくなる。</p>
+            <p class="cl-desc">①並べ替えボタン修正：setPointerCaptureを削除しpointerleaveでプレビュー消去に変更（167C以来のバグ修正）。②名前クリアボタン・resetComplexPatternにonFormChange連動。③scroll-numberのchangeイベントにもonFormChange追加（スクロール・スワイプ変更のリアルタイム保存）。④新規挿入ボタンを楽譜枠直下に移動し「新規挿入(前)」「新規挿入(末尾)」に改名、作成編集モード時のみ表示。</p>
 
             <p class="cl-ver">Z253C</p>
-            <p class="cl-desc">落ち着いた。「刻む」で拍ズレが起きるのを修正。作成編集モードでの編集を「読み込みボタン→入力→保存ボタン」形式から「選択したら中身表示、入力したら即保存」に変更。不要になった一部ボタンを撤去、保存に使っていたボタンは「新規小節群の挿入」に動作変更し、未編集の新規小節群は色を変えてわかりやすく。</p>
+            <p class="cl-desc">①デバッグコード削除。②刻む(×2/×3/×4)切替時にnextNoteTime・currentBeatを時間軸基準で再計算（metroStartTimeからの経過時間で次の拍位置を求める）。③並べ替えボタンの動作安定化。④作成編集モード仕様変更：小節群選択で即時読み込み、フォーム変更でリアルタイム保存(300msデバウンス)、上書きボタン廃止、前に挿入/末尾に追加を新規作成ボタンに変更(BPM120・1小節のデフォルト値)、未編集小節群を枠色変更で表示、「選択中を読み込み」「入力内容クリア」ボタン撤去。</p>
 
             <p class="cl-ver">Z252C</p>
-            <p class="cl-desc">とりあえず再生出来たのと週間利用制限に達したので、数日かけて落ち着いて今後を考える。</p>
+            <p class="cl-desc">expandRepeatのmaxPass計算を修正：maxBracket→maxBracket+1が正しい（最終passは全カッコスキップして通過）。bracketなしの単純リピートはmaxPass=1で展開なし。折り返しロジックを「lastBracket演奏後にpassCounts++してrepeat_startへ戻る」シンプルな形に整理。</p>
+
+            <p class="cl-ver">Z251C</p>
+            <p class="cl-desc">デバッグログを強化：[songData repeat構造]でbracket/segno等のmarkTypeとrepeatPassesをコンソールに出力。passScheduleTableとsetPassMapを整理・統一。</p>
+
+            <p class="cl-ver">Z250C</p>
+            <p class="cl-desc">passScheduleTable（setIndex→maxPass+starts）をcompileSong末尾で構築し、ピッカーpass表示・再生開始インデックスをこのテーブルから直接参照する方式に統一。findIndex不要になり型不一致バグも解消。コーダ記号(𝄌)のサイズをtoCoda=1.4rem/coda=1.8rem に拡大。デバッグログを追加（確認後削除予定）。</p>
+
+            <p class="cl-ver">Z249C</p>
+            <p class="cl-desc">ピッカーのpass計算をsongDataからfullSongNotes（expandRepeat結果）ベースに変更。compileSong末尾でsetPassMap(setIndex→maxPass)を構築。syncPickerTo・onPickerScrollをsetPassMap参照に切り替え。songStartingPassのparseInt適用を統一。古いコメントを整理。</p>
+
+            <p class="cl-ver">Z248C</p>
+            <p class="cl-desc">expandRepeat 2点修正。①bracketスキップを「次のbracketまで飛ぶ」→「このbracket1小節だけi++」に変更（カッコ間の通常小節が消えるバグ修正）。②toCodaをpushSetで演奏してからコーダへジャンプするよう修正。実楽譜22セットでNode.jsトレース検証済み（完全一致）。</p>
+
+            <p class="cl-ver">Z247C</p>
+            <p class="cl-desc">expandRepeatをスタック方式に完全書き直し。repeatStackで現在アクティブなリピート階層を管理、getLastBracketForPass()で「この周回で通る最後のbracket」を動的に求め、そのbracketを演奏した直後に折り返しを発動。実楽譜19セットでNode.jsトレース検証済み（完全一致）。</p>
+
+            <p class="cl-ver">Z246C</p>
+            <p class="cl-desc">expandRepeatのcheckFoldback条件を「pos > lastBracketIdx」から「pos >= lastBracketIdx」に修正。bracketスキップ後の折り返し判定も同様に「i-1 >= lastBracketIdx」に統一。実楽譜データでトレース検証済み（全21セット・完全一致）。</p>
+
+            <p class="cl-ver">Z245C</p>
+            <p class="cl-desc">expandRepeatを正しいスゴロク方式に再実装。getBlockStart/getBlockInfo/checkFoldbackヘルパーでブロック判定を明確化。bracketスキップ後にもcheckFoldbackを適用し折り返し漏れを修正。guard上限(200000)で無限ループを確実防止。</p>
+
+            <p class="cl-ver">Z244C</p>
+            <p class="cl-desc">expandRepeatをスゴロク方式（単一whileループ・1小節ずつ評価・内部ブロックループ廃止）に完全書き直し。D.S./toコーダジャンプをブロック展開から完全分離。passCountマップで通過回数を管理しbracketスキップ・repeat折り返しを実現。再生開始findIndexのsongStartingPassをparseIntで明示数値変換し型不一致バグを修正。</p>
 
             <p class="cl-ver">Z243C</p>
-            <p class="cl-desc">わざわざ複数AIを使ってセーニョとコーダの記号描画審査会を行ったのに、unicodeで出せることに気づいて修正。</p>
+            <p class="cl-desc">①コーダ記号をSVGからUnicode𝄌に変更。②セーニョを枠内左上・コーダを枠内左上に配置統一。③ピッカーのD.S./toコーダ記号を名前の右側に移動。④expandRepeatを全面書き直し：ノートにpass(通算通過回数)を付与、D.S.→セーニョジャンプ・toコーダ→コーダジャンプのロジックをブロック展開と分離して正しく実装。⑤再生開始findIndexをpassプロパティで検索するよう修正。</p>
+
+            <p class="cl-ver">Z242C</p>
+            <p class="cl-desc">セーニョ記号をSVGからUnicode文字𝄋に変更（Grok方式採用）。ピッカーにセーニョ(𝄋)・D.S.・to⊕・コーダ(⊕)記号を表示。expandRepeat内のblockEnd判定を修正。</p>
 
             <p class="cl-ver">Z241C</p>
-            <p class="cl-desc">セーニョ・コーダを実装開始。</p>
+            <p class="cl-desc">セーニョ・コーダを実装。markTypeに segno/dalSegno/toCoda/coda を追加。楽譜ブロックへのSVG記号描画（セーニョ=S字カーブ+点、コーダ=丸十字）、リピート設定UIへの選択肢追加、expandRepeat()でD.S.→セーニョへ戻り・toコーダ→コーダへジャンプの展開ロジックを実装。</p>
 
             <p class="cl-ver">Z240C</p>
-            <p class="cl-desc">リピート記号の色の調整。</p>
+            <p class="cl-desc">グリーンテーマのbubble-colorを紫(#7b3fa0)から暗めの茶色(#6b3d1e)に変更。</p>
+
+            <p class="cl-ver">Z239C</p>
+            <p class="cl-desc">リピート記号（楽譜SVG・volta罫線・ピッカー）の表示色をprimary-colorからbubble-colorに変更。テーマによらず背景から浮き立つ色になった。</p>
 
             <p class="cl-ver">Z238C</p>
-            <p class="cl-desc">このあたりではリピートのカッコの太線と細線と：の位置関係を何度も間違われて盛大にツッコミを入れています。</p>
+            <p class="cl-desc">SVGリピート記号の構成を正しく修正。開始記号：左から太線・細線・点。終了記号：左から点・細線・太線。</p>
+
+            <p class="cl-ver">Z237C</p>
+            <p class="cl-desc">SVGリピート記号の点位置を修正。点は常に太線の内側（太線に隣接する側）に配置。</p>
+
+            <p class="cl-ver">Z236C</p>
+            <p class="cl-desc">リピートUI修正。①SVG記号の太線・細線・点の向きを正しく修正。②volta罫線をブロック内部に収め幅を狭く。③リピート設定オーバーレイをsong-edit-mode全体（ボタン群含む）を覆う位置に移動し、オーバーレイ中の前に挿入／上書き／末尾追加ボタン誤操作を防止。④ヒント文を削除し選択中名をタイトル横に表示。⑤ピッカーのリピート記号を2倍サイズに拡大。</p>
 
             <p class="cl-ver">Z235C</p>
-            <p class="cl-desc">リピートの入力を即時保存式に変更、再生ロールにもリピートマーク表示。</p>
+            <p class="cl-desc">リピートUIを大幅刷新。①リピート設定がオーバーレイ方式（詳細フォームを覆う）になり、小節群タップで即時読み込み・変更即時反映。②リピート設定ボタンのアイコンを𝄆に変更。③楽譜のリピート開始記号をブロック外側左にSVGで縦長表示。④カッコ付き小節群にブロック外側右に反転記号、上部にvolta罫線と番号を表示。⑤ピッカーのセット名にリピート記号を付加。</p>
+
+            <p class="cl-ver">Z234C</p>
+            <p class="cl-desc">リピート展開のnone小節pass判定を修正（bracket前は全pass、bracket後は直後bracketと同じpass）。passロールのpointer-events修正。</p>
+
+            <p class="cl-ver">Z233C</p>
+            <p class="cl-desc">リピート展開のmaxPassをmax(repeatPasses)+1に修正。全カッコをスキップして通過するpassを正しく生成し、ブロック後の小節群へ進めるよう修正。</p>
+
+            <p class="cl-ver">Z232C</p>
+            <p class="cl-desc">（デバッグ版）</p>
+
+            <p class="cl-ver">Z231C</p>
+            <p class="cl-desc">リピート展開ロジックを修正。カッコ間・カッコ後の通常小節のpass判定を正確に実装（直前カッコのmax(pass)+1以上のpassのみ演奏）。</p>
+
+            <p class="cl-ver">Z230C</p>
+            <p class="cl-desc">リピートブロック終了判定を「次のrepeat_startまで」に変更。1・2カッコの間に通常小節が挟まっても正しく展開。デバッグ出力を削除。</p>
+
+            <p class="cl-ver">Z229C</p>
+            <p class="cl-desc">リピートパネルを開かずに上書き保存するとmarkTypeがnoneに書き戻される問題を修正。デバッグ出力を追加（確認後削除予定）。</p>
 
             <p class="cl-ver">Z228C</p>
-            <p class="cl-desc">ここからしばらく正常動作を目指して奮闘しつつ見た目も調整。</p>
+            <p class="cl-desc">リピート展開ロジック修正（ブロック終了判定：最後のbracket直後で終了）。ピッカーの回数ロールを非表示時も幅確保（位置ずれ防止）。</p>
 
             <p class="cl-ver">Z227C</p>
-            <p class="cl-desc">リピート記号の入力機能実装チャレンジ開始。まずは繰り返しのカッコ入力と表示、再生ロールの回数選択など。</p>
+            <p class="cl-desc">リピート記号（リピート開始・1/2カッコ）を実装。compileSong()でのリピート展開、ピッカーへの繰り返し回数ロール追加（左端）、楽譜ブロックへの記号描画、編集UIのリピート設定パネル追加。</p>
 
-                        <p class="cl-ver">Z226C</p>
+            <p class="cl-ver">Z226C</p>
             <p class="cl-desc">プログラムコードの掃除。</p>
 
             <p class="cl-ver">Z224C</p>
@@ -1527,7 +1488,7 @@
                     <p>はじめに──アプリの紹介とか、製作背景とか</p>
                     <br>
                     <p>最新版の配布元：<a id="distUrl" href="#" target="_blank" style="color:var(--primary-color);"></a></p>
-                    <script>(function(){var u=atob('aHR0cHM6Ly9uYW1hMTIyMy5naXRodWIuaW8vTmFtYU1ldG8vP29wZW5FeHRlcm5hbEJyb3dzZXI9MQ==');var a=document.getElementById('distUrl');a.href=u;a.textContent=u;})();</script>
+                    <script>(function(){var u=atob('aHR0cHM6Ly9uYW1hLmJ5ZXRob3N0MTAuY29tLz9vcGVuRXh0ZXJuYWxCcm93c2VyPTE=');var a=document.getElementById('distUrl');a.href=u;a.textContent=u;})();</script>
                     <p>スマートフォンで開く時、「PC版で開く」設定にした方が見やすいはずです。<a href="https://appllio.com/how-to-view-pc-websites-on-smartphone" target="_blank" style="color:var(--primary-color);">やり方の参考サイト</a></p>
                     <p>（最近のバージョンはスマートフォンモードでも割と見られるかも？）</p>
                     <br>
@@ -1569,7 +1530,7 @@
                     <p>なお、５／８なら「強弱弱中弱」のように鳴らすので、４／４だと実際は「強弱弱弱」ではなく「強中中中」になります。</p>
                     <p>自分で音を登録できる「カスタム音色」も３セットあるので、好きな音がなければ自作でどうぞ！　これも他人とデータ共有できます！</p>
                     <p class="intro-heading">■オフライン動作対応！</p>
-                    <p>ブラウザで動作するアプリです。アプリとしてインストールすれば通信環境がなくても起動できます（「設定」タブ下段から手順を確認できます）。</p>
+                    <p>ブラウザで動作するアプリですが、ダウンロードすれば通信環境がなくても起動できます（「設定」タブ下段から）。</p>
                     <p>データはすべて端末のブラウザ内に保存され、ネット上には保存されません。というか無料レンタルサーバーなので保存する機能そのものがないです。</p>
                     <p>なお、保存データはオンライン版とオフライン版では別になります。</p>
                     <p>切り替える際はフルエクスポート機能で全てを移行できます。</p>
@@ -1853,128 +1814,12 @@
     // カスタム音色のユーザー定義名
     const customSoundNames = { custom1: 'Custom 1', custom2: 'Custom 2', custom3: 'Custom 3' };
 
-
-    // ===== 楽譜エリア縦幅リサイズ =====
-    (function() {
-        const MIN_H = 80, MAX_H = 600, STORE_KEY = 'namameto_scoreview_h';
-        function applyHeight(h) {
-            h = Math.min(MAX_H, Math.max(MIN_H, h));
-            const el = document.getElementById('scoreView');
-            if (el) el.style.height = h + 'px';
-            return h;
-        }
-        function loadHeight() {
-            const saved = localStorage.getItem(STORE_KEY);
-            if (saved) applyHeight(parseInt(saved));
-        }
-        function initResizeHandle() {
-            const wrapper = document.getElementById('scoreView');
-            if (!wrapper) return;
-            const handle = document.getElementById('scoreResizeHandle');
-            if (!handle) return;
-            let startY = 0, startH = 0, dragging = false;
-            function onStart(e) {
-                dragging = true;
-                startY = (e.touches ? e.touches[0].clientY : e.clientY);
-                startH = wrapper.offsetHeight;
-                handle.classList.add('dragging');
-                e.preventDefault();
-            }
-            function onMove(e) {
-                if (!dragging) return;
-                const y = (e.touches ? e.touches[0].clientY : e.clientY);
-                const newH = applyHeight(startH + (y - startY));
-                localStorage.setItem(STORE_KEY, newH);
-                e.preventDefault();
-            }
-            function onEnd() {
-                if (!dragging) return;
-                dragging = false;
-                handle.classList.remove('dragging');
-            }
-            handle.addEventListener('mousedown',  onStart, { passive: false });
-            handle.addEventListener('touchstart',  onStart, { passive: false });
-            window.addEventListener('mousemove',  onMove,  { passive: false });
-            window.addEventListener('touchmove',  onMove,  { passive: false });
-            window.addEventListener('mouseup',    onEnd);
-            window.addEventListener('touchend',   onEnd);
-        }
-        document.addEventListener('DOMContentLoaded', function() {
-            loadHeight();
-            initResizeHandle();
-        });
-    })();
-
-
-    // ===== スクロール余白インジケーター =====
-    (function() {
-        const FADE_MS   = 1000;   // 各矢印が完全に消えるまでの時間(ms)
-        const DELAY2    = 340;    // 1つ目→2つ目の表示タイミング差(ms) (1s*0.34)
-        const DELAY3    = 680;    // 1つ目→3つ目の表示タイミング差(ms) (1s*0.68)
-        const MAX_ALPHA = 0.38;   // 最大不透明度（うっすら）
-
-        const IDS_UP   = ['siUp1','siUp2','siUp3'];
-        const IDS_DOWN = ['siDn1','siDn2','siDn3'];
-
-        function setAlpha(ids, alpha) {
-            ids.forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.style.opacity = alpha;
-            });
-        }
-
-        function animateCycle() {
-            const t0 = performance.now();
-
-            function tick(now) {
-                const elapsed = now - t0;
-
-                // arrow1: 0→FADE_MS で MAX_ALPHA→0
-                const a1 = Math.max(0, MAX_ALPHA * (1 - elapsed / FADE_MS));
-                // arrow2: DELAY2後に開始
-                const a2 = elapsed < DELAY2 ? 0 : Math.max(0, MAX_ALPHA * (1 - (elapsed - DELAY2) / FADE_MS));
-                // arrow3: DELAY3後に開始
-                const a3 = elapsed < DELAY3 ? 0 : Math.max(0, MAX_ALPHA * (1 - (elapsed - DELAY3) / FADE_MS));
-
-                setAlpha(IDS_UP,   a1);
-                setAlpha(['siUp2'], a2);
-                setAlpha(['siUp3'], a3);
-
-                setAlpha(IDS_DOWN, a1);
-                setAlpha(['siDn2'], a2);
-                setAlpha(['siDn3'], a3);
-
-                // siUp1/siDn1はa1のまま（既にsetAlphaで設定済み）
-                // siUp2/siDn2をa2で上書き
-                const up2 = document.getElementById('siUp2');
-                const dn2 = document.getElementById('siDn2');
-                const up3 = document.getElementById('siUp3');
-                const dn3 = document.getElementById('siDn3');
-                if (up2) up2.style.opacity = a2;
-                if (dn2) dn2.style.opacity = a2;
-                if (up3) up3.style.opacity = a3;
-                if (dn3) dn3.style.opacity = a3;
-
-                if (elapsed < DELAY3 + FADE_MS) {
-                    requestAnimationFrame(tick);
-                } else {
-                    // 全消えしたら少し待ってループ
-                    setTimeout(animateCycle, 80);
-                }
-            }
-            requestAnimationFrame(tick);
-        }
-
-        document.addEventListener('DOMContentLoaded', animateCycle);
-    })();
-
     const i18n = {
         ja: {
-            appTitleText: "NamaMeto",
             help_close: "画面をタップして閉じる", tab_metro: "メトロノーム", tab_setting: "設定", tab_song: "楽曲モード",
             help_flash_vibe: "👁️ 視覚や振動でリズムを取れます", opt_flash: "フラッシュ", opt_vibrate: "バイブ", offset_flash: "フラッシュ補正:", offset_vibe: "バイブ補正:",
-            help_scroll_input: "👆 マウスホイール・スワイプで変更可能", label_sound: "音色", label_beats: "拍子",
-            help_score_calc: "🎼 楽譜の指定からBPMを自動計算！", calc_title: "🎼 楽譜テンポ換算 (分母指定)", note_dot_half: "付点2分音符 (d.)", note_half: "2分音符 (d)", note_dot_quarter: "付点4分 (♩.)", note_quarter: "4分音符 (♩)", note_dot_eighth: "付点8分 (♪.)", note_eighth: "8分音符 (♪)",
+            help_scroll_input: "👆 マウスホイール・スワイプで変更可能", label_sound: "音色 (Sound)", label_beats: "拍子 (Beats)",
+            help_score_calc: "🎼 楽譜の指定からBPMを自動計算！", calc_title: "🎼 楽譜テンポ換算 (分母指定)", note_half: "2分音符 (d)", note_dot_quarter: "付点4分 (♩.)", note_quarter: "4分音符 (♩)", note_dot_eighth: "付点8分 (♪.)", note_eighth: "8分音符 (♪)",
             calc_target: "刻む音符:", note_dot_quarter_f: "付点4分音符", note_quarter_f: "4分音符", note_eighth_f: "8分音符", note_sixteenth_f: "16分音符", note_triplet_f: "3連符", calc_apply: "メトロノームに反映",
             help_dial: "🔄 なぞって回せる！", help_longpress: "⚡ 長押しで連続変化！",
             help_tap_tempo: "👆 タップした間隔で\nテンポを自動計測します", btn_tap_tempo: "タップテンポ",
@@ -1987,11 +1832,11 @@
             help_song_picker: "ドラムロールを回して再生開始位置を決めます", label_play_start: "▶ 再生開始位置（小節群 / 小節）", help_score_view: "🎼 作成した小節群が並びます。タップで選択！長押しで内容確認！",
             label_precount: "予備拍\nカウントイン:", precount_auto: "自動 (時間計算)", precount_manual: "手動 (小節数)", precount_off: "オフ",
             precount_min_sec: "最低時間:", unit_sec: "秒", help_min_time: "BPMや拍子から自動計算される予備拍の「最低秒数」です", help_tts: "Aメロ等、数字以外の小節群の名前を読み上げます", label_tts: "🔊 音声読み上げ",
-            help_song_form: "ここで小節群の内容を入力します", btn_load_form: "▲ 選択中を読み込み <span style='color:#ff6b6b;'>▽</span>", btn_clear_form: "▼ 入力内容クリア ▼",
+            help_song_form: "ここで設定を入力し、「追加」で楽譜を作ります", btn_load_form: "▲ 選択中を読み込み <span style='color:#ff6b6b;'>▽</span>", btn_clear_form: "▼ 入力内容クリア ▼",
             overlay_multi_mode: "複数選択モード中", overlay_tap_cancel: "ここをタップで解除",
-            overlay_copy_mode: "📄 コピーモード中", overlay_tap_cancel_copy: "ここをタップで解除（貼り付けは上の挿入ボタン）",
+            overlay_copy_mode: "📄 コピーモード中", overlay_tap_cancel_copy: "ここをタップで解除（貼り付けは下部ボタン）",
             label_set_name: "小節群 名", label_set_name_sub: "(※未入力時は開始小節番号)", ph_set_name: "A, B, Intro など",
-            label_bpm_base: "BPM基準", label_bpm_base_short: "拍・テンポ", label_tempo: "テンポ (BPM)", label_time_sig: "拍子", label_bar_count: "小節数", help_guide_click: "細かくリズムを刻むガイド音を追加します", label_guide_click: "細かく刻む", label_complex_sig: "複雑な拍子", help_complex_tip: "💡複数の拍子記号を繋げた変拍子を作れます<br>自由なビートパターンも作れます",
+            label_bpm_base: "BPM基準", label_tempo: "テンポ (BPM)", label_time_sig: "拍子", label_bar_count: "小節数", help_guide_click: "細かくリズムを刻むガイド音を追加します", label_guide_click: "細かく刻む", label_complex_sig: "複雑な拍子", help_complex_tip: "💡複数の拍子記号を繋げた変拍子を作れます<br>自由なビートパターンも作れます",
             label_tempo_change: "rit. / accel.", label_target_bpm: "到着BPM:", label_curve: "変化カーブ:", curve_linear: "標準 (直線的)", curve_early: "手前で強く変化", curve_late: "後ろで強く変化",
             btn_insert: "前に挿入", btn_overwrite: "上書き", btn_append: "末尾に追加", help_menu_fab: "楽曲の保存・読込やクリア",
             btn_delete: "削除", btn_cancel: "キャンセル", title_song_menu: "楽曲メニュー", ph_song_name: "楽曲名", btn_save_as: "別名保存", btn_save_over: "上書き保存",
@@ -2002,7 +1847,6 @@
             btn_export_full: "フルエクスポート (.nmf)", btn_export_song: "単曲エクスポート (.nm1)", btn_export_sound: "音色エクスポート (.nms)", btn_import: "インポート (.nmf / .nm1 / .nms)", prompt_filename: "ファイル名を入力", alert_imported: "インポート完了しました", title_import_nmf: "フルインポート設定", title_import_nms: "音色インポート", chk_metro: "メトロノーム設定・プリセット", chk_sound: "オリジナル音色", chk_song: "楽曲データ (追加)", btn_exec_import: "実行", help_export: "💾 データをファイルにバックアップ・復元します", help_custom_bpm: "⚡ メトロノームタブの固定増減ボタンの値を変更できます", help_tts_settings: "🔊 楽曲モードの読み上げ音声を調整します\n詳細設定では「何を読み上げるか」を選べます", label_tts_rate: "速さ:", label_tts_pitch: "高さ:", btn_tts_preview: "試聴",
             unit_bars_short: "小節",
             label_next_tempo: "次のテンポへ向かう",
-            help_ratio_btn: "練習用に再生速度を変更できます",
             label_ratio_btn: "倍率",
             label_ratio_modal_title: "テンポ倍率",
             label_ratio_help1: "練習用に全体の再生速度を調整できます",
@@ -2023,7 +1867,7 @@
             theme_navy_name: "🌊 ネイビー",
             theme_green_name: "🍃 グリーン",
             label_sync_offset: "⚙️ ズレ補正 (ms)",
-            label_dl_sound_set: "音色セット例のダウンロード (Google Drive)",
+            label_dl_sound_set: "音色セット例のダウンロード",
             tts_read_names: "小節群の名前を読み上げる（数字の時を除く）",
             tts_len_prefix: "名前が",
             tts_len_suffix: "文字以下の時だけ読み上げる",
@@ -2047,21 +1891,21 @@
             vol_tts_name: "💬 名前/掛け声",
             vol_tts_count: "🔢 カウント",
             link_dl_app: "このアプリ(html)をダウンロード",
-            link_add_home: "このメトロノームをアプリとしてインストールするには",
-            add_home_title: "📲 アプリとしてインストールするには",
-            add_home_desc: "以下の手順でホーム画面にアイコンを追加できます。インストール後はオフラインでも使用できます。<br>（ネット接続時は自動で最新版に更新されることがあります）",
+            link_add_home: "ダウンロードしたhtmlをホーム画面に追加するには",
+            add_home_title: "📲 ホーム画面への追加手順",
+            add_home_desc: "ダウンロードしたHTMLファイルをブラウザで開いた後、以下の手順でホーム画面（またはデスクトップ）に追加できます。",
             add_home_ios_title: "🍎 iPhone / iPad (Safari)",
-            add_home_ios_1: "まず <a id='stableUrlLinkIos' href='#' target='_blank' style='color:var(--primary-color);'>NamaMeto.html（安定版）</a> を別タブで開く",
+            add_home_ios_1: "ダウンロードしたHTMLファイルをSafariで開く",
             add_home_ios_2: "画面下部の 共有ボタン <strong>□↑</strong> をタップ",
             add_home_ios_3: "「ホーム画面に追加」をタップ",
             add_home_ios_4: "名前を確認して「追加」をタップ",
             add_home_android_title: "🤖 Android (Chrome)",
-            add_home_android_1: "まず <a id='stableUrlLinkAndroid' href='#' target='_blank' style='color:var(--primary-color);'>NamaMeto.html（安定版）</a> を別タブで開く",
+            add_home_android_1: "ダウンロードしたHTMLをChromeで開く",
             add_home_android_2: "右上メニュー <strong>⋮</strong> をタップ",
-            add_home_android_3: "「ホーム画面に追加」→「インストール」をタップ（環境により表記が異なる場合あり）",
-            add_home_pc_title: "💻 PC (Windows / Mac) - Chrome / Edge",
-            add_home_pc_1: "<a id='stableUrlLinkPc' href='#' target='_blank' style='color:var(--primary-color);'>NamaMeto.html（安定版）</a> を別タブで開く",
-            add_home_pc_2: "アドレスバー右端のインストールアイコン（または ⋮ メニュー）からインストール",
+            add_home_android_3: "「ホーム画面に追加」をタップ",
+            add_home_pc_title: "💻 PC (Windows / Mac)",
+            add_home_pc_1: "ダウンロードした <strong>NamaMeto.html</strong> をデスクトップに移動",
+            add_home_pc_2: "ダブルクリックするとブラウザで開きます",
             ph_preset_name: "名前（省略可）",
             datahelp_title: "💾 データの入出力について",
             datahelp_full_title: "📤 フルエクスポート (.nmf)",
@@ -2088,35 +1932,13 @@
             fmhelp_copy_label: "複製",
             fmhelp_copy_desc: "楽曲をコピーして新しいファイルとして保存します。",
             fmhelp_del_label: "削除",
-            fmhelp_del_desc: "楽曲データを削除します。削除すると元に戻せません。",
-            tts_voice_count_label: "１、２、３、４…の音声カウント",
-            vol_ui_sound: "🖱️ 操作音",
-            btn_insert_before: "新規挿入(前)",
-            btn_insert_add: "新規挿入(末尾)",
-            btn_insert_before_copy: "挿入(前)",
-            btn_insert_add_copy: "挿入(末尾)",
-            ro_none: "なし（通常）",
-            ro_repeat_left: "リピート左括弧",
-            ro_repeat_left_desc: "演奏回数（このブロックを合計何回演奏するか）",
-            ro_repeat_times_prefix: "合計",
-            ro_repeat_times_suffix: "回演奏",
-            ro_repeat_right: "リピート右括弧",
-            ro_volta: "反復番号括弧",
-            ro_volta_desc_num: "番号（何回目の通過で演奏するか）",
-            ro_volta_max_label: "最大番号:",
-            ro_segno: "セーニョ（着地点）",
-            ro_dal_segno: "D.S.（セーニョに戻る）",
-            ro_to_coda: "to コーダ（コーダへ飛ぶ）",
-            ro_coda: "コーダ（着地点）",
-            ro_title: "𝄆 リピート設定",
-            ro_close: "✕ 閉じる"
+            fmhelp_del_desc: "楽曲データを削除します。削除すると元に戻せません。"
         },
         en: {
-            appTitleText: "NamaMetro",
             help_close: "Tap screen to close", tab_metro: "Metronome", tab_setting: "Settings", tab_song: "Song Mode",
             help_flash_vibe: "👁️ Feel the rhythm with visuals & vibration", opt_flash: "Flash", opt_vibrate: "Vibrate", offset_flash: "Flash Offset:", offset_vibe: "Vibe Offset:",
             help_scroll_input: "👆 Scroll or swipe to change values", label_sound: "Sound", label_beats: "Beats",
-            help_score_calc: "🎼 Auto-calculate BPM from sheet music!", calc_title: "🎼 BPM Calculator (Note Value)", note_dot_half: "Dot Half (d.)", note_half: "Half (d)", note_dot_quarter: "Dot Quarter (♩.)", note_quarter: "Quarter (♩)", note_dot_eighth: "Dot Eighth (♪.)", note_eighth: "Eighth (♪)",
+            help_score_calc: "🎼 Auto-calculate BPM from sheet music!", calc_title: "🎼 BPM Calculator (Note Value)", note_half: "Half (d)", note_dot_quarter: "Dot Quarter (♩.)", note_quarter: "Quarter (♩)", note_dot_eighth: "Dot Eighth (♪.)", note_eighth: "Eighth (♪)",
             calc_target: "Click Base:", note_dot_quarter_f: "Dot Quarter", note_quarter_f: "Quarter", note_eighth_f: "Eighth", note_sixteenth_f: "16th", note_triplet_f: "Triplet", calc_apply: "Apply to Metronome",
             help_dial: "🔄 Swipe to rotate!", help_longpress: "⚡ Long press to adjust fast!",
             help_tap_tempo: "👆 Tap to measure tempo\nfrom your tap intervals", btn_tap_tempo: "Tap Tempo",
@@ -2125,16 +1947,16 @@
             help_theme: "🎨 Change app color theme",
             help_custom_sound: "🎧 Set and preview custom sounds per beat", desc_custom_sound: "Load audio files from your device.<br>(Recommended: Short .mp3/.wav under 1MB)",
             custom_sound_h: "H", custom_sound_m: "M", custom_sound_l: "L", label_custom_file: "File", label_custom_offset: "Offset",
-            help_song_title: "※ What is a 'Measure Group'?", help_song_text: "It's a section with the same tempo and time signature. Chain them together to build a full practice metronome for an entire song. Each group can be named — like a rehearsal mark or 'Verse A' — and if TTS is enabled, the name will be announced aloud. When left unnamed, the measure number is used automatically.", tab_play_mode: "▶ Play Mode", tab_edit_mode: "✎ Edit Mode",
-            help_song_picker: "Scroll to set the starting playback position", label_play_start: "▶ Start Position (Group / Measure)", help_score_view: "🎼 Your measure groups appear here. Tap to select, long-press to preview!",
+            help_song_title: "※ What is a 'Measure Group'?", help_song_text: "It's a section with the same tempo and time signature. You can name them (e.g., Intro, Chorus), manage by measure numbers, or use them as rehearsal marks. Chain them to build a song.", tab_play_mode: "▶ Play Mode", tab_edit_mode: "✎ Edit Mode",
+            help_song_picker: "Scroll to set the starting playback position", label_play_start: "▶ Start Position (Group / Measure)", help_score_view: "🎼 Tap to select. Long-press to preview!",
             label_precount: "Count-in:", precount_auto: "Auto (Time)", precount_manual: "Manual (Bars)", precount_off: "Off",
-            precount_min_sec: "Min Time:", unit_sec: "sec", help_min_time: "Minimum duration for auto-calculated count-in.", help_tts: "Reads out group names that are not numbers.", label_tts: "🔊 Voice (TTS)",
+            precount_min_sec: "Min Time:", unit_sec: "sec", help_min_time: "Minimum duration for auto-calculated count-in.", help_tts: "Reads out group names that are not numbers.", label_tts: "TTS",
             help_song_form: "Configure settings here and 'Add' to build sheet", btn_load_form: "▲ Load Selected <span style='color:#ff6b6b;'>▽</span>", btn_clear_form: "▼ Clear Inputs ▼",
             overlay_multi_mode: "Multi-Select Mode", overlay_tap_cancel: "Tap here to exit",
             overlay_copy_mode: "📄 Copy Mode", overlay_tap_cancel_copy: "Tap here to exit (Paste using buttons below)",
             label_set_name: "Group Name", label_set_name_sub: "(※Defaults to start measure number)", ph_set_name: "e.g., A, B, Intro",
-            label_bpm_base: "BPM Base Note", label_bpm_base_short: "Beat/Tempo", label_tempo: "Tempo (BPM)", label_time_sig: "Time Sig.", label_bar_count: "Measures", help_guide_click: "Add guide clicks", label_guide_click: "Guide Clicks", label_complex_sig: "Complex Sig.", help_complex_tip: "💡 Create odd meters by chaining signatures<br>Custom beat patterns are also possible",
-            label_tempo_change: "rit. / accel.", label_target_bpm: "Target BPM:", label_curve: "Curve:", curve_linear: "Linear", curve_early: "Faster change at start", curve_late: "Faster change at end",
+            label_bpm_base: "BPM Base Note", label_tempo: "Tempo (BPM)", label_time_sig: "Time Sig.", label_bar_count: "Measures", help_guide_click: "Add guide clicks", label_guide_click: "Guide Clicks", label_complex_sig: "Complex Sig.", help_complex_tip: "💡 Create odd meters by chaining signatures<br>Custom beat patterns are also possible",
+            label_tempo_change: "rit. / accel.", label_target_bpm: "Target BPM:", label_curve: "Curve:", curve_linear: "Linear", curve_early: "Early", curve_late: "Late",
             btn_insert: "Insert", btn_overwrite: "Overwrite", btn_append: "Add", help_menu_fab: "Save/load songs, or clear all data", help_ratio_btn: "Change playback speed for practice",
             btn_delete: "Delete", btn_cancel: "Cancel", title_song_menu: "Song Menu", ph_song_name: "Song Title", btn_save_as: "Save As", btn_save_over: "Overwrite Save",
             title_offset_bar: "Measure Number Offset", label_offset_bar_end: "Start from measure #", btn_clear_all: "New Song (Clear Current)", confirm_overwrite_load: "This will overwrite the song you are currently editing. Continue?", btn_close: "Close",
@@ -2152,7 +1974,7 @@
             label_ratio_floor_suffix: "or less → 100%",
             acc_theme: "🎨 Theme Color",
             acc_flash_vibe: "👁️ Flash / Vibrate",
-            acc_custom_sound: "🎧 Custom Sound Setup",
+            acc_custom_sound: "🎧 Custom Sound",
             acc_data_io: "💾 Data Import/Export",
             acc_custom_bpm: "⚡ Custom Tempo Buttons",
             acc_tts: "💬 Speech Settings",
@@ -2164,13 +1986,13 @@
             theme_navy_name: "🌊 Navy",
             theme_green_name: "🍃 Green",
             label_sync_offset: "⚙️ Sync Offset (ms)",
-            label_dl_sound_set: "Download Sound Set Examples (Google Drive)",
+            label_dl_sound_set: "Download Sound Set Examples",
             tts_read_names: "Read group names (except numbers)",
             tts_len_prefix: "Only read names with",
             tts_len_suffix: "characters or fewer",
             tts_finish_label: "Announce when playback finishes",
             tts_finish_ph: "e.g. Great work!",
-            tts_count_precount: "Count aloud in the last count-in bar",
+            tts_count_precount: "Count in last pre-count bar",
             tts_count_rit: "Count during rit. / accel.",
             tts_count_always: "Always count",
             tts_credit: "Count audio by",
@@ -2188,21 +2010,21 @@
             vol_tts_name: "💬 Name/Cue",
             vol_tts_count: "🔢 Count",
             link_dl_app: "Download this app (html)",
-            link_add_home: "How to install this metronome as an app",
-            add_home_title: "📲 How to Install as an App",
-            add_home_desc: "You can add an icon to your home screen. Once installed, it works offline too.<br>(May auto-update to the latest version when connected to the internet)",
+            link_add_home: "How to add the downloaded html to your home screen",
+            add_home_title: "📲 How to Add to Home Screen",
+            add_home_desc: "Open the downloaded HTML file in your browser, then follow these steps to add it to your home screen (or desktop).",
             add_home_ios_title: "🍎 iPhone / iPad (Safari)",
-            add_home_ios_1: "Open <a id='stableUrlLinkIosEn' href='#' target='_blank' style='color:var(--primary-color);'>NamaMeto.html (stable)</a> in a new tab",
+            add_home_ios_1: "Open the downloaded HTML file in Safari",
             add_home_ios_2: "Tap the Share button <strong>□↑</strong> at the bottom",
             add_home_ios_3: "Tap \"Add to Home Screen\"",
             add_home_ios_4: "Confirm the name and tap \"Add\"",
             add_home_android_title: "🤖 Android (Chrome)",
-            add_home_android_1: "Open <a id='stableUrlLinkAndroidEn' href='#' target='_blank' style='color:var(--primary-color);'>NamaMeto.html (stable)</a> in a new tab",
+            add_home_android_1: "Open the downloaded HTML in Chrome",
             add_home_android_2: "Tap the menu <strong>⋮</strong> in the top right",
-            add_home_android_3: "Tap \"Add to Home Screen\" → \"Install\" (wording may vary by device)",
-            add_home_pc_title: "💻 PC (Windows / Mac) - Chrome / Edge",
-            add_home_pc_1: "Open <a id='stableUrlLinkPcEn' href='#' target='_blank' style='color:var(--primary-color);'>NamaMeto.html (stable)</a> in a new tab",
-            add_home_pc_2: "Click the install icon in the address bar (or use the ⋮ menu)",
+            add_home_android_3: "Tap \"Add to Home Screen\"",
+            add_home_pc_title: "💻 PC (Windows / Mac)",
+            add_home_pc_1: "Move <strong>NamaMeto.html</strong> to your desktop",
+            add_home_pc_2: "Double-click it to open in your browser",
             ph_preset_name: "Name (optional)",
             datahelp_title: "💾 About Data Import/Export",
             datahelp_full_title: "📤 Full Export (.nmf)",
@@ -2229,28 +2051,7 @@
             fmhelp_copy_label: "Duplicate",
             fmhelp_copy_desc: "Copy the song and save it as a new file.",
             fmhelp_del_label: "Delete",
-            fmhelp_del_desc: "Delete the song data. This cannot be undone.",
-            tts_voice_count_label: "1, 2, 3, 4… Voice Count",
-            vol_ui_sound: "🖱️ UI Sound",
-            btn_insert_before: "New Insert (Before)",
-            btn_insert_add: "New Insert (End)",
-            btn_insert_before_copy: "Paste (Before)",
-            btn_insert_add_copy: "Paste (End)",
-            ro_none: "None (Normal)",
-            ro_repeat_left: "Repeat Start",
-            ro_repeat_left_desc: "Total plays (how many times to play this block in total)",
-            ro_repeat_times_prefix: "Total",
-            ro_repeat_times_suffix: "plays",
-            ro_repeat_right: "Repeat End",
-            ro_volta: "Volta Bracket",
-            ro_volta_desc_num: "Pass number (which pass through to play this measure)",
-            ro_volta_max_label: "Max number:",
-            ro_segno: "Segno (Landing point)",
-            ro_dal_segno: "D.S. (Return to Segno)",
-            ro_to_coda: "To Coda (Jump to Coda)",
-            ro_coda: "Coda (Landing point)",
-            ro_title: "𝄆 Repeat Settings",
-            ro_close: "✕ Close"
+            fmhelp_del_desc: "Delete the song data. This cannot be undone."
         }
     };
     let currentLang = 'ja';
@@ -2268,7 +2069,6 @@
         updateExportSoundButtonLabels();
         updateSongTimeBar();
         const wl = document.getElementById('wishlistLabel'); if(wl) wl.textContent = lang==='en' ? 'Wish list' : 'ほしいものリスト';
-        updateInsertBtnLabels();
     }
     function getText(key) { return i18n[currentLang][key] || key; }
 
@@ -3936,8 +3736,7 @@ const COUNT_AUDIO = {
     let currentComplexDividers = new Set(); // 区切り位置（拍子の境界インデックス）
     function toggleComplexMode() {
         const isC = document.getElementById('editComplexToggle').checked;
-        const _ssRow = document.getElementById('standardSigRow');
-        if (_ssRow) _ssRow.style.visibility = isC ? 'hidden' : '';
+        document.getElementById('standardSigPanel').style.display = isC ? 'none' : 'flex';
         document.getElementById('complexSigPanel').style.display = isC ? 'flex' : 'none';
         if (isC) { 
             document.getElementById('editClick').checked = false; 
@@ -4232,7 +4031,6 @@ const COUNT_AUDIO = {
                 moveBtns = `<div class="move-btn left" onclick="event.stopPropagation(); moveSongSet(-1)">◀</div><div class="move-btn right" onclick="event.stopPropagation(); moveSongSet(1)">▶</div>`;
             }
             let clickIcon = s.click ? `<div class="click-icon">♩</div>` : '';
-            let uneditedBadge = s._unedited ? '<div class="unedited-badge">新</div>' : '';
             
             const tsDen = s.timeSigDen || 4; const tsNum = s.timeSigNum || 4;
             let infoStr = `${tsNum}/${tsDen}`;
@@ -4256,7 +4054,7 @@ const COUNT_AUDIO = {
             const _bpmHtml = _ratioActive
                 ? `<span${_bpmStyle}>${_dispBpm}</span>`
                 : `${s.bpm}`;
-            b.innerHTML = `${moveBtns}${clickIcon}${uneditedBadge}<div class="block-name">${(!isNaN(s.name)&&s.name.trim()!=='') ? getAbsoluteBar(i) : getAbsoluteBar(i)+s.name}</div><div class="block-bars">┠ ${s.bars} ┨</div><div class="block-info">${infoStr} | ${_bpmHtml} ${ritTargetDisp}</div>`;
+            b.innerHTML = `${moveBtns}${clickIcon}<div class="block-name">${(!isNaN(s.name)&&s.name.trim()!=='') ? getAbsoluteBar(i) : getAbsoluteBar(i)+s.name}</div><div class="block-bars">┠ ${s.bars} ┨</div><div class="block-info">${infoStr} | ${_bpmHtml} ${ritTargetDisp}</div>`;
             tr.appendChild(b);
         });
         updateEditPlaceholder(); renderPicker(); checkScrollArrows(); updatePrecountDisp(); renderRepeatMarks();
@@ -4324,14 +4122,6 @@ const COUNT_AUDIO = {
         isCopyMode = !isCopyMode;
         const overlay = document.getElementById('copyOverlay');
         if (isCopyMode) {
-            // コピーON時：リピートモードを解除（排他）
-            if (isRepeatEditMode) {
-                isRepeatEditMode = false;
-                const ro = document.getElementById('repeatOverlay');
-                const rb = document.getElementById('repeatBtn');
-                if (ro) ro.classList.remove('active');
-                if (rb) rb.classList.remove('repeat-active');
-            }
             if (isMultiSelectMode) {
                 const orderMap = {}; songData.forEach((s,i) => orderMap[s.id] = i);
                 multiSelectedIds.sort((a,b) => orderMap[a] - orderMap[b]);
@@ -4340,9 +4130,7 @@ const COUNT_AUDIO = {
                 document.getElementById('multiSelectOverlay').classList.remove('active');
                 document.getElementById('trashBtn').classList.remove('blinking');
             } else {
-                const _src = songData.find(s => s.id === selectedSetId);
-                if (!_src) { isCopyMode = false; return; }
-                copiedSetData = [JSON.parse(JSON.stringify(_src))];
+                copiedSetData = [JSON.parse(JSON.stringify(songData.find(s => s.id === selectedSetId)))];
             }
             overlay.classList.add('active');
         } else {
@@ -4350,13 +4138,11 @@ const COUNT_AUDIO = {
         }
         renderSongScore();
         updateInsertBtnLabels();
-        updateFabActiveStates();
     }
     
     function cancelCopyMode() {
         isCopyMode = false; copiedSetData = null; document.getElementById('copyOverlay').classList.remove('active'); renderSongScore();
         updateInsertBtnLabels();
-        updateFabActiveStates();
     }
     
     function loadSelectedToForm() {
@@ -4432,11 +4218,11 @@ const COUNT_AUDIO = {
         const b2 = document.getElementById('btnInsertAdd');
         if (!b1 || !b2) return;
         if (isCopyMode) {
-            b1.textContent = getText('btn_insert_before_copy');
-            b2.textContent = getText('btn_insert_add_copy');
+            b1.textContent = '挿入(前)';
+            b2.textContent = '挿入(末尾)';
         } else {
-            b1.textContent = getText('btn_insert_before');
-            b2.textContent = getText('btn_insert_add');
+            b1.textContent = '新規挿入(前)';
+            b2.textContent = '新規挿入(末尾)';
         }
     }
 
@@ -4502,24 +4288,12 @@ const COUNT_AUDIO = {
         const overlay = document.getElementById('repeatOverlay');
         const btn = document.getElementById('repeatBtn');
         if (overlay) overlay.classList.toggle('active', isRepeatEditMode);
-        if (btn) btn.classList.toggle('repeat-active', isRepeatEditMode);
+        if (btn) btn.style.opacity = isRepeatEditMode ? '1' : '0.6';
         if (isRepeatEditMode) {
-            // リピートON時：コピーモードと複数選択モードを解除（排他）
-            if (isCopyMode) cancelCopyMode();
-            if (isMultiSelectMode) {
-                isMultiSelectMode = false; multiSelectedIds = [];
-                selectedSetId = _preMultiSelectId; _preMultiSelectId = null;
-                document.getElementById('multiSelectOverlay').classList.remove('active');
-                const msBtn = document.getElementById('multiSelBtn');
-                if (msBtn) msBtn.classList.remove('active');
-                document.getElementById('trashBtn').classList.remove('blinking');
-                renderSongScore();
-            }
             // 選択中の小節群があれば即読み込み
             if (selectedSetId) loadRepeatSettingsForId(selectedSetId);
             else document.getElementById('roSelectedName').textContent = '';
         }
-        updateFabActiveStates();
     }
 
     // リピートオーバーレイにid指定の小節群の設定を読み込む
@@ -4589,10 +4363,8 @@ const COUNT_AUDIO = {
         if (!isRepeatEditMode || !selectedSetId) return;
         const idx = songData.findIndex(x => x.id === selectedSetId);
         if (idx === -1) return;
-        pushUndoSnapshot(selectedSetId);  // 同一IDへの連続変更は1回扱い
         const val = document.querySelector('input[name="roRepeatType"]:checked')?.value || 'none';
         songData[idx].markType = val;
-        if (songData[idx]._unedited) { delete songData[idx]._unedited; }  // 新規扱い解除
         // 全リピートプロパティをまず完全クリア（旧データの混入を防ぐ）
         delete songData[idx].repeatTimes;
         delete songData[idx].voltaNums;
@@ -4945,30 +4717,10 @@ const COUNT_AUDIO = {
         }
     }
 
-
-    function updateFabActiveStates() {
-        const msBtn = document.getElementById('multiSelBtn');
-        const rpBtn = document.getElementById('repeatBtn');
-        const cpBtn = document.getElementById('copyBtn');
-        // 複数選択由来のコピー中（copiedSetData.length > 1）はmultiアニメーションも維持
-        const multiCopy = isCopyMode && copiedSetData && copiedSetData.length > 1;
-        if (msBtn) msBtn.classList.toggle('fab-active-multi',  isMultiSelectMode || multiCopy);
-        if (rpBtn) rpBtn.classList.toggle('fab-active-repeat', isRepeatEditMode);
-        if (cpBtn) cpBtn.classList.toggle('fab-active-copy',   isCopyMode);
-    }
-
     function enterMultiSelectMode() {
         isMultiSelectMode = !isMultiSelectMode; multiSelectedIds = [];
         if(isCopyMode) cancelCopyMode();
         if(isMultiSelectMode) {
-            // 複数選択ON時：リピートモードを解除（排他）
-            if (isRepeatEditMode) {
-                isRepeatEditMode = false;
-                const ro = document.getElementById('repeatOverlay');
-                const rb = document.getElementById('repeatBtn');
-                if (ro) ro.classList.remove('active');
-                if (rb) rb.classList.remove('repeat-active');
-            }
             // ON: 現在の単体選択を退避してクリア
             _preMultiSelectId = selectedSetId;
             selectedSetId = null;
@@ -4992,7 +4744,6 @@ const COUNT_AUDIO = {
             document.getElementById('trashBtn').classList.remove('blinking');
             if(msBtn) msBtn.classList.remove('active');
         }
-        updateFabActiveStates();
     }
     function confirmClearAll() {
         closeModal('songMenuModal');
@@ -5193,11 +4944,10 @@ const COUNT_AUDIO = {
     let isSyncingPicker = false;
     
     function makeScrollableDrag(el) {
-        const elType = el.id === 'pickerSet' ? 'set' : el.id === 'pickerPass' ? 'pass' : 'bar';
         let startY, sTop;
         el.addEventListener('mousedown', e => { isPickerDragging=true; startY=e.pageY-el.offsetTop; sTop=el.scrollTop; el.style.scrollSnapType='none'; });
-        el.addEventListener('mouseleave', () => { if(isPickerDragging){isPickerDragging=false; if(!isPlaying) el.style.scrollSnapType='y mandatory'; onPickerScroll(elType);} });
-        el.addEventListener('mouseup', () => { if(isPickerDragging){isPickerDragging=false; if(!isPlaying) el.style.scrollSnapType='y mandatory'; onPickerScroll(elType);} });
+        el.addEventListener('mouseleave', () => { if(isPickerDragging){isPickerDragging=false; if(!isPlaying) el.style.scrollSnapType='y mandatory'; onPickerScroll(el.id==='pickerSet'?'set':'bar');} });
+        el.addEventListener('mouseup', () => { if(isPickerDragging){isPickerDragging=false; if(!isPlaying) el.style.scrollSnapType='y mandatory'; onPickerScroll(el.id==='pickerSet'?'set':'bar');} });
         el.addEventListener('mousemove', e => { if(!isPickerDragging)return; e.preventDefault(); const y=e.pageY-el.offsetTop, w=(y-startY)*1.5; el.scrollTop=sTop-w; });
         // マウスホイール感度を1/3に（ネイティブスクロールをキャンセルして手動制御）
         el.addEventListener('wheel', e => { e.preventDefault(); el.scrollTop += (e.deltaY / 3); }, {passive:false});
@@ -5604,6 +5354,15 @@ const COUNT_AUDIO = {
         // リピート展開（段階1: repeat_start〜bracketのリピートを線形化）
         compiledSongNotes = expandRepeat(compiledSongNotes);
         // デバッグ: リピート関連の実際の設定値を出力
+        const _dbgR = songData.filter(s=>s.markType&&s.markType!=='none')
+            .map(s=>`id=${s.id} mt=${s.markType}${s.repeatTimes!=null?' times='+s.repeatTimes:''}${s.voltaNums?' vnums='+JSON.stringify(s.voltaNums):''}`);
+        console.log('[songData repeat]', _dbgR.join(' | '));
+        // 全小節の順序も出力
+        const _dbgAll = songData.map((s,i)=>`[${i}]id=${s.id} mt=${s.markType||'none'}`);
+        console.log('[songData全順序]', _dbgAll.join(' | '));
+        const _dbgSeq=[]; let _prev=null;
+        for(const n of compiledSongNotes){ if(n.setIndex!==_prev&&n.isBarStart){_dbgSeq.push(`${songData[n.setIndex]?.id}(p${n.pass})`);_prev=n.setIndex;} }
+        console.log('[expand結果]', _dbgSeq.join('→'));
         updatePrecountDisp();
         fullSongNotes = compiledSongNotes.slice();
 
@@ -5653,26 +5412,6 @@ const COUNT_AUDIO = {
     //   volta        = 反復番号括弧（旧bracket）：voltaNumsで何周目に演奏するか指定
     //                  repeat_right通過後も有効（2カッコ等がrepeat_rightの後に来るケース）
     //   segno/dalSegno/toCoda/coda = 変更なし
-    // ── expandRepeat：新仕様スゴロク方式 ──
-    // markType定義：
-    //   repeat_left  = リピート左括弧（旧repeat_start）：repeatTimesで繰り返し回数指定
-    //   repeat_right = リピート右括弧：
-    //                  ・戻り回数が残っている → その小節を演奏してrepeat_leftに戻る
-    //                  ・最終周通過 → その小節をスキップ（演奏しない）、スタック維持
-    //                    ※スタックを維持することでR後のvolta[2]等が同コンテキストで動作する
-    //   volta        = 反復番号括弧（旧bracket）：voltaNumsで何周目に演奏するか指定
-    //                  「分岐開始地点」だけを表す
-    //                  volta後・次のvoltaまでのnone小節は直前voltaと同じ周回に属する
-    //   segno/dalSegno/toCoda/coda = 変更なし
-    // ── expandRepeat：新仕様スゴロク方式 ──
-    // markType定義：
-    //   repeat_left  = リピート左括弧（旧repeat_start）：repeatTimesで繰り返し回数指定
-    //   repeat_right = リピート右括弧：折り返しまたは通過。演奏するかどうかはvoltaの範囲で決まる
-    //                  ・直前のvoltaがある → そのvolta範囲に含まれる（voltaNums指定の周回のみ演奏）
-    //                  ・直前のvoltaがない → 毎周演奏（単純リピート）
-    //   volta        = 反復番号括弧：voltaNumsで何周目に演奏するか。
-    //                  volta〜repeat_rightまでの全小節がこのvoltaの範囲に属する
-    //   segno/dalSegno/toCoda/coda = 変更なし
     function expandRepeat(notes) {
         const notesBySet = new Map();
         for (const n of notes) {
@@ -5689,17 +5428,18 @@ const COUNT_AUDIO = {
         let segnoIdx = -1, codaIdx = -1;
         for (let k = 0; k < songData.length; k++) {
             const mt = songData[k].markType || 'none';
-            if (mt === 'segno'  && segnoIdx < 0) segnoIdx = k;
-            if (mt === 'coda'   && codaIdx  < 0) codaIdx  = k;
+            if ((mt === 'segno') && segnoIdx < 0) segnoIdx = k;
+            if ((mt === 'coda')  && codaIdx  < 0) codaIdx  = k;
         }
 
+        // visitCount: setIndexごとの通算登場回数（passプロパティ用）
         const visitCount = {};
         const visit = (idx) => { visitCount[idx] = (visitCount[idx] || 0) + 1; return visitCount[idx]; };
 
-        // ブロック内のnone/repeat_rightが属するvoltaNumsを返す
-        // volta〜次のvoltaまたはrepeat_rightまでが同一voltaの範囲
-        // 直前のvoltaがなければnull（全周演奏）
-        const getVoltaNumsForBlock = (leftIdx, targetIdx) => {
+        // ブロック内のnone小節が演奏すべき周回セットを返す
+        // volta後・次のvoltaの前にあるnoneは直前voltaと同じvoltaNums
+        // 最初のvoltaより前のnoneはnull（全周演奏）
+        const getVoltaNumsForNone = (leftIdx, noneIdx) => {
             if (leftIdx < 0) return null;
             // ブロック終端：次のrepeat_leftまたは曲末
             let blockEnd = songData.length;
@@ -5707,17 +5447,18 @@ const COUNT_AUDIO = {
                 const mt = songData[k].markType || 'none';
                 if (mt === 'repeat_left' || mt === 'repeat_start') { blockEnd = k; break; }
             }
-            if (targetIdx >= blockEnd) return null; // ブロック外
-            // 直前のvoltaを探す
+            if (noneIdx >= blockEnd) return null;
+            // 直前のvoltaを探す（repeat_leftより後、noneIdxより前）
             let prevVolta = -1;
-            for (let k = leftIdx; k < targetIdx; k++) {
+            for (let k = leftIdx + 1; k < noneIdx; k++) {
                 const mt = songData[k].markType || 'none';
                 if (mt === 'volta' || mt === 'bracket') prevVolta = k;
             }
-            if (prevVolta === -1) return null; // voltaなし → 全周演奏
+            if (prevVolta === -1) return null; // 最初のvoltaより前 → 全周演奏
             return songData[prevVolta].voltaNums || songData[prevVolta].repeatPasses || [1];
         };
 
+        // repeatStack: アクティブなrepeat_leftのインデックス
         let repeatStack = [];
         const repeatCounts = {}; // repeat_leftIdx → 残り戻り回数
 
@@ -5742,12 +5483,13 @@ const COUNT_AUDIO = {
                 pushSet(i, visit(i));
                 toCodaDone = true; i = codaIdx; continue;
             }
-            // ── リピート左括弧 ──
+            // ── リピート左括弧（repeat_left）：スタックに積む ──
             if (isRepeatLeft) {
-                // repeatCounts=0の通過済みスタック要素をpop
+                // 通過済み（repeatCounts=0）のスタックをpop
                 while (repeatStack.length > 0 && repeatStack[repeatStack.length - 1] !== i) {
                     const topIdx = repeatStack[repeatStack.length - 1];
-                    if (repeatCounts[topIdx] <= 0) repeatStack.pop(); else break;
+                    if (repeatCounts[topIdx] <= 0) repeatStack.pop();
+                    else break;
                 }
                 if (repeatStack[repeatStack.length - 1] !== i) {
                     repeatStack.push(i);
@@ -5757,35 +5499,26 @@ const COUNT_AUDIO = {
                 pushSet(i, visit(i));
                 i++; continue;
             }
-            // ── リピート右括弧 ──
+            // ── リピート右括弧（repeat_right）：折り返しまたは通過 ──
             if (isRepeatRight) {
+                pushSet(i, visit(i));
                 const leftIdx = repeatStack[repeatStack.length - 1];
-                if (leftIdx !== undefined) {
-                    const voltaNums = getVoltaNumsForBlock(leftIdx, i);
-                    const times = songData[leftIdx].repeatTimes || 1;
-                    const currentRound = times - repeatCounts[leftIdx] + 1;
-                    // voltaの範囲に含まれる場合はvoltaNums、なければ全周演奏
-                    const shouldPlay = (voltaNums === null) || voltaNums.includes(currentRound);
-                    if (repeatCounts[leftIdx] > 0) {
-                        // 折り返し周：演奏判定してからrepeat_leftへ戻る
-                        if (shouldPlay) pushSet(i, visit(i)); else visit(i);
-                        repeatCounts[leftIdx]--;
-                        i = leftIdx; continue;
-                    } else {
-                        // 最終通過：演奏判定してからi++（スタック維持）
-                        if (shouldPlay) pushSet(i, visit(i)); else visit(i);
-                        i++; continue;
-                    }
+                if (leftIdx !== undefined && repeatCounts[leftIdx] > 0) {
+                    // 折り返し
+                    repeatCounts[leftIdx]--;
+                    i = leftIdx; continue;
                 } else {
-                    pushSet(i, visit(i)); i++; continue;
+                    // 通過：スタックをpopしない（通過後のvoltaも同コンテキストで判定）
+                    i++; continue;
                 }
             }
-            // ── 反復番号括弧（volta）──
+            // ── 反復番号括弧（volta）：番号で通過/スキップ ──
             if (isVolta) {
                 const leftIdx = repeatStack[repeatStack.length - 1];
                 // スタック外のbracket（旧markType）は通常演奏
                 if (leftIdx === undefined && mt === 'bracket') {
-                    pushSet(i, visit(i)); i++; continue;
+                    pushSet(i, visit(i));
+                    i++; continue;
                 }
                 let currentRound = 1;
                 if (leftIdx !== undefined) {
@@ -5793,17 +5526,23 @@ const COUNT_AUDIO = {
                     currentRound = times - repeatCounts[leftIdx] + 1;
                 }
                 const nums = songData[i].voltaNums || songData[i].repeatPasses || [1];
-                if (nums.includes(currentRound)) pushSet(i, visit(i)); else visit(i);
+                if (nums.includes(currentRound)) {
+                    pushSet(i, visit(i));
+                } else {
+                    visit(i);
+                }
                 i++; continue;
             }
             // ── 通常演奏（none / segno / coda 等）──
             const leftIdx = repeatStack[repeatStack.length - 1];
             if (leftIdx !== undefined) {
-                const voltaNums = getVoltaNumsForBlock(leftIdx, i);
+                const voltaNums = getVoltaNumsForNone(leftIdx, i);
                 if (voltaNums !== null) {
                     const times = songData[leftIdx].repeatTimes || 1;
                     const currentRound = times - repeatCounts[leftIdx] + 1;
-                    if (!voltaNums.includes(currentRound)) { visit(i); i++; continue; }
+                    if (!voltaNums.includes(currentRound)) {
+                        visit(i); i++; continue;
+                    }
                 }
             }
             pushSet(i, visit(i));
@@ -5811,8 +5550,6 @@ const COUNT_AUDIO = {
         }
         return result;
     }
-
-
 
 
 
@@ -5942,19 +5679,10 @@ const COUNT_AUDIO = {
             const savedCountInIndex = countInIndex;
             // 本編ノートを新durationで再構築（カウントインは別管理なので混入しない）
             compileSong();
-            // compileSong後、本編開始インデックスをsongStartingSetIndex/barIndex/pass基準で再設定
-            const _cip = parseInt(songStartingPass, 10) || 1;
-            const _entry = window.passScheduleTable?.get(songStartingSetIndex);
-            let startIdx = (_entry && _entry.starts.has(_cip))
-                ? _entry.starts.get(_cip)
-                : compiledSongNotes.findIndex(n => n.setIndex === songStartingSetIndex && n.barIndex === (songStartingBarIndex || 0));
-            if (startIdx >= 0 && songStartingBarIndex > 0) {
-                const barIdx = compiledSongNotes.findIndex(
-                    (n, ni) => ni >= startIdx && n.setIndex === songStartingSetIndex &&
-                               n.barIndex === songStartingBarIndex && (n.pass || 1) === _cip
-                );
-                if (barIdx >= 0) startIdx = barIdx;
-            }
+            // compileSong後、本編開始インデックスをsongStartingSetIndex基準で再設定
+            const startIdx = compiledSongNotes.findIndex(
+                n => n.setIndex === songStartingSetIndex && n.barIndex === songStartingBarIndex
+            );
             currentSongNoteIndex = startIdx >= 0 ? startIdx : 0;
             // カウントインも新durationで再構築
             const pM = document.getElementById('precountMode') ? document.getElementById('precountMode').value : 'off';
@@ -6012,14 +5740,19 @@ const COUNT_AUDIO = {
                         countInIndex++;
                     } else {
                         // カウントイン完了 → 本編フェーズへ移行
-                        // currentSongNoteIndexはtogglePlay()で既に正しく設定済みのため再計算不要
                         isCountingInPhase = false;
+                        // passScheduleTableから直接取得（passも考慮）
+                        const _cip = parseInt(songStartingPass, 10) || 1;
+                        const _cipEntry = window.passScheduleTable?.get(songStartingSetIndex);
+                        let startIdx = (_cipEntry && _cipEntry.starts.has(_cip))
+                            ? _cipEntry.starts.get(_cip)
+                            : compiledSongNotes.findIndex(n => n.setIndex === songStartingSetIndex && n.barIndex === (songStartingBarIndex||0));
+                        currentSongNoteIndex = startIdx >= 0 ? startIdx : 0;
                     }
                 } else {
                     // 本編フェーズ
                     if(currentSongNoteIndex < compiledSongNotes.length){
-                        const n=compiledSongNotes[currentSongNoteIndex];
-                        scheduleSongNote(n,nextNoteTime); nextNoteTime+=n.duration; currentSongNoteIndex++;
+                        const n=compiledSongNotes[currentSongNoteIndex]; scheduleSongNote(n,nextNoteTime); nextNoteTime+=n.duration; currentSongNoteIndex++;
                     } else { 
                         const delay = Math.max(0, (nextNoteTime - audioCtx.currentTime) * 1000);
                         window.clearTimeout(timerID); timerID = null;
@@ -6042,12 +5775,12 @@ const COUNT_AUDIO = {
     function scheduleNote(bNum, time) { playSound(time,beatPattern[bNum]); pushVisualQueues(time,bNum,beatPattern[bNum]); }
     function scheduleSongNote(n, time) { 
         playSound(time, n.level, n.isCountIn); 
-        pushVisualQueues(time,n.barIndex,n.level,n.setIndex,n.isBarStart,{isRit:n.isRit,isClickBeat:n.isClickBeat,beatCountInBar:n.beatCountInBar,isLastPrecountBar:n.isLastPrecountBar,isCountIn:n.isCountIn,pass:n.pass}); 
+        pushVisualQueues(time,n.barIndex,n.level,n.setIndex,n.isBarStart,{isRit:n.isRit,isClickBeat:n.isClickBeat,beatCountInBar:n.beatCountInBar,isLastPrecountBar:n.isLastPrecountBar,isCountIn:n.isCountIn}); 
     }
     
     function pushVisualQueues(time, bNum, lvl, setIdx=-1, isBarStart=false, noteExtra={}) { 
         const fOff=(parseInt(flashOffsetInput.value)||0)/1000, vOff=(parseInt(vibeOffsetInput.value)||0)/1000; 
-        dotQueue.push({time,beatNumber:bNum,barIndex:bNum,level:lvl,setIndex:setIdx,isBarStart,pass:noteExtra.pass}); 
+        dotQueue.push({time,beatNumber:bNum,level:lvl,setIndex:setIdx,isBarStart}); 
         flashQueue.push({time:time+fOff,level:lvl}); 
         vibeQueue.push({time:time+vOff,level:lvl}); 
         pendQueue.push({time,index:pendTickIndex++}); 
@@ -6167,11 +5900,9 @@ const COUNT_AUDIO = {
             songPlayStartAudioTime = audioCtx.currentTime + 0.1;
             if(currentMode==='metro') { currentBeat=0; metroStartTime = audioCtx.currentTime + 0.1; }
             else {
-                const _savedPass = parseInt(songStartingPass, 10) || 1; // compileSong前に保存
                 compileSong();
-                songStartingPass = _savedPass; // compileSong内のrenderPickerでリセットされるのを防ぐ
                 // passScheduleTableから直接インデックスを取得（確実・高速）
-                const _targetPass = _savedPass;
+                const _targetPass = parseInt(songStartingPass, 10) || 1;
                 const _entry = window.passScheduleTable?.get(songStartingSetIndex);
                 let idx = (_entry && _entry.starts.has(_targetPass))
                     ? _entry.starts.get(_targetPass)
@@ -6734,14 +6465,14 @@ function playSoundOffline(offCtx, time, level, isCountIn, offBuiltinBufs, offCus
 <!-- ホーム画面追加 案内モーダル -->
 <div class="modal-overlay" id="addToHomeModal" onclick="if(event.target===this)closeModal('addToHomeModal')">
     <div class="modal-content" style="text-align:left; max-width:360px;">
-        <div style="font-size:1.1rem; font-weight:bold; margin-bottom:14px; text-align:center;" data-i18n="add_home_title">📲 アプリとしてインストールするには</div>
+        <div style="font-size:1.1rem; font-weight:bold; margin-bottom:14px; text-align:center;" data-i18n="add_home_title">📲 ホーム画面への追加手順</div>
 
-        <p style="font-size:0.8rem; opacity:0.75; margin:0 0 14px;" data-i18n="add_home_desc">以下の手順でホーム画面にアイコンを追加できます。インストール後はオフラインでも使用できます。<br>（ネット接続時は自動で最新版に更新されることがあります）</p>
+        <p style="font-size:0.8rem; opacity:0.75; margin:0 0 14px;" data-i18n="add_home_desc">ダウンロードしたHTMLファイルをブラウザで開いた後、以下の手順でホーム画面（またはデスクトップ）に追加できます。</p>
 
         <div style="margin-bottom:12px;">
             <div style="font-weight:bold; font-size:0.85rem; margin-bottom:5px;" data-i18n="add_home_ios_title">🍎 iPhone / iPad (Safari)</div>
             <ol style="font-size:0.8rem; margin:0; padding-left:1.4em; line-height:1.9;">
-                <li data-i18n="add_home_ios_1">まず <a id="stableUrlLinkIos" href="#" target="_blank" style="color:var(--primary-color);">NamaMeto.html（安定版）</a> を別タブで開く</li>
+                <li data-i18n="add_home_ios_1">ダウンロードしたHTMLファイルをSafariで開く</li>
                 <li data-i18n="add_home_ios_2">画面下部の 共有ボタン <strong>□↑</strong> をタップ</li>
                 <li data-i18n="add_home_ios_3">「ホーム画面に追加」をタップ</li>
                 <li data-i18n="add_home_ios_4">名前を確認して「追加」をタップ</li>
@@ -6751,17 +6482,17 @@ function playSoundOffline(offCtx, time, level, isCountIn, offBuiltinBufs, offCus
         <div style="margin-bottom:12px;">
             <div style="font-weight:bold; font-size:0.85rem; margin-bottom:5px;" data-i18n="add_home_android_title">🤖 Android (Chrome)</div>
             <ol style="font-size:0.8rem; margin:0; padding-left:1.4em; line-height:1.9;">
-                <li data-i18n="add_home_android_1">まず <a id="stableUrlLinkAndroid" href="#" target="_blank" style="color:var(--primary-color);">NamaMeto.html（安定版）</a> を別タブで開く</li>
+                <li data-i18n="add_home_android_1">ダウンロードしたHTMLをChromeで開く</li>
                 <li data-i18n="add_home_android_2">右上メニュー <strong>⋮</strong> をタップ</li>
-                <li data-i18n="add_home_android_3">「ホーム画面に追加」→「インストール」をタップ（環境により表記が異なる場合あり）</li>
+                <li data-i18n="add_home_android_3">「ホーム画面に追加」をタップ</li>
             </ol>
         </div>
 
         <div style="margin-bottom:18px;">
-            <div style="font-weight:bold; font-size:0.85rem; margin-bottom:5px;" data-i18n="add_home_pc_title">💻 PC (Windows / Mac) - Chrome / Edge</div>
+            <div style="font-weight:bold; font-size:0.85rem; margin-bottom:5px;" data-i18n="add_home_pc_title">💻 PC (Windows / Mac)</div>
             <ol style="font-size:0.8rem; margin:0; padding-left:1.4em; line-height:1.9;">
-                <li data-i18n="add_home_pc_1"><a id="stableUrlLinkPc" href="#" target="_blank" style="color:var(--primary-color);">NamaMeto.html（安定版）</a> を別タブで開く</li>
-                <li data-i18n="add_home_pc_2">アドレスバー右端のインストールアイコン（または ⋮ メニュー）からインストール</li>
+                <li data-i18n="add_home_pc_1">ダウンロードした <strong>NamaMeto.html</strong> をデスクトップに移動</li>
+                <li data-i18n="add_home_pc_2">ダブルクリックするとブラウザで開きます</li>
             </ol>
         </div>
 
@@ -6770,15 +6501,14 @@ function playSoundOffline(offCtx, time, level, isCountIn, offBuiltinBufs, offCus
         </div>
     </div>
 </div>
-<script>(function(){var u=atob('aHR0cHM6Ly9uYW1hMTIyMy5naXRodWIuaW8vTmFtYU1ldG8vTmFtYU1ldG8uaHRtbA==');['stableUrlLinkIos','stableUrlLinkAndroid','stableUrlLinkPc'].forEach(function(id){var a=document.getElementById(id);if(a)a.href=u;});})();</script>
 
 <!-- 削除確認モーダル -->
 <div id="deleteConfirmModal" class="modal-overlay">
     <div class="modal-content" style="text-align:center;">
-        <p id="deleteConfirmMsg" style="font-size:1rem; margin-bottom:20px; font-weight:bold;"></p>
-        <div style="display:flex; gap:72px; justify-content:center;">
-            <button id="deleteConfirmOk" class="btn-update" style="min-width:90px; padding:14px 18px; border:none; border-radius:10px; font-size:1rem; font-weight:bold; cursor:pointer;" onclick="execDeleteConfirm()" data-i18n="btn_delete">削除</button>
-            <button class="btn-cancel" style="min-width:90px; padding:14px 18px; border:none; border-radius:10px; font-size:1rem; font-weight:bold; cursor:pointer;" onclick="closeModal('deleteConfirmModal')" data-i18n="btn_cancel">キャンセル</button>
+        <p id="deleteConfirmMsg" style="font-size:1rem; margin-bottom:16px; font-weight:bold;"></p>
+        <div style="display:flex; gap:10px; justify-content:center;">
+            <button id="deleteConfirmOk" class="btn-update" style="min-width:80px;" onclick="execDeleteConfirm()">削除</button>
+            <button class="btn-cancel" style="min-width:80px;" onclick="closeModal('deleteConfirmModal')">キャンセル</button>
         </div>
     </div>
 </div>
@@ -6851,55 +6581,6 @@ function playSoundOffline(offCtx, time, level, isCountIn, offBuiltinBufs, offCus
         </table>
         </div>
     </div>
-</div>
-
-<script>
-window.addEventListener('DOMContentLoaded', () => {
-  const versionSpan = document.querySelector('h1 span:last-child');
-  if (!versionSpan) return;
-  const currentVersion = versionSpan.textContent.trim();
-  const previousVersion = localStorage.getItem('namameto_saved_version');
-  if (previousVersion && previousVersion !== currentVersion) {
-    const updateToast = document.createElement('div');
-    updateToast.innerHTML = `アプリが更新されました！<br><span style="color:#a8ffb2;">${previousVersion}</span> → <span style="color:#ffb2a8;">${currentVersion}</span>`;
-    updateToast.style.cssText = `
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(0, 0, 0, 0.85);
-      color: white;
-      padding: 20px 30px;
-      border-radius: 12px;
-      z-index: 9999;
-      text-align: center;
-      font-weight: bold;
-      font-size: 1.2rem;
-      line-height: 1.5;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-      pointer-events: none;
-      transition: opacity 0.5s ease;
-    `;
-    document.body.appendChild(updateToast);
-    setTimeout(() => {
-      updateToast.style.opacity = '0';
-      setTimeout(() => updateToast.remove(), 500);
-    }, 4000);
-  }
-  localStorage.setItem('namameto_saved_version', currentVersion);
-});
-</script>
-<script>if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');</script>
-
-<!-- スクロール余白インジケーター -->
-<div id="scrollIndicator">
-    <div class="si-arrow si-up"   id="siUp3"></div>
-    <div class="si-arrow si-up"   id="siUp2"></div>
-    <div class="si-arrow si-up"   id="siUp1"></div>
-    <div class="si-gap"></div>
-    <div class="si-arrow si-down" id="siDn1"></div>
-    <div class="si-arrow si-down" id="siDn2"></div>
-    <div class="si-arrow si-down" id="siDn3"></div>
 </div>
 
 </body>
