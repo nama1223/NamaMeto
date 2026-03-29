@@ -222,7 +222,7 @@
         .lang-selector-outer { display: flex; justify-content: flex-start; align-items: center; gap: 10px; padding: 12px 0 8px 0; width: 95%; max-width: 450px; flex-wrap: wrap; }
         .lang-btn { background: transparent; color: var(--text-color); border: 2px solid var(--text-color); padding: 6px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; cursor: pointer; transition: 0.2s; opacity: 0.5; }
         .lang-btn.active { background: var(--text-color); color: var(--bg-color); opacity: 1; border-color: var(--text-color); }
-        .ad-spacer { height: 10px; width: 100%; pointer-events: none; flex-shrink: 0; }
+        .ad-spacer { height: 100px; width: 100%; pointer-events: none; flex-shrink: 0; }
 
         .setting-card { background: var(--bg-color); border-radius: 12px; padding: 12px; margin-bottom: 10px; border: 1px solid var(--dot-weak); width: 100%; box-sizing: border-box; }
         .options-row { display: flex; justify-content: space-around; background: var(--bg-color); padding: 10px; border-radius: 8px; margin-bottom: 5px; border: 1px solid var(--dot-weak); width: 100%; box-sizing: border-box;}
@@ -504,7 +504,7 @@
         <div style="text-align: center; margin-bottom: 10px;">
             <div class="header-row">
                 <button class="help-btn" onclick="toggleHelp()">?</button>
-                <h1><span data-i18n="appTitleText"></span><span style="font-size:0.62rem; font-weight:400; opacity:0.6; letter-spacing:0.5px; vertical-align:baseline; margin-left:6px; line-height:1;">Z300C</span></h1>
+                <h1><span data-i18n="appTitleText"></span><span style="font-size:0.62rem; font-weight:400; opacity:0.6; letter-spacing:0.5px; vertical-align:baseline; margin-left:6px; line-height:1;">Z306C</span></h1>
                 <button id="headerVolBtn" style="width:36px; background:none; border:none; padding:2px 0; display:flex; flex-direction:column; align-items:center; cursor:pointer; user-select:none; -webkit-user-select:none; touch-action:none; -webkit-tap-highlight-color:transparent; position:relative; outline:none;">
                     <span id="headerVolIcon" style="font-size:1.3rem; line-height:1; pointer-events:none;">🔊</span>
                     <span id="headerVolPct" style="font-size:0.62rem; color:var(--primary-color); font-weight:bold; margin-top:1px; line-height:1; pointer-events:none;">100%</span>
@@ -645,6 +645,19 @@
             <div style="display:flex; justify-content:center; gap:16px; padding-bottom:10px;">
                 <button id="introBtn" onclick="toggleIntro()" style="width:auto; padding:0 14px 0;">はじめに</button>
                 <button id="changelogBtn" onclick="toggleChangelog()" style="background:none; border:none; color:var(--primary-color); font-size:1.05rem; font-weight:bold; cursor:pointer; padding:0 14px; letter-spacing:0.05em; opacity:0.85;" onmouseover="this.style.opacity=1;this.style.textDecoration='underline'" onmouseout="this.style.opacity=0.85;this.style.textDecoration='none'">更新履歴</button>
+            </div>
+            <!-- スリープ防止 -->
+            <div id="wakeLockPanel" style="display:flex; align-items:center; justify-content:space-between; padding:10px 14px; margin-bottom:8px; background:var(--surface-color); border-radius:10px; border:1px solid var(--dot-weak);">
+                <div>
+                    <div style="font-size:0.9rem; font-weight:bold;" data-i18n="label_wake_lock">😴 スリープ防止</div>
+                    <div id="wakeLockStatus" style="font-size:0.72rem; opacity:0.65; margin-top:2px;" data-i18n="wake_lock_off">オフ</div>
+                </div>
+                <label style="position:relative; display:inline-block; width:48px; height:26px; flex-shrink:0;">
+                    <input type="checkbox" id="wakeLockToggle" onchange="onWakeLockToggle()" style="opacity:0; width:0; height:0; position:absolute;">
+                    <span id="wakeLockSlider" style="position:absolute; cursor:pointer; inset:0; background:var(--dot-weak); border-radius:26px; transition:0.2s;">
+                        <span style="position:absolute; content:''; height:20px; width:20px; left:3px; top:3px; background:#fff; border-radius:50%; transition:0.2s; display:block;" id="wakeLockThumb"></span>
+                    </span>
+                </label>
             </div>
             <div id="settingsPanelContainer">
             <!-- テーマカラー -->
@@ -1056,7 +1069,10 @@
                         <div id="blockPreviewOverlay"></div>
                         <div class="song-edit-form">
                             <div class="form-group full-width">
-                                <label><span data-i18n="label_set_name">小節群 名</span> <span style="font-weight:normal; font-size:0.65rem;" data-i18n="label_set_name_sub">(※未入力時は開始小節番号)</span></label>
+                                <div style="display:flex; flex-direction:row; align-items:flex-start; justify-content:space-between; gap:4px;">
+                                    <label style="flex:1; min-width:0;"><span data-i18n="label_set_name">小節群 名</span> <span style="font-weight:normal; font-size:0.65rem;" data-i18n="label_set_name_sub">(※未入力時は開始小節番号)</span></label>
+                                    <button id="barShiftBtn" onclick="openBarShiftModal()" style="padding:3px 7px; border:1px solid var(--dot-weak); border-radius:6px; background:var(--surface-color); color:var(--text-color); cursor:pointer; font-size:0.68rem; white-space:nowrap; flex-shrink:0; line-height:1.4; text-align:center;">📐 <span data-i18n="btn_bar_shift_line1">小節番号</span><br><span data-i18n="btn_bar_shift_line2">ずらす</span></button>
+                                </div>
                                 <div class="flex-row">
                                     <input type="text" id="editName" oninput="onFormChange()" placeholder="A, B, Intro など" data-i18n-ph="ph_set_name" style="flex-grow:1; background:var(--surface-color); color:var(--text-color);">
                                     <button class="complex-sig-clear" onclick="document.getElementById('editName').value=''; onFormChange();" style="position:relative; top:0; right:0; padding:8px 12px; font-size:1rem;" title="クリア">✖</button>
@@ -1221,6 +1237,16 @@
         <div class="intro-close"><button onclick="toggleChangelog()">✕ 閉じる</button></div>
         <div class="cl-body">
 
+            <p class="cl-ver">Z306C</p>
+            <p class="cl-desc">スリープ防止の動作を修正。ページ読み込み時ではなく再生ボタンを押した時にロックを取得し、停止時に解除するよう変更。取得・解除・エラー時にトースト通知を表示（動作確認用）。</p>
+            <p class="cl-ver">Z305C</p>
+            <p class="cl-desc">スリープ防止機能のバグ修正：オフにするとエラーが出る問題と、オンにしても効かない問題を修正。</p>
+            <p class="cl-ver">Z304C</p>
+            <p class="cl-desc">設定タブに「スリープ防止」スイッチを追加。オンにすると画面が自動消灯しなくなる。バックグラウンドから復帰時に自動で再有効化。非対応ブラウザではグレーアウト表示。設定はバックアップ・復元（エクスポート/インポート）にも対応。小節番号ずらし機能の反映バグを修正。</p>
+            <p class="cl-ver">Z303C</p>
+            <p class="cl-desc">「小節番号をずらす」ボタンの不具合修正：適用後に楽譜・ピッカーへ即時反映されない問題を修正。ボタンラベルを2行表示に変更。入力欄をスクロール・スワイプ操作に対応。「複雑な拍子」のビートパターン編集が即時保存・アンドゥに記録されない不具合も合わせて修正（Z301C相当）。</p>
+            <p class="cl-ver">Z302C</p>
+            <p class="cl-desc">作成編集モードに「小節番号をずらす」ボタンを追加。小節群名の入力欄の横に配置され、その群から以降の小節番号をまとめてずらせる。マイナス入力も可能。アンドゥ対応。</p>
             <p class="cl-ver">Z300C</p>
             <p class="cl-desc">カスタム音色パネルの鉛筆マークを名前の左端に移動。Vol:ラベルを多言語対応（日: 音量 / En: Volume）。</p>
             <p class="cl-ver">Z299C</p>
@@ -1837,6 +1863,24 @@
         </div>
     </div>
     
+    <!-- 小節番号シフトモーダル -->
+    <div id="barShiftModal" class="modal-overlay" onclick="if(event.target===this)closeModal('barShiftModal')">
+        <div class="modal-content" style="max-width:300px;">
+            <h3 style="margin:0 0 12px 0; font-size:1rem;" data-i18n="title_bar_shift">小節番号をずらす</h3>
+            <p style="font-size:0.8rem; opacity:0.75; margin:0 0 14px 0;" data-i18n="desc_bar_shift">この小節群以降の小節番号を指定した数だけずらします。マイナスも入力できます。</p>
+            <div style="display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:16px;">
+                <button onclick="document.getElementById('barShiftInput').stepDown(); document.getElementById('barShiftInput').dispatchEvent(new Event('input'));" style="width:36px;height:36px;font-size:1.2rem;border:1px solid var(--dot-weak);border-radius:8px;background:var(--surface-color);color:var(--text-color);cursor:pointer;">−</button>
+                <input type="number" id="barShiftInput" value="0" step="1" class="scroll-number" oninput="updateBarShiftPreview()" style="width:80px;text-align:center;font-size:1.3rem;font-weight:bold;padding:6px;border:1px solid var(--secondary-color);border-radius:8px;background:var(--surface-color);color:var(--text-color);">
+                <button onclick="document.getElementById('barShiftInput').stepUp(); document.getElementById('barShiftInput').dispatchEvent(new Event('input'));" style="width:36px;height:36px;font-size:1.2rem;border:1px solid var(--dot-weak);border-radius:8px;background:var(--surface-color);color:var(--text-color);cursor:pointer;">＋</button>
+            </div>
+            <p id="barShiftPreview" style="font-size:0.82rem; color:var(--primary-color); margin:0 0 16px 0; min-height:1.2em;"></p>
+            <div class="modal-buttons">
+                <button class="btn-save" onclick="applyBarShift()" data-i18n="btn_apply">適用</button>
+                <button class="btn-cancel" onclick="closeModal('barShiftModal')" data-i18n="btn_cancel">キャンセル</button>
+            </div>
+        </div>
+    </div>
+
     <div id="importNmsModal" class="modal-overlay">
         <div class="modal-content">
             <h2 data-i18n="title_import_nms">音色インポート (.nms)</h2>
@@ -2023,6 +2067,8 @@
             btn_insert: "前に挿入", btn_overwrite: "上書き", btn_append: "末尾に追加", help_menu_fab: "楽曲の保存・読込やクリア",
             btn_delete: "削除", btn_cancel: "キャンセル", title_song_menu: "楽曲メニュー", ph_song_name: "楽曲名", btn_save_as: "別名保存", btn_save_over: "上書き保存",
             title_offset_bar: "小節番号シフト (オフセット)", label_offset_bar_end: "小節目から開始する", btn_clear_all: "現在の楽曲をクリア(新規作成)", confirm_overwrite_load: "編集中の楽曲に上書きされます。よろしいですか？", btn_close: "閉じる",
+            btn_bar_shift: "📐 ずらす", btn_bar_shift_line1: "小節番号", btn_bar_shift_line2: "ずらす", title_bar_shift: "小節番号をずらす", desc_bar_shift: "この小節群以降の小節番号を指定した数だけずらします。マイナスも入力できます。", btn_apply: "適用",
+            label_wake_lock: "😴 スリープ防止", wake_lock_on: "オン（有効）", wake_lock_off: "オフ", wake_lock_unsupported: "このブラウザは非対応です",
             title_load_song: "楽曲の読み込み", sort_name: "名前でソート", sort_date: "日時でソート",
             alert_loaded: " を読込ました。", alert_load_fail: "読込失敗", alert_no_data: "データがありません", alert_multi_del: " 個の小節群を削除しますか？", alert_single_del: "選択中の小節群を削除しますか？", alert_clear_all: "表示中の楽譜がすべてクリアされます。よろしいですか？", alert_saved: "保存しました！", alert_del_file: "この楽曲データを削除しますか？", msg_no_song: "保存された楽曲はありません。", str_now: "(現在: ", str_bar: "小節)", str_untitled: "無題の楽曲",
             btn_start: "スタート", btn_stop: "ストップ",
@@ -2167,6 +2213,8 @@
             btn_insert: "Insert", btn_overwrite: "Overwrite", btn_append: "Add", help_menu_fab: "Save/load songs, or clear all data", help_ratio_btn: "Change playback speed for practice",
             btn_delete: "Delete", btn_cancel: "Cancel", title_song_menu: "Song Menu", ph_song_name: "Song Title", btn_save_as: "Save As", btn_save_over: "Overwrite Save",
             title_offset_bar: "Measure Number Offset", label_offset_bar_end: "Start from measure #", btn_clear_all: "New Song (Clear Current)", confirm_overwrite_load: "This will overwrite the song you are currently editing. Continue?", btn_close: "Close",
+            btn_bar_shift: "📐 Shift", btn_bar_shift_line1: "Bar No.", btn_bar_shift_line2: "Shift", title_bar_shift: "Shift Bar Numbers", desc_bar_shift: "Shift the bar numbers from this group onward by the specified amount. Negative values are allowed.", btn_apply: "Apply",
+            label_wake_lock: "😴 Keep Screen On", wake_lock_on: "On (Active)", wake_lock_off: "Off", wake_lock_unsupported: "Not supported in this browser",
             title_load_song: "Load Song", sort_name: "Sort by Name", sort_date: "Sort by Date",
             alert_loaded: " loaded.", alert_load_fail: "Load failed.", alert_no_data: "No data available.", alert_multi_del: " groups selected. Delete?", alert_single_del: "Delete selected group?", alert_clear_all: "Clear all sheet data. Are you sure?", alert_saved: "Saved successfully!", alert_del_file: "Delete this song data?", msg_no_song: "No saved songs.", str_now: "(Now: ", str_bar: " bars)", str_untitled: "Untitled Song",
             btn_start: "START", btn_stop: "STOP",
@@ -2547,6 +2595,7 @@ const COUNT_AUDIO = {
         if (draft) { try { const d = JSON.parse(draft); if (d.data && d.data.length > 0) { songData = d.data; songBarOffset = d.offset !== undefined ? d.offset : 1; document.getElementById('songBarOffsetInput').value = songBarOffset; if (d.title) document.getElementById('songFileName').value = d.title; if (d.fileId) currentSongFileId = d.fileId; } } catch(e) {} }
 
         renderCustomSoundUI(); restoreCustomAudioFromStorage(); loadCurrentState(); updatePresetOptions(); cacheI18nForBubbles(); updateTempoMarking();
+        initWakeLockUI();
         // 拍子入力モーダルのscroll-numberも後からバインド
         setTimeout(() => {
             const tsNum = document.getElementById('tsModalNum');
@@ -2861,6 +2910,81 @@ const COUNT_AUDIO = {
     }
 
     function syncSound(val) { soundSet=val; document.getElementById('soundSelect').value=val; document.getElementById('songSoundSelect').value=val; saveCurrentState(); }
+
+    // ===== スリープ防止 (Screen Wake Lock API) =====
+    let _wakeLock = null;
+    const _wakeLockSupported = ('wakeLock' in navigator);
+    let _wakeLockListenerAdded = false;
+
+    function initWakeLockUI() {
+        const panel = document.getElementById('wakeLockPanel');
+        const toggle = document.getElementById('wakeLockToggle');
+        if (!_wakeLockSupported) {
+            if (panel) panel.style.opacity = '0.4';
+            if (toggle) toggle.disabled = true;
+            const status = document.getElementById('wakeLockStatus');
+            if (status) { status.removeAttribute('data-i18n'); status.textContent = getText('wake_lock_unsupported'); }
+            return;
+        }
+        const saved = localStorage.getItem('namameto_wake_lock');
+        const enabled = saved === 'true';
+        if (toggle) toggle.checked = enabled;
+        _updateWakeLockSlider(enabled);
+        _updateWakeLockStatus();
+        // 初期化時の自動取得はしない（ユーザー操作なしではブラウザにブロックされる）
+        // 取得は再生ボタン押下時に行う
+        if (!_wakeLockListenerAdded) {
+            _wakeLockListenerAdded = true;
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'visible' && isPlaying) {
+                    const t = document.getElementById('wakeLockToggle');
+                    if (t && t.checked) _requestWakeLock();
+                }
+            });
+        }
+    }
+
+    async function _requestWakeLock() {
+        if (!_wakeLockSupported) return;
+        try {
+            if (_wakeLock) return;
+            _wakeLock = await navigator.wakeLock.request('screen');
+            _wakeLock.addEventListener('release', () => { _wakeLock = null; _updateWakeLockStatus(); });
+            _updateWakeLockStatus();
+            showToast('😴 スリープ防止: 有効');
+        } catch(e) { _wakeLock = null; _updateWakeLockStatus(); showToast('😴 スリープ防止エラー: ' + e.message); }
+    }
+
+    function _releaseWakeLock() {
+        if (_wakeLock) { _wakeLock.release(); }
+        _wakeLock = null;
+        _updateWakeLockStatus();
+        showToast('😴 スリープ防止: 解除');
+    }
+
+    function _updateWakeLockStatus() {
+        const status = document.getElementById('wakeLockStatus');
+        if (!status) return;
+        status.removeAttribute('data-i18n');
+        status.textContent = getText(_wakeLock ? 'wake_lock_on' : 'wake_lock_off');
+    }
+
+    function _updateWakeLockSlider(on) {
+        const slider = document.getElementById('wakeLockSlider');
+        const thumb = document.getElementById('wakeLockThumb');
+        if (!slider || !thumb) return;
+        slider.style.background = on ? 'var(--primary-color)' : 'var(--dot-weak)';
+        thumb.style.transform = on ? 'translateX(22px)' : 'translateX(0)';
+    }
+
+    function onWakeLockToggle() {
+        const toggle = document.getElementById('wakeLockToggle');
+        const on = toggle && toggle.checked;
+        localStorage.setItem('namameto_wake_lock', on ? 'true' : 'false');
+        _updateWakeLockSlider(on);
+        if (on) _requestWakeLock(); else _releaseWakeLock();
+    }
+    // ===== スリープ防止 ここまで =====
 
     function saveCurrentState() {
         const state = { bpm, totalBeats, beatPattern, soundSet, currentTheme, flash: flashToggle.checked, vibrate: vibrateToggle.checked, fOffset: flashOffsetInput.value, vOffset: vibeOffsetInput.value, sheetNote: document.getElementById('sheetNoteVal').value, sheetBpm: document.getElementById('sheetBpmVal').value, clickNote: document.getElementById('clickNoteVal').value, precountSec: document.getElementById('precountSec').value, metroClick, bpmMultiplier, baseBeatPattern, baseTotal };
@@ -4110,12 +4234,12 @@ const COUNT_AUDIO = {
             const col = document.createElement('div');
             col.className = 'beat-col'; col.dataset.state = val;
             col.style.width = colW + 'px';
-            col.onclick = () => { currentComplexPattern[i] = (currentComplexPattern[i] + 1) % 4; renderComplexSequencer(); };
+            col.onclick = () => { currentComplexPattern[i] = (currentComplexPattern[i] + 1) % 4; renderComplexSequencer(); onFormChange(); };
             col.innerHTML = `<div class="blocks" style="height:${blocksH}"><div class="block b3" style="height:${blockH}"></div><div class="block b2" style="height:${blockH}"></div><div class="block b1" style="height:${blockH}"></div></div><div class="beat-line"></div><div class="beat-num" style="font-size:${numFontSize}">${i+1}</div>`;
             let wAccC=0, tYC=0;
-            col.addEventListener('wheel', e=>{ e.preventDefault(); e.stopPropagation(); wAccC+=e.deltaY; if(wAccC>40){currentComplexPattern[i]=Math.max(0,currentComplexPattern[i]-1);renderComplexSequencer();wAccC=0;playUiSound();}else if(wAccC<-40){currentComplexPattern[i]=Math.min(3,currentComplexPattern[i]+1);renderComplexSequencer();wAccC=0;playUiSound();} });
+            col.addEventListener('wheel', e=>{ e.preventDefault(); e.stopPropagation(); wAccC+=e.deltaY; if(wAccC>40){currentComplexPattern[i]=Math.max(0,currentComplexPattern[i]-1);renderComplexSequencer();wAccC=0;playUiSound();onFormChange();}else if(wAccC<-40){currentComplexPattern[i]=Math.min(3,currentComplexPattern[i]+1);renderComplexSequencer();wAccC=0;playUiSound();onFormChange();} });
             col.addEventListener('touchstart', e=>{ tYC=e.touches[0].clientY; }, {passive:true});
-            col.addEventListener('touchmove', e=>{ if(e.cancelable)e.preventDefault(); const diff=tYC-e.touches[0].clientY; if(Math.abs(diff)>25){if(diff>0){currentComplexPattern[i]=Math.min(3,currentComplexPattern[i]+1);}else{currentComplexPattern[i]=Math.max(0,currentComplexPattern[i]-1);}renderComplexSequencer();tYC=e.touches[0].clientY;playUiSound();} }, {passive:false});
+            col.addEventListener('touchmove', e=>{ if(e.cancelable)e.preventDefault(); const diff=tYC-e.touches[0].clientY; if(Math.abs(diff)>25){if(diff>0){currentComplexPattern[i]=Math.min(3,currentComplexPattern[i]+1);}else{currentComplexPattern[i]=Math.max(0,currentComplexPattern[i]-1);}renderComplexSequencer();tYC=e.touches[0].clientY;playUiSound();onFormChange();} }, {passive:false});
             return col;
         };
 
@@ -4176,8 +4300,13 @@ const COUNT_AUDIO = {
     function getAbsoluteBar(targetIdx) { 
         let b = songBarOffset;
         for(let i=0;i<targetIdx;i++){
-            if(songData[i]) b += songData[i].bars;
-        } 
+            if(songData[i]) {
+                b += songData[i].bars;
+                if(songData[i].barShift) b += songData[i].barShift;
+            }
+        }
+        // その群自身のbarShiftも反映（開始番号のオフセット）
+        if(songData[targetIdx] && songData[targetIdx].barShift) b += songData[targetIdx].barShift;
         return b; 
     }
     
@@ -4458,8 +4587,82 @@ const COUNT_AUDIO = {
             document.getElementById('editComplexToggle').checked = false; toggleComplexMode();
         }
         } finally { _loadingForm = false; }
+        updateBarShiftBtn();
     }
     
+    function openBarShiftModal() {
+        if (!selectedSetId) return;
+        const s = songData.find(x => x.id === selectedSetId);
+        if (!s) return;
+        const inp = document.getElementById('barShiftInput');
+        inp.value = s.barShift || 0;
+        // scroll/swipe バインド（初回のみ）
+        if (!inp._barShiftBound) {
+            bindNode(inp, v => { inp.value = (parseInt(inp.value)||0) + v; updateBarShiftPreview(); });
+            inp._barShiftBound = true;
+        }
+        updateBarShiftPreview();
+        openModal('barShiftModal');
+    }
+
+    function updateBarShiftPreview() {
+        if (!selectedSetId) return;
+        const idx = songData.findIndex(x => x.id === selectedSetId);
+        if (idx === -1) return;
+        const shift = parseInt(document.getElementById('barShiftInput').value) || 0;
+        // 現在のbarShiftを一時的に除いて計算
+        const currentShift = songData[idx].barShift || 0;
+        songData[idx].barShift = shift;
+        const startBar = getAbsoluteBar(idx);
+        songData[idx].barShift = currentShift; // 戻す
+        const prev = document.getElementById('barShiftPreview');
+        if (shift === 0) {
+            prev.textContent = '';
+        } else {
+            const sign = shift > 0 ? '+' : '';
+            prev.textContent = (currentLang === 'ja'
+                ? `この群から小節 ${startBar + shift} 番で開始（${sign}${shift}）`
+                : `Starts at bar ${startBar + shift} from this group (${sign}${shift})`);
+        }
+    }
+
+    function applyBarShift() {
+        if (!selectedSetId) return;
+        const idx = songData.findIndex(x => x.id === selectedSetId);
+        if (idx === -1) return;
+        const shift = parseInt(document.getElementById('barShiftInput').value) || 0;
+        pushUndoSnapshot();
+        if (shift === 0) {
+            delete songData[idx].barShift;
+        } else {
+            songData[idx].barShift = shift;
+        }
+        // 数値名の小節群を更新
+        songData.forEach((s, i) => { if (!isNaN(s.name) && s.name.trim() !== '') s.name = getAbsoluteBar(i).toString(); });
+        saveCurrentSongToDraft(); compileSong(); renderSongScore();
+        updateBarShiftBtn();
+        loadSelectedToForm();
+        closeModal('barShiftModal');
+    }
+
+    function updateBarShiftBtn() {
+        const btn = document.getElementById('barShiftBtn');
+        if (!btn) return;
+        if (!selectedSetId) { btn.style.borderColor = 'var(--dot-weak)'; btn.style.color = 'var(--text-color)'; return; }
+        const s = songData.find(x => x.id === selectedSetId);
+        const shift = s?.barShift || 0;
+        if (shift !== 0) {
+            const sign = shift > 0 ? '+' : '';
+            btn.style.borderColor = 'var(--primary-color)';
+            btn.style.color = 'var(--primary-color)';
+            btn.title = `${sign}${shift}`;
+        } else {
+            btn.style.borderColor = 'var(--dot-weak)';
+            btn.style.color = 'var(--text-color)';
+            btn.title = currentLang === 'ja' ? '小節番号をずらす' : 'Shift bar numbers';
+        }
+    }
+
     function clearForm() {
         document.getElementById('editName').value = ''; document.getElementById('editNote').value = "1";
         document.getElementById('editBpm').value = 120; document.getElementById('editTimeSigNum').value = 4; document.getElementById('editTimeSigDen').value = 4;
@@ -4877,7 +5080,8 @@ const COUNT_AUDIO = {
             rit: document.getElementById('editRitToggle').checked, autoNextBpm: document.getElementById('editAutoNextBpm').checked, targetBpm: parseInt(document.getElementById('editTargetBpm').value), curve: document.getElementById('editCurve').value,
             isComplex: isC, complexSigs: cSigs, complexPattern: currentComplexPattern, complexBaseDen: currentComplexBaseDen,
             markType: (selectedSetId ? (songData.find(x=>x.id===selectedSetId)?.markType||'none') : 'none'),
-            repeatPasses: (selectedSetId ? (songData.find(x=>x.id===selectedSetId)?.repeatPasses||[1]) : [1])
+            repeatPasses: (selectedSetId ? (songData.find(x=>x.id===selectedSetId)?.repeatPasses||[1]) : [1]),
+            barShift: (selectedSetId ? (songData.find(x=>x.id===selectedSetId)?.barShift||0) : 0)
         };
     }
     
@@ -5124,7 +5328,8 @@ const COUNT_AUDIO = {
             volumes: localStorage.getItem('namameto_volumes'),
             ttsDetail: localStorage.getItem('namameto_tts_detail'),
             ttsRate: localStorage.getItem('namameto_tts_rate'),
-            ttsPitch: localStorage.getItem('namameto_tts_pitch')
+            ttsPitch: localStorage.getItem('namameto_tts_pitch'),
+            wakeLock: localStorage.getItem('namameto_wake_lock')
         };
         for(let i=1; i<=10; i++) data.slots[`slot_${i}`] = localStorage.getItem(`namameto_slot_${i}`);
         let list = []; try { list = JSON.parse(data.songList || '[]'); } catch(e){}
@@ -5231,7 +5436,8 @@ const COUNT_AUDIO = {
             if(pendingImportData.ttsDetail) localStorage.setItem('namameto_tts_detail', pendingImportData.ttsDetail);
             if(pendingImportData.ttsRate)  localStorage.setItem('namameto_tts_rate',  pendingImportData.ttsRate);
             if(pendingImportData.ttsPitch) localStorage.setItem('namameto_tts_pitch', pendingImportData.ttsPitch);
-            loadCurrentState(); updatePresetOptions(); loadJumpValues(); loadVolumes(); loadTtsDetail(); loadTtsRatePitch();
+            if(pendingImportData.wakeLock !== undefined) localStorage.setItem('namameto_wake_lock', pendingImportData.wakeLock);
+            loadCurrentState(); updatePresetOptions(); loadJumpValues(); loadVolumes(); loadTtsDetail(); loadTtsRatePitch(); initWakeLockUI();
         }
         if(document.getElementById('chkImportSound').checked && pendingImportData.customSounds) {
             CUSTOM_IDS.forEach(id => {
@@ -6319,12 +6525,17 @@ const COUNT_AUDIO = {
             playBtn.textContent=getText('btn_stop'); playBtn.classList.add('playing');
             // 再生中は並べ替えボタンを非表示
             document.querySelectorAll('.move-btn').forEach(btn => btn.style.display = 'none');
+            // スリープ防止：再生開始時に取得
+            const _wlToggle = document.getElementById('wakeLockToggle');
+            if (_wlToggle && _wlToggle.checked) _requestWakeLock();
             scheduler();
         } else {
             document.getElementById('songPicker').classList.remove('playing-lock');
             document.getElementById('pickerSet').style.scrollSnapType = 'y mandatory';
             document.getElementById('pickerBar').style.scrollSnapType = 'y mandatory';
             window.clearTimeout(timerID); playBtn.textContent=getText('btn_start'); playBtn.classList.remove('playing');
+            // スリープ防止：停止時に解除
+            _releaseWakeLock();
             document.querySelectorAll('.beat-col').forEach(d=>d.classList.remove('active')); document.querySelectorAll('.score-block').forEach(d=>{ d.classList.remove('playback-target'); d.classList.remove('selected'); }); document.body.classList.remove('flash-active');
             activeAudioNodes.forEach(n=>{try{n.stop();}catch(e){}}); activeAudioNodes=[]; checkScrollArrows(songStartingSetIndex);
             if (currentMode==='song') updateSongTimeBar();
