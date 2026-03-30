@@ -504,7 +504,7 @@
         <div style="text-align: center; margin-bottom: 10px;">
             <div class="header-row">
                 <button class="help-btn" onclick="toggleHelp()">?</button>
-                <h1><span data-i18n="appTitleText"></span><span style="font-size:0.62rem; font-weight:400; opacity:0.6; letter-spacing:0.5px; vertical-align:baseline; margin-left:6px; line-height:1;">Z307C</span></h1>
+                <h1><span data-i18n="appTitleText"></span><span style="font-size:0.62rem; font-weight:400; opacity:0.6; letter-spacing:0.5px; vertical-align:baseline; margin-left:6px; line-height:1;">Z308C</span></h1>
                 <button id="headerVolBtn" style="width:36px; background:none; border:none; padding:2px 0; display:flex; flex-direction:column; align-items:center; cursor:pointer; user-select:none; -webkit-user-select:none; touch-action:none; -webkit-tap-highlight-color:transparent; position:relative; outline:none;">
                     <span id="headerVolIcon" style="font-size:1.3rem; line-height:1; pointer-events:none;">🔊</span>
                     <span id="headerVolPct" style="font-size:0.62rem; color:var(--primary-color); font-weight:bold; margin-top:1px; line-height:1; pointer-events:none;">100%</span>
@@ -831,6 +831,11 @@
                         <label style="display:flex; align-items:flex-start; gap:8px; cursor:pointer; font-size:0.9rem;">
                             <input type="checkbox" id="ttsCountAlwaysEnabled" style="width:18px;height:18px;flex-shrink:0;margin-top:2px;" onchange="saveTtsDetail();updateTtsCountUI()">
                             <span data-i18n="tts_count_always">常にカウントする</span>
+                        </label>
+
+                        <label style="display:flex; align-items:flex-start; gap:8px; cursor:pointer; font-size:0.9rem;">
+                            <input type="checkbox" id="ttsCountSkipWeakEnabled" style="width:18px;height:18px;flex-shrink:0;margin-top:2px;" checked onchange="saveTtsDetail()">
+                            <span data-i18n="tts_count_skip_weak">弱拍のカウントは飛ばす</span>
                         </label>
 
                         <p style="font-size:0.75rem; opacity:0.7; margin:4px 0 0 0; text-align:center;">
@@ -1237,6 +1242,8 @@
         <div class="intro-close"><button onclick="toggleChangelog()">✕ 閉じる</button></div>
         <div class="cl-body">
 
+            <p class="cl-ver">Z308C</p>
+            <p class="cl-desc">小節番号をずらした時に何小節ずれているかをボタン内に表示。音声カウントに「弱拍のカウントは飛ばす」設定を追加（初期ON、307Cまでは設定不可で飛ばしていた）。カウント最終拍の音声を「はい／ready」に切り替える「開始ボイス」機能を追加（カウントイン最終小節と楽曲開始1小節目の最後の拍が対象）。スタートボタンが無反応になったのでGeminiさんに相談して手動修復。</p>
             <p class="cl-ver">Z307C</p>
             <p class="cl-desc">スリープ防止関係＆小節番号ずらしの微調整とバグ取りの他、ずらしの下位互換機能となった作成編集メニューの「小節番号シフト」機能を撤去。</p>
             <p class="cl-ver">Z304C</p>
@@ -1851,9 +1858,9 @@
     <div id="barShiftModal" class="modal-overlay" onclick="if(event.target===this)closeModal('barShiftModal')">
         <div class="modal-content" style="max-width:300px;">
             <h3 style="margin:0 0 12px 0; font-size:1rem;" data-i18n="title_bar_shift">小節番号をずらす</h3>
-            <p style="font-size:0.8rem; opacity:0.75; margin:0 0 6px 0;" data-i18n="desc_bar_shift">この小節群以降の小節番号を指定した数だけずらします。マイナスも入力できます。</p>
-            <p style="font-size:0.75rem; opacity:0.65; margin:0 0 14px 0; line-height:1.6;" data-i18n-html="desc_bar_shift_ex">使い方の例<br>・弱起の曲で0小節目から始める<br>・第二楽章でカウントをリセットする<br>・フェルマータの後、間をあけて入るために読み上げカウント専用の小節群を挟む</p>
-            <div style="display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:16px;">
+            <p style="font-size:0.8rem; opacity:0.75; margin:0 0 16px 0; text-align:left;" data-i18n="desc_bar_shift">この小節群以降の小節番号を指定した数だけずらします。マイナスも入力できます。</p>
+            <p style="font-size:0.75rem; opacity:0.65; margin:0 0 14px 0; line-height:1.6; text-align:left;" data-i18n-html="desc_bar_shift_ex">使い方の例<br>・弱起の曲で0小節目から始める<br>・第二楽章でカウントをリセットする<br>・フェルマータの後、間をあけて入るために読み上げカウント専用の小節群を挟む</p>
+            <div style="display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:0px;">
                 <button id="barShiftMinus" style="width:44px;height:44px;font-size:1.4rem;border:1px solid var(--dot-weak);border-radius:8px;background:var(--surface-color);color:var(--text-color);cursor:pointer;user-select:none;">−</button>
                 <input type="number" id="barShiftInput" value="0" step="1" style="width:80px;text-align:center;font-size:1.3rem;font-weight:bold;padding:6px;border:1px solid var(--secondary-color);border-radius:8px;background:var(--surface-color);color:var(--text-color);">
                 <button id="barShiftPlus" style="width:44px;height:44px;font-size:1.4rem;border:1px solid var(--dot-weak);border-radius:8px;background:var(--surface-color);color:var(--text-color);cursor:pointer;user-select:none;">＋</button>
@@ -2052,7 +2059,7 @@
             btn_insert: "前に挿入", btn_overwrite: "上書き", btn_append: "末尾に追加", help_menu_fab: "楽曲の保存・読込やクリア",
             btn_delete: "削除", btn_cancel: "キャンセル", title_song_menu: "楽曲メニュー", ph_song_name: "楽曲名", btn_save_as: "別名保存", btn_save_over: "上書き保存",
             btn_clear_all: "現在の楽曲をクリア(新規作成)", confirm_overwrite_load: "編集中の楽曲に上書きされます。よろしいですか？", btn_close: "閉じる",
-            btn_bar_shift: "小節番号ずらす", title_bar_shift: "小節番号をずらす", desc_bar_shift: "この小節群以降の小節番号を指定した数だけずらします。マイナスも入力できます。", desc_bar_shift_ex: "使い方の例<br>・弱起の曲で0小節目から始める<br>・第二楽章でカウントをリセットする<br>・フェルマータの後、間をあけて入るために読み上げカウント専用の小節群を挟む", btn_apply: "適用",
+            btn_bar_shift: "小節番号ずらす", title_bar_shift: "小節番号をずらす", desc_bar_shift: "この小節群以降の小節番号を指定した数だけずらします。マイナスも入力できます。", desc_bar_shift_ex: "──使い方の例──<br>・弱起の曲で0小節目から始める<br>・第二楽章でカウントをリセットする<br>・フェルマータの後、間をあけて入るために読み上げカウント専用の小節群を挟む", btn_apply: "適用",
             label_wake_lock_text: "スリープ防止", wake_lock_on: "オン（有効）", wake_lock_off: "オフ", wake_lock_unsupported: "このブラウザは非対応です",
             title_load_song: "楽曲の読み込み", sort_name: "名前でソート", sort_date: "日時でソート",
             alert_loaded: " を読込ました。", alert_load_fail: "読込失敗", alert_no_data: "データがありません", alert_multi_del: " 個の小節群を削除しますか？", alert_single_del: "選択中の小節群を削除しますか？", alert_clear_all: "表示中の楽譜がすべてクリアされます。よろしいですか？", alert_saved: "保存しました！", alert_del_file: "この楽曲データを削除しますか？", msg_no_song: "保存された楽曲はありません。", str_now: "(現在: ", str_bar: "小節)", str_untitled: "無題の楽曲",
@@ -2090,6 +2097,7 @@
             tts_count_precount: "カウントイン(予備拍)で開始１小節前に読み上げ",
             tts_count_rit: "rit. / accel. の時にカウントする",
             tts_count_always: "常にカウントする",
+            tts_count_skip_weak: "弱拍のカウントは飛ばす",
             tts_credit: "カウント音声 by",
             vol_metro: "🔔 メトロノーム",
             vol_tts: "🔊 読み上げ",
@@ -2232,6 +2240,7 @@
             tts_count_precount: "Count aloud in the last count-in bar",
             tts_count_rit: "Count during rit. / accel.",
             tts_count_always: "Always count",
+            tts_count_skip_weak: "Skip weak beat counts",
             tts_credit: "Count audio by",
             vol_metro: "🔔 Metronome",
             vol_tts: "🔊 Speech",
@@ -2376,7 +2385,7 @@
     }
 
     // TTS詳細設定
-    let ttsDetail = { nameEnabled: true, lenLimitEnabled: false, lenLimit: 10, finishEnabled: false, finishText: '', countPrecountEnabled: false, countRitEnabled: false, countAlwaysEnabled: false };
+    let ttsDetail = { nameEnabled: true, lenLimitEnabled: false, lenLimit: 10, finishEnabled: false, finishText: '', countPrecountEnabled: false, countRitEnabled: false, countAlwaysEnabled: false, countSkipWeakEnabled: true };
 
     function previewFinishText() {
         const text = document.getElementById('ttsFinishText').value.trim();
@@ -2403,6 +2412,7 @@
         ttsDetail.countPrecountEnabled = document.getElementById('ttsCountPrecountEnabled').checked;
         ttsDetail.countRitEnabled   = document.getElementById('ttsCountRitEnabled').checked;
         ttsDetail.countAlwaysEnabled= document.getElementById('ttsCountAlwaysEnabled').checked;
+        ttsDetail.countSkipWeakEnabled = document.getElementById('ttsCountSkipWeakEnabled').checked;
         localStorage.setItem('namameto_tts_detail', JSON.stringify(ttsDetail));
     }
     function loadTtsDetail() {
@@ -2418,6 +2428,7 @@
                 document.getElementById('ttsCountPrecountEnabled').checked = ttsDetail.countPrecountEnabled || false;
                 document.getElementById('ttsCountRitEnabled').checked   = ttsDetail.countRitEnabled  || false;
                 document.getElementById('ttsCountAlwaysEnabled').checked= ttsDetail.countAlwaysEnabled || false;
+                document.getElementById('ttsCountSkipWeakEnabled').checked = ttsDetail.countSkipWeakEnabled !== false;
             }
         } catch(e) {}
         updateTtsCountUI();
@@ -2537,8 +2548,43 @@ const COUNT_AUDIO = {
   "9jp": "data:audio/mpeg;base64,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"
 };
 
-    // カウント音AudioBufferキャッシュ
-    const countAudioBuffers = {};
+    // 開始ボイス音声データ（カウントイン最終拍 / 楽曲1小節目の最終拍に使用）
+    const START_VOICE_AUDIO = {
+      ready: "data:audio/mpeg;base64,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",
+      high: "data:audio/mpeg;base64,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"
+    };
+
+    // 開始ボイスBufferキャッシュ
+    const startVoiceBuffers = {};
+
+    async function loadStartVoiceAudio() {
+        ensureAudioContext();
+        for (const key of ['ready', 'high']) {
+            if (startVoiceBuffers[key]) continue;
+            try {
+                const resp = await fetch(START_VOICE_AUDIO[key]);
+                const arrayBuf = await resp.arrayBuffer();
+                startVoiceBuffers[key] = await audioCtx.decodeAudioData(arrayBuf);
+            } catch(e) {}
+        }
+    }
+
+    function playStartVoice(schedTime) {
+        const lang = (document.documentElement.lang === 'en') ? 'en' : 'jp';
+        const key = (lang === 'en') ? 'ready' : 'high';
+        const buf = startVoiceBuffers[key];
+        if (!buf || !audioCtx) return;
+        const src = audioCtx.createBufferSource();
+        const gain = audioCtx.createGain();
+        src.buffer = buf;
+        src.connect(gain);
+        gain.connect(audioCtx.destination);
+        gain.gain.setValueAtTime(ttsVol * ttsVolCount, schedTime);
+        const pt = Math.max(schedTime, audioCtx.currentTime);
+        src.start(pt);
+        activeAudioNodes.push(src);
+        src.onended = () => { activeAudioNodes = activeAudioNodes.filter(n => n !== src); };
+    }
 
     let countQueue = [];
     let _countInBarSeq = 0; // 小節内で実際に読み上げた順番（isBarStartでリセット）
@@ -4650,7 +4696,13 @@ const COUNT_AUDIO = {
     function updateBarShiftBtn() {
         const btn = document.getElementById('barShiftBtn');
         if (!btn) return;
-        if (!selectedSetId) { btn.style.borderColor = 'var(--dot-weak)'; btn.style.color = 'var(--text-color)'; return; }
+        const span = btn.querySelector('[data-i18n="btn_bar_shift"]');
+        if (!selectedSetId) {
+            btn.style.borderColor = 'var(--dot-weak)';
+            btn.style.color = 'var(--text-color)';
+            if (span) span.textContent = getText('btn_bar_shift');
+            return;
+        }
         const s = songData.find(x => x.id === selectedSetId);
         const shift = s?.barShift || 0;
         if (shift !== 0) {
@@ -4658,10 +4710,12 @@ const COUNT_AUDIO = {
             btn.style.borderColor = 'var(--primary-color)';
             btn.style.color = 'var(--primary-color)';
             btn.title = `${sign}${shift}`;
+            if (span) span.textContent = (currentLang === 'ja' ? '小節番号' : 'Bar No.') + sign + shift;
         } else {
             btn.style.borderColor = 'var(--dot-weak)';
             btn.style.color = 'var(--text-color)';
             btn.title = currentLang === 'ja' ? '小節番号をずらす' : 'Shift bar numbers';
+            if (span) span.textContent = getText('btn_bar_shift');
         }
     }
 
@@ -5795,47 +5849,80 @@ const COUNT_AUDIO = {
         if (el) { clearTimeout(el._timer); el.classList.remove('show'); }
     }
 
-        function buildPrecountNotes(startSetIndex, pM) {
-        // カウントインノートをcountInNotesに構築する（compiledSongNotesとは混ぜない）
-        countInNotes = [];
-        const s = songData[startSetIndex];
-        if (!s) return;
-        const bpmNote = s.bpmNote || 1;
-        const bpmVal = (s.bpm || 120) * ((tempoRatio || 100) / 100);
-        let bDur = 0; let num = 0;
-        if (s.isComplex) {
-            const baseDen = s.complexBaseDen || 8;
-            num = s.complexPattern ? s.complexPattern.length : 1;
-            if (num <= 0) num = 1;
-            bDur = (60/(bpmVal*bpmNote)) * (4/baseDen) * num;
-        } else {
-            const tsDen = s.timeSigDen || 4;
-            num = s.timeSigNum || 4;
-            if (num <= 0) num = 1;
-            bDur = (60/(bpmVal*bpmNote)) * (4/tsDen) * num;
-        }
-        if (bDur <= 0) bDur = 1;
-        let pB = 0;
-        if (pM === 'manual') pB = parseInt(document.getElementById('precountBars').value) || 1;
-        else if (pM === 'auto') pB = Math.ceil((parseFloat(document.getElementById('precountSec').value) || 2.5) / bDur) || 1;
-        if (s.isComplex) {
-            for (let b = 0; b < pB; b++) {
-                const isLast = (b === pB - 1);
-                if (s.complexPattern && s.complexPattern.length > 0) {
-                    s.complexPattern.forEach((lvl,i) => { countInNotes.push({setIndex:-1,barIndex:-1,level:lvl,duration:bDur/num,isBarStart:i===0,isCountIn:true,isLastPrecountBar:isLast,beatCountInBar:i}); });
-                } else {
-                    countInNotes.push({setIndex:-1,barIndex:-1,level:3,duration:bDur,isBarStart:true,isCountIn:true,isLastPrecountBar:isLast,beatCountInBar:0});
-                }
-            }
-        } else {
-            for (let b = 0; b < pB; b++) {
-                const isLast = (b === pB - 1);
-                for (let i = 0; i < num; i++) {
-                    countInNotes.push({setIndex:-1,barIndex:-1,level:i===0?3:2,duration:bDur/num,isBarStart:i===0,isCountIn:true,isLastPrecountBar:isLast,beatCountInBar:i});
-                }
-            }
-        }
+		function buildPrecountNotes(startSetIndex, pM) {
+		    // カウントインノートをcountInNotesに構築する（compiledSongNotesとは混ぜない）
+		    countInNotes = [];
+		    const s = songData[startSetIndex];
+		    if (!s) return;
+
+		    const bpmNote = s.bpmNote || 1;
+		    const rawBpm = s.bpm || 120;
+
+		    // --- 再生倍率の除外判定を追加 ---
+		    let currentRatio = (tempoRatio || 100) / 100;
+		    const ignoreCheck = document.getElementById('tempoRatioFloorChk');
+		    const thresholdInput = document.getElementById('tempoRatioFloorInput');
+
+		    if (ignoreCheck && ignoreCheck.checked) {
+		        const threshold = parseInt(thresholdInput.value) || 100;
+		        if (rawBpm <= threshold) {
+		            currentRatio = 1.0; // 閾値以下の場合は倍率を1.0（100%）に固定
+		        }
+		    }
+
+		    const bpmVal = rawBpm * currentRatio;
+		    // ----------------------------
+
+		    let bDur = 0; let num = 0;
+		    if (s.isComplex) {
+		        const baseDen = s.complexBaseDen || 8;
+		        num = s.complexPattern ? s.complexPattern.length : 1;
+		        if (num <= 0) num = 1;
+		        bDur = (60/(bpmVal*bpmNote)) * (4/baseDen) * num;
+		    } else {
+		        const tsDen = s.timeSigDen || 4;
+		        num = s.timeSigNum || 4;
+		        if (num <= 0) num = 1;
+		        bDur = (60/(bpmVal*bpmNote)) * (4/tsDen) * num;
+		    }
+		    if (bDur <= 0) bDur = 1;
+		    let pB = 0;
+		    if (pM === 'manual') pB = parseInt(document.getElementById('precountBars').value) || 1;
+		    else if (pM === 'auto') pB = Math.ceil((parseFloat(document.getElementById('precountSec').value) || 2.5) / bDur) || 1;
+		    
+		    if (s.isComplex) {
+		        for (let b = 0; b < pB; b++) {
+		            const isLast = (b === pB - 1);
+		            if (s.complexPattern && s.complexPattern.length > 0) {
+		                s.complexPattern.forEach((lvl,i) => { 
+		                    countInNotes.push({setIndex:-1,barIndex:-1,level:lvl,duration:bDur/num,isBarStart:i===0,isCountIn:true,isLastPrecountBar:isLast,beatCountInBar:i}); 
+		                });
+		            } else {
+		                countInNotes.push({setIndex:-1,barIndex:-1,level:3,duration:bDur,isBarStart:true,isCountIn:true,isLastPrecountBar:isLast,beatCountInBar:0});
+		            }
+		        }
+		    } else {
+		        for (let b = 0; b < pB; b++) {
+		            const isLast = (b === pB - 1);
+		            for (let i = 0; i < num; i++) {
+		                countInNotes.push({setIndex:-1,barIndex:-1,level:i===0?3:2,duration:bDur/num,isBarStart:i===0,isCountIn:true,isLastPrecountBar:isLast,beatCountInBar:i});
+		            }
+		        }
+		    }
+
         // currentSongNoteIndexは本編用（0から開始）なので変更不要
+        // countInNotes の isLastCountInBar 付与
+        for (let i = 0; i < countInNotes.length; i++) {
+            const n = countInNotes[i];
+            if (n.isClickBeat || n.level < 1) continue;
+            let isLast = true;
+            for (let j = i + 1; j < countInNotes.length; j++) {
+                const m = countInNotes[j];
+                if (m.isBarStart && !m.isClickBeat) { break; }
+                if (!m.isClickBeat && m.level >= 1) { isLast = false; break; }
+            }
+            countInNotes[i].isLastCountInBar = isLast;
+        }
     }
 
     function compileSong() {
@@ -5858,6 +5945,8 @@ const COUNT_AUDIO = {
             const bpmVal = startBpm * ratioS;
             const qS = bpmVal * bpmNote;
             const qE = s.rit ? (resolvedTargetBpm * ratioE * bpmNote) : qS;
+            // この小節群の絶対小節番号が1かどうか（開始ボイス判定用）
+            const isBar1Group = (getAbsoluteBar(sIdx) === 1);
             
             // progをビートインデックスから計算するヘルパー
             const calcProg = (beatIdx, totalBeats) => {
@@ -5878,7 +5967,7 @@ const COUNT_AUDIO = {
                         const prog = calcProg(stepIdx, totalSteps);
                         const cQBpm = qS + (qE - qS) * prog;
                         const stepDur = (60 / cQBpm) * (4 / baseDen);
-                        compiledSongNotes.push({setIndex:sIdx,barIndex:b,level:lvl,duration:stepDur,isBarStart:nIdx===0,isRit:!!s.rit,isClickBeat:false,beatCountInBar:nIdx});
+                        compiledSongNotes.push({setIndex:sIdx,barIndex:b,level:lvl,duration:stepDur,isBarStart:nIdx===0,isRit:!!s.rit,isClickBeat:false,beatCountInBar:nIdx,isBar1Group});
                     });
                 }
             } else {
@@ -5902,7 +5991,7 @@ const COUNT_AUDIO = {
                         // 1ビート分の長さ（click有りなら÷2）
                         const beatDur = (60 / cQBpm) * (4 / tsDen);
                         const nDur = beatDur / clickStep;
-                        compiledSongNotes.push({setIndex:sIdx,barIndex:b,level:lvl,duration:nDur,isBarStart:nIdx===0,isRit:!!s.rit,isClickBeat,beatCountInBar:realBeat});
+                        compiledSongNotes.push({setIndex:sIdx,barIndex:b,level:lvl,duration:nDur,isBarStart:nIdx===0,isRit:!!s.rit,isClickBeat,beatCountInBar:realBeat,isBar1Group});
                     });
                 }
             }
@@ -5911,6 +6000,26 @@ const COUNT_AUDIO = {
         compiledSongNotes = expandRepeat(compiledSongNotes);
         // デバッグ: リピート関連の実際の設定値を出力
         updatePrecountDisp();
+        fullSongNotes = compiledSongNotes.slice();
+
+        // ── isLastCountInBar 後処理：小節内で最後に読み上げられるカウントかどうかを付与 ──
+        // 「読み上げ対象」= !isClickBeat かつ lvl>=2（弱拍スキップ時）または lvl>=1（スキップなし時）
+        // ただし設定は実行時に変わるため、ここでは lvl>=1 のノートを「候補」として扱い、
+        // 実際のスキップ判定は playback 側で行う。
+        // 開始ボイスが必要なのは「その小節で読み上げ対象になりうる最後のカウント」なので、
+        // 小節内の非clickbeat かつ lvl>=1 な最後のノートに isLastCountInBar=true を付ける。
+        for (let i = 0; i < compiledSongNotes.length; i++) {
+            const n = compiledSongNotes[i];
+            if (n.isClickBeat || n.level < 1) continue;
+            // 次の isBarStart(非clickbeat) or 配列末まで探して、この小節内に後続の非clickbeatノードがなければ isLastCountInBar
+            let isLast = true;
+            for (let j = i + 1; j < compiledSongNotes.length; j++) {
+                const m = compiledSongNotes[j];
+                if (m.isBarStart && !m.isClickBeat) { break; } // 次の小節頭
+                if (!m.isClickBeat && m.level >= 1) { isLast = false; break; }
+            }
+            compiledSongNotes[i].isLastCountInBar = isLast;
+        }
         fullSongNotes = compiledSongNotes.slice();
 
         // ── passScheduleTable：ピッカーと再生開始に使う演奏スケジュール表 ──
@@ -6182,6 +6291,7 @@ const COUNT_AUDIO = {
     }
 
     // 全カウント音を事前ロード
+　  let countAudioBuffers = {};   //Geminiさんによる修正(Z307C→308Cの時にスタートボタンが無反応になった)
     async function preloadCountAudio() {
         ensureAudioContext();
         const lang = (document.documentElement.lang === 'en') ? 'en' : 'jp';
@@ -6190,6 +6300,7 @@ const COUNT_AUDIO = {
             await loadCountAudio(i + lang);
             await loadCountAudio(i + otherLang);
         }
+        await loadStartVoiceAudio();
     }
 
     function ensureAudioContext() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
@@ -6362,7 +6473,7 @@ const COUNT_AUDIO = {
     function scheduleNote(bNum, time) { playSound(time,beatPattern[bNum]); pushVisualQueues(time,bNum,beatPattern[bNum]); }
     function scheduleSongNote(n, time) { 
         playSound(time, n.level, n.isCountIn); 
-        pushVisualQueues(time,n.barIndex,n.level,n.setIndex,n.isBarStart,{isRit:n.isRit,isClickBeat:n.isClickBeat,beatCountInBar:n.beatCountInBar,isLastPrecountBar:n.isLastPrecountBar,isCountIn:n.isCountIn,pass:n.pass}); 
+        pushVisualQueues(time,n.barIndex,n.level,n.setIndex,n.isBarStart,{isRit:n.isRit,isClickBeat:n.isClickBeat,beatCountInBar:n.beatCountInBar,isLastPrecountBar:n.isLastPrecountBar,isCountIn:n.isCountIn,pass:n.pass,isBar1Group:n.isBar1Group,isLastCountInBar:n.isLastCountInBar}); 
     }
     
     function pushVisualQueues(time, bNum, lvl, setIdx=-1, isBarStart=false, noteExtra={}) { 
@@ -6376,7 +6487,9 @@ const COUNT_AUDIO = {
             ttsQueue.push({ time: time - 0.3, setIndex: setIdx });
         }
         // カウント音キュー
-        if (!noteExtra.isClickBeat && lvl >= 2 && noteExtra.beatCountInBar !== undefined) {
+        const skipWeak = ttsDetail.countSkipWeakEnabled !== false;
+        const minLvl = skipWeak ? 2 : 1;
+        if (!noteExtra.isClickBeat && lvl >= minLvl && noteExtra.beatCountInBar !== undefined) {
             if (isBarStart) _countInBarSeq = 0; // 小節頭でリセット
             const shouldCount = ttsDetail.countAlwaysEnabled
                              || (ttsDetail.countRitEnabled && noteExtra.isRit)
@@ -6384,12 +6497,15 @@ const COUNT_AUDIO = {
             if (shouldCount) {
                 const tgl = document.getElementById('ttsToggle');
                 if (tgl && tgl.checked) {
-                    countQueue.push({ time: time - 0.05, beatNum: _countInBarSeq });
+                    // 開始ボイス判定：カウントイン最終小節 or 楽曲中の小節番号1グループ の最後のカウント
+                    const isStartVoiceBeat = noteExtra.isLastCountInBar &&
+                        (noteExtra.isLastPrecountBar || noteExtra.isBar1Group);
+                    countQueue.push({ time: time - 0.05, beatNum: _countInBarSeq, isStartVoice: isStartVoiceBeat || false });
                 }
             }
             _countInBarSeq++;
         } else if (isBarStart && !noteExtra.isClickBeat) {
-            // 読み上げ対象外のisBarStartでもリセット（lvl<2の小節頭対応）
+            // 読み上げ対象外のisBarStartでもリセット（lvl<minLvlの小節頭対応）
             _countInBarSeq = 0;
         }
     }
@@ -6428,7 +6544,11 @@ const COUNT_AUDIO = {
 
         while(countQueue.length && countQueue[0].time <= cT) {
             const n = countQueue.shift();
-            playCountSound(n.beatNum, n.time + 0.05);
+            if (n.isStartVoice) {
+                playStartVoice(n.time + 0.05);
+            } else {
+                playCountSound(n.beatNum, n.time + 0.05);
+            }
         }
 
         while(dotQueue.length&&dotQueue[0].time<=cT){

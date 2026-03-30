@@ -1243,7 +1243,7 @@
         <div class="cl-body">
 
             <p class="cl-ver">Z308C</p>
-            <p class="cl-desc">作成編集モードの「小節番号ずらす」ボタン、ずらし適用時に何小節ずれているかをボタンに表示するよう変更。設定タブの音声カウントに「弱拍のカウントは飛ばす」を追加（初期：ON）。カウント最終拍の音声を「はい」や「ready」に切り替える「開始ボイス」機能を追加（カウントイン最終小節と楽曲開始1小節目の最後の拍が対象）。</p>
+            <p class="cl-desc">小節番号をずらした時に何小節ずれているかをボタン内に表示。音声カウントに「弱拍のカウントは飛ばす」設定を追加（初期ON、307Cまでは設定不可で飛ばしていた）。カウント最終拍の音声を「はい／ready」に切り替える「開始ボイス」機能を追加（カウントイン最終小節と楽曲開始1小節目の最後の拍が対象）。スタートボタンが無反応になったのでGeminiさんに相談して手動修復。</p>
             <p class="cl-ver">Z307C</p>
             <p class="cl-desc">スリープ防止関係＆小節番号ずらしの微調整とバグ取りの他、ずらしの下位互換機能となった作成編集メニューの「小節番号シフト」機能を撤去。</p>
             <p class="cl-ver">Z304C</p>
@@ -5849,46 +5849,67 @@ const COUNT_AUDIO = {
         if (el) { clearTimeout(el._timer); el.classList.remove('show'); }
     }
 
-        function buildPrecountNotes(startSetIndex, pM) {
-        // カウントインノートをcountInNotesに構築する（compiledSongNotesとは混ぜない）
-        countInNotes = [];
-        const s = songData[startSetIndex];
-        if (!s) return;
-        const bpmNote = s.bpmNote || 1;
-        const bpmVal = (s.bpm || 120) * ((tempoRatio || 100) / 100);
-        let bDur = 0; let num = 0;
-        if (s.isComplex) {
-            const baseDen = s.complexBaseDen || 8;
-            num = s.complexPattern ? s.complexPattern.length : 1;
-            if (num <= 0) num = 1;
-            bDur = (60/(bpmVal*bpmNote)) * (4/baseDen) * num;
-        } else {
-            const tsDen = s.timeSigDen || 4;
-            num = s.timeSigNum || 4;
-            if (num <= 0) num = 1;
-            bDur = (60/(bpmVal*bpmNote)) * (4/tsDen) * num;
-        }
-        if (bDur <= 0) bDur = 1;
-        let pB = 0;
-        if (pM === 'manual') pB = parseInt(document.getElementById('precountBars').value) || 1;
-        else if (pM === 'auto') pB = Math.ceil((parseFloat(document.getElementById('precountSec').value) || 2.5) / bDur) || 1;
-        if (s.isComplex) {
-            for (let b = 0; b < pB; b++) {
-                const isLast = (b === pB - 1);
-                if (s.complexPattern && s.complexPattern.length > 0) {
-                    s.complexPattern.forEach((lvl,i) => { countInNotes.push({setIndex:-1,barIndex:-1,level:lvl,duration:bDur/num,isBarStart:i===0,isCountIn:true,isLastPrecountBar:isLast,beatCountInBar:i}); });
-                } else {
-                    countInNotes.push({setIndex:-1,barIndex:-1,level:3,duration:bDur,isBarStart:true,isCountIn:true,isLastPrecountBar:isLast,beatCountInBar:0});
-                }
-            }
-        } else {
-            for (let b = 0; b < pB; b++) {
-                const isLast = (b === pB - 1);
-                for (let i = 0; i < num; i++) {
-                    countInNotes.push({setIndex:-1,barIndex:-1,level:i===0?3:2,duration:bDur/num,isBarStart:i===0,isCountIn:true,isLastPrecountBar:isLast,beatCountInBar:i});
-                }
-            }
-        }
+		function buildPrecountNotes(startSetIndex, pM) {
+		    // カウントインノートをcountInNotesに構築する（compiledSongNotesとは混ぜない）
+		    countInNotes = [];
+		    const s = songData[startSetIndex];
+		    if (!s) return;
+
+		    const bpmNote = s.bpmNote || 1;
+		    const rawBpm = s.bpm || 120;
+
+		    // --- 再生倍率の除外判定を追加 ---
+		    let currentRatio = (tempoRatio || 100) / 100;
+		    const ignoreCheck = document.getElementById('tempoRatioFloorChk');
+		    const thresholdInput = document.getElementById('tempoRatioFloorInput');
+
+		    if (ignoreCheck && ignoreCheck.checked) {
+		        const threshold = parseInt(thresholdInput.value) || 100;
+		        if (rawBpm <= threshold) {
+		            currentRatio = 1.0; // 閾値以下の場合は倍率を1.0（100%）に固定
+		        }
+		    }
+
+		    const bpmVal = rawBpm * currentRatio;
+		    // ----------------------------
+
+		    let bDur = 0; let num = 0;
+		    if (s.isComplex) {
+		        const baseDen = s.complexBaseDen || 8;
+		        num = s.complexPattern ? s.complexPattern.length : 1;
+		        if (num <= 0) num = 1;
+		        bDur = (60/(bpmVal*bpmNote)) * (4/baseDen) * num;
+		    } else {
+		        const tsDen = s.timeSigDen || 4;
+		        num = s.timeSigNum || 4;
+		        if (num <= 0) num = 1;
+		        bDur = (60/(bpmVal*bpmNote)) * (4/tsDen) * num;
+		    }
+		    if (bDur <= 0) bDur = 1;
+		    let pB = 0;
+		    if (pM === 'manual') pB = parseInt(document.getElementById('precountBars').value) || 1;
+		    else if (pM === 'auto') pB = Math.ceil((parseFloat(document.getElementById('precountSec').value) || 2.5) / bDur) || 1;
+		    
+		    if (s.isComplex) {
+		        for (let b = 0; b < pB; b++) {
+		            const isLast = (b === pB - 1);
+		            if (s.complexPattern && s.complexPattern.length > 0) {
+		                s.complexPattern.forEach((lvl,i) => { 
+		                    countInNotes.push({setIndex:-1,barIndex:-1,level:lvl,duration:bDur/num,isBarStart:i===0,isCountIn:true,isLastPrecountBar:isLast,beatCountInBar:i}); 
+		                });
+		            } else {
+		                countInNotes.push({setIndex:-1,barIndex:-1,level:3,duration:bDur,isBarStart:true,isCountIn:true,isLastPrecountBar:isLast,beatCountInBar:0});
+		            }
+		        }
+		    } else {
+		        for (let b = 0; b < pB; b++) {
+		            const isLast = (b === pB - 1);
+		            for (let i = 0; i < num; i++) {
+		                countInNotes.push({setIndex:-1,barIndex:-1,level:i===0?3:2,duration:bDur/num,isBarStart:i===0,isCountIn:true,isLastPrecountBar:isLast,beatCountInBar:i});
+		            }
+		        }
+		    }
+
         // currentSongNoteIndexは本編用（0から開始）なので変更不要
         // countInNotes の isLastCountInBar 付与
         for (let i = 0; i < countInNotes.length; i++) {
@@ -6270,6 +6291,7 @@ const COUNT_AUDIO = {
     }
 
     // 全カウント音を事前ロード
+　  let countAudioBuffers = {};   //Geminiさんによる修正(Z307C→308Cの時にスタートボタンが無反応になった)
     async function preloadCountAudio() {
         ensureAudioContext();
         const lang = (document.documentElement.lang === 'en') ? 'en' : 'jp';
