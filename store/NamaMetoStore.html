@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NamaMeto Download Page</title>
+<style>
+    /* ＝＝＝ 基本設定・Play Store風のデザイン ＝＝＝ */
+    :root {
+        --primary-color: #01875f;
+        --bg-color: #ffffff;
+        --text-main: #202124;
+        --text-sub: #5f6368;
+        --border-color: #e8eaed;
+        --btn-radius: 8px;
+    }
+    body {
+        font-family: 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+        background-color: #f2f2f2;
+        margin: 0; padding: 0; color: var(--text-main);
+    }
+    #app-container {
+        max-width: 480px; margin: 0 auto; background-color: var(--bg-color);
+        min-height: 100vh; box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        padding-bottom: 40px; position: relative;
+    }
+    
+    /* ＝＝＝ 各セクションのスタイル ＝＝＝ */
+    .header-section { padding: 24px; display: flex; gap: 16px; }
+    .app-icon {
+        width: 72px; height: 72px; border-radius: 16px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.2); object-fit: cover;
+    }
+    .app-info { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+    .app-title { font-size: 24px; font-weight: bold; margin: 0 0 4px 0; line-height: 1.2; }
+    .app-developer { color: var(--primary-color); font-size: 14px; font-weight: bold; margin: 0; }
+    
+    .action-section { padding: 0 24px 24px 24px; }
+    .btn-install {
+        display: block; width: 100%; padding: 12px 0;
+        background-color: var(--primary-color); color: white;
+        text-align: center; text-decoration: none; border-radius: var(--btn-radius);
+        font-size: 14px; font-weight: bold; border: none; cursor: pointer;
+    }
+    
+    /* スクリーンショット＆動画（横スクロール） */
+    .screenshots-section { padding: 0 0 24px 24px; overflow: hidden; }
+    .section-title { font-size: 18px; font-weight: bold; margin: 0 0 16px 0; padding-right: 24px;}
+    .gallery-scroll {
+        display: flex; gap: 12px; overflow-x: auto; padding-right: 24px;
+        scroll-snap-type: x mandatory; scrollbar-width: none;
+    }
+    .gallery-scroll::-webkit-scrollbar { display: none; }
+    
+    .gallery-item-wrapper {
+        position: relative; flex: 0 0 auto; cursor: pointer; scroll-snap-align: start;
+    }
+    .gallery-item {
+        height: 250px; border-radius: 8px; object-fit: cover;
+        border: 1px solid var(--border-color); display: block;
+    }
+    .img-portrait { width: 140px; }
+    .img-landscape { width: 250px; }
+    
+    .play-icon {
+        position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+        width: 48px; height: 48px; background-color: rgba(0,0,0,0.6);
+        border-radius: 50%; display: flex; justify-content: center; align-items: center;
+        color: white; font-size: 20px; padding-left: 4px; box-sizing: border-box;
+    }
+
+    /* 説明文 */
+    .description-section { padding: 0 24px 24px 24px; }
+    .description-text { font-size: 14px; line-height: 1.6; color: var(--text-sub); white-space: pre-wrap; }
+    .description-text a { color: var(--primary-color); text-decoration: none; font-weight: bold; }
+    
+    /* 類似アプリ */
+    .more-apps-section { padding: 24px; border-top: 1px solid var(--border-color); }
+    .more-apps-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 16px; }
+    .more-app-card { text-align: center; text-decoration: none; color: inherit; display: block;}
+    .more-app-icon { width: 64px; height: 64px; border-radius: 12px; margin-bottom: 8px; object-fit: cover; }
+    .more-app-name { font-size: 12px; color: var(--text-sub); display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    /* 言語切り替えボタン */
+    .lang-toggle {
+        position: absolute; top: 16px; right: 16px;
+        background: transparent; border: 1px solid var(--border-color);
+        border-radius: 16px; padding: 4px 12px; font-size: 12px;
+        color: var(--text-sub); cursor: pointer; background-color: var(--bg-color);
+    }
+
+    /* ＝＝＝ ライトボックス ＝＝＝ */
+    #lightbox {
+        display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background-color: rgba(0,0,0,0.95); z-index: 1000;
+        justify-content: center; align-items: center; flex-direction: column;
+    }
+    #lightbox.active { display: flex; }
+    #lightbox-img { max-width: 90%; max-height: 80vh; object-fit: contain; border-radius: 4px; transition: opacity 0.2s; display: none; }
+    
+    #lightbox-video {
+        width: 100%; max-width: 800px; aspect-ratio: 16 / 9; transition: opacity 0.2s; display: none; background: #000;
+    }
+    #lightbox-video iframe { width: 100%; height: 100%; border: none; }
+
+    .lightbox-controls { display: flex; justify-content: space-between; width: 100%; position: absolute; top: 50%; transform: translateY(-50%); padding: 0 20px; box-sizing: border-box; pointer-events: none; z-index: 1001;}
+    .nav-btn { background: rgba(255,255,255,0.2); color: white; border: none; border-radius: 50%; width: 44px; height: 44px; font-size: 20px; cursor: pointer; pointer-events: auto; }
+    .close-btn { position: absolute; top: 20px; right: 20px; background: transparent; color: white; border: none; font-size: 32px; cursor: pointer; z-index: 1001;}
+    .swipe-hint { color: rgba(255,255,255,0.5); font-size: 12px; position: absolute; bottom: 40px; }
+</style>
+</head>
+<body>
+
+<script>
+const APP_CONFIG = {
+    // 【基本設定】
+    appUrl: "https://nama1223.github.io/NamaMeto/NamaMeto.html",
+    appIcon: "https://nama1223.github.io/NamaMeto/NamaMetoLogo192.png",
+    
+    // 【メディア設定（動画と画像を混在可能）】
+    media: [
+        // ↓ 動画が用意できたらコメントアウトを外してIDを書き換えてください
+        // { type: "youtube", id: "YOUR_YOUTUBE_ID_HERE" },
+        { type: "image", src: "1-MetoTab1.jpg" },
+        { type: "image", src: "1-MetoTab2.jpg" },
+        { type: "image", src: "2-SettingTab1.jpg" },
+        { type: "image", src: "2-SettingTab2.jpg" },
+        { type: "image", src: "3-Edit1.jpg" },
+        { type: "image", src: "3-Edit2.jpg" },
+        { type: "image", src: "4-Play1.jpg" },
+        { type: "image", src: "4-Play2.jpg" }
+    ],
+
+    // 【同一作者の他のアプリ設定】
+    moreApps: [
+        { id: "app1", icon: "other1.png", url: "https://example.com/app1" },
+        { id: "app2", icon: "other2.png", url: "https://example.com/app2" }
+    ],
+
+    // 【日本語のテキスト設定】
+    ja: {
+        title: "NamaMeto ─ 楽曲対応の高機能メトロノーム ─",
+        developer: "生",
+        buttonText: "Webアプリを起動",
+        screenshotsTitle: "スクリーンショット/画面説明",
+        description: `楽譜を再現できるメトロノーム！\n\n■基本のメトロノーム\n素早い操作を重視した設計で、テンポの調節手段を豊富に用意してある他、各種数値を縦にスワイプ(またはマウススクロール)することで連打せずに高速で微調整できます。\n\n■音色のカスタム\n標準搭載された基本の5種類の音色に加え、自身で用意した音色を更に5パターン登録できます。\n<a href="https://drive.google.com/drive/folders/1uftx_yTjGCWsNSE_bHz-2QX7BZl-wYjD?usp=drive_link" style="color: #01875f;">アプリ内のリンク</a>(Google Drive)から様々なサンプル音色をダウンロードしてカスタム枠に登録することもできます。\n\n■楽曲モード　─ 合奏の味方！\nメトロノームを鳴らすための楽曲データを作ることができます。\n楽譜のような見た目で、でも音符を入れる必要はない…という考えから長休符で小節数を表現しています。\n長休符で表された一つの区間をNamaMetoでは「小節群」と呼んでいます。\n小節群には思いつく限りの柔軟な設定機能を設けました。rit.やaccel.に、裏拍を刻む機能、複合拍子、鳴らし方の個別編集、リピート記号、複数選択からのコピーや貼り付けや削除、などなど。\n\n■再生モード\n楽曲データ作成と対になる「再生モード」も快適さを追求しています。\n演奏開始前の予備拍(カウントイン)。繰り返しの2回目でも、練習記号から4小節目でも、好きな場所から開始できる機能。再生速度を変えて練習する「倍率」機能(縦スワイプで秒速調整可能！)。迷子にならないための読み上げ機能(拍のカウントや練習記号名など)。\n\n■ 万全のバックアップ\n全ての設定はファイルとして出力できます。\nまとめて出力するフルエクスポートの他に、音色や楽曲を1つずつ出力する機能もあり、演奏メンバーとのデータ共有ができます。\n\n■ アプリ化に対応\nブラウザ上で動作するアプリですが、各種OSにインストールする機能があります。(詳細はアプリ内「設定」タブの下部に記載)\nインストール後はホーム画面やデスクトップに置くことができ、オフラインでの動作が可能で、通信できる時にリロードすると最新の安定版に自動更新されます。`,
+        moreAppsTitle: "生 の他のアプリ",
+        moreAppNames: {
+            "app1": "NamaChu ─ 時系列つき高機能チューナー ─",
+            "app2": "絶対にアラーム"
+        }
+    },
+
+    // 【英語のテキスト設定】（翻訳・反映済み）
+    en: {
+        title: "NamaMeto - Advanced Metronome for Musical Scores -",
+        developer: "Nama",
+        buttonText: "Launch Web App",
+        screenshotsTitle: "Trailer & Screenshots",
+        description: `A metronome that can reproduce musical scores!\n\n■ Basic Metronome\nDesigned with an emphasis on quick operation. In addition to a wide variety of tempo adjustment methods, you can quickly fine-tune values by swiping vertically (or using mouse scroll) without having to tap repeatedly.\n\n■ Custom Sounds\nIn addition to the 5 basic built-in sounds, you can register up to 5 of your own custom sound patterns.\nYou can also download various sample sounds from the <a href="https://drive.google.com/drive/folders/1uftx_yTjGCWsNSE_bHz-2QX7BZl-wYjD?usp=drive_link" style="color: #01875f;">in-app link</a> (Google Drive) and register them in your custom slots.\n\n■ Song Mode - A great ally for ensemble practice!\nYou can create song data to play the metronome along with.\nBased on the idea of looking like a musical score without needing to input actual notes, measures are represented by multi-measure rests.\nIn NamaMeto, a section represented by a multi-measure rest is called a "measure group" (小節群).\nI've included as many flexible settings as I could think of for measure groups: rit. and accel., off-beat ticks, complex time signatures, individual playback editing, repeat signs, copy/paste/delete from multiple selections, and more.\n\n■ Playback Mode\nThe "Playback Mode", which pairs with the song data creation, also pursues comfort.\nCount-in before starting the performance. The ability to start from anywhere, whether it's the second time through a repeat or the 4th measure of a rehearsal mark. A "Multiplier" feature to practice at different playback speeds (speed can be adjusted by vertical swiping!). A read-aloud function so you don't get lost (counting beats, rehearsal mark names, etc.).\n\n■ Perfect Backup\nAll settings can be exported as files.\nIn addition to a full export that outputs everything together, there is also a function to output sounds and songs one by one, allowing you to share data with your band members.\n\n■ App Support (PWA)\nAlthough it is an app that runs on a browser, it has a function to install it on various OSs. (Details are described at the bottom of the "Settings" tab in the app.)\nOnce installed, you can place it on your home screen or desktop, use it offline, and it will automatically update to the latest stable version when reloaded while connected to the internet.`,
+        moreAppsTitle: "More apps by Nama",
+        moreAppNames: {
+            "app1": "NamaChu - Advanced Tuner with Time-Series -",
+            "app2": "Absolute Alarm"
+        }
+    }
+};
+let currentLang = 'ja';
+</script>
+
+<div id="app-container">
+    <button class="lang-toggle" onclick="toggleLanguage()">EN / JP</button>
+    <div class="header-section">
+        <img id="ui-app-icon" class="app-icon" src="" alt="App Icon">
+        <div class="app-info">
+            <h1 id="ui-title" class="app-title"></h1>
+            <p id="ui-developer" class="app-developer"></p>
+        </div>
+    </div>
+    <div class="action-section">
+        <a id="ui-action-btn" class="btn-install" href="#" target="_blank"></a>
+    </div>
+    <div class="screenshots-section">
+        <h2 id="ui-screenshots-title" class="section-title"></h2>
+        <div id="ui-gallery" class="gallery-scroll"></div>
+    </div>
+    <div class="description-section">
+        <div id="ui-description" class="description-text"></div>
+    </div>
+    <div class="more-apps-section">
+        <h2 id="ui-more-apps-title" class="section-title"></h2>
+        <div id="ui-more-apps-grid" class="more-apps-grid"></div>
+    </div>
+</div>
+
+<div id="lightbox">
+    <button class="close-btn" onclick="closeLightbox()">×</button>
+    <img id="lightbox-img" src="" alt="Enlarged Screenshot">
+    <div id="lightbox-video"></div>
+    
+    <div class="lightbox-controls">
+        <button class="nav-btn" onclick="prevMedia(event)">◀</button>
+        <button class="nav-btn" onclick="nextMedia(event)">▶</button>
+    </div>
+    <div class="swipe-hint">Swipe to navigate</div>
+</div>
+
+<script>
+const BLANK_IMG_SVG = "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='600'%3E%3Crect width='100%25' height='100%25' fill='%23e8eaed'/%3E%3Ctext x='50%25' y='50%25' font-family='sans-serif' font-size='24' fill='%239aa0a6' text-anchor='middle' dominant-baseline='middle'%3ENo Image%3C/text%3E%3C/svg%3E";
+const BLANK_ICON_SVG = "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Crect width='100%25' height='100%25' fill='%23e8eaed'/%3E%3Ctext x='50%25' y='50%25' font-family='sans-serif' font-size='24' fill='%239aa0a6' text-anchor='middle' dominant-baseline='middle'%3EIcon%3C/text%3E%3C/svg%3E";
+
+function setFallbackImage(imgElement, isIcon = false) {
+    imgElement.onerror = null;
+    imgElement.src = isIcon ? BLANK_ICON_SVG : BLANK_IMG_SVG;
+}
+
+function renderUI() {
+    const textData = APP_CONFIG[currentLang];
+    
+    document.getElementById('ui-title').innerText = textData.title;
+    document.getElementById('ui-developer').innerText = textData.developer;
+    const mainIcon = document.getElementById('ui-app-icon');
+    mainIcon.src = APP_CONFIG.appIcon;
+    mainIcon.onerror = () => setFallbackImage(mainIcon, true);
+    
+    const actionBtn = document.getElementById('ui-action-btn');
+    actionBtn.innerText = textData.buttonText;
+    actionBtn.href = APP_CONFIG.appUrl;
+    
+    document.getElementById('ui-screenshots-title').innerText = textData.screenshotsTitle;
+    document.getElementById('ui-description').innerHTML = textData.description;
+    document.getElementById('ui-more-apps-title').innerText = textData.moreAppsTitle;
+    
+    const gallery = document.getElementById('ui-gallery');
+    if (gallery.innerHTML.trim() === "") {
+        APP_CONFIG.media.forEach((item, index) => {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'gallery-item-wrapper';
+            wrapper.onclick = () => openLightbox(index);
+            
+            const img = document.createElement('img');
+            img.className = 'gallery-item';
+            
+            if (item.type === 'youtube') {
+                img.src = `https://img.youtube.com/vi/${item.id}/hqdefault.jpg`;
+                img.classList.add('img-landscape');
+                
+                const playIcon = document.createElement('div');
+                playIcon.className = 'play-icon';
+                playIcon.innerHTML = '▶';
+                wrapper.appendChild(playIcon);
+            } else {
+                img.src = item.src;
+                img.classList.add('img-portrait');
+                img.onerror = () => setFallbackImage(img);
+            }
+            
+            wrapper.appendChild(img);
+            gallery.appendChild(wrapper);
+        });
+    }
+
+    const moreAppsGrid = document.getElementById('ui-more-apps-grid');
+    moreAppsGrid.innerHTML = "";
+    APP_CONFIG.moreApps.forEach(app => {
+        const a = document.createElement('a');
+        a.className = 'more-app-card';
+        a.href = app.url;
+        
+        const img = document.createElement('img');
+        img.className = 'more-app-icon';
+        img.src = app.icon;
+        img.onerror = () => setFallbackImage(img, true);
+        
+        const span = document.createElement('span');
+        span.className = 'more-app-name';
+        span.innerText = textData.moreAppNames[app.id] || "Unknown App";
+        
+        a.appendChild(img);
+        a.appendChild(span);
+        moreAppsGrid.appendChild(a);
+    });
+}
+
+function toggleLanguage() {
+    currentLang = currentLang === 'ja' ? 'en' : 'ja';
+    renderUI();
+}
+
+let currentMediaIndex = 0;
+const lightbox = document.getElementById('lightbox');
+const lightboxImg = document.getElementById('lightbox-img');
+const lightboxVideo = document.getElementById('lightbox-video');
+
+function openLightbox(index) {
+    currentMediaIndex = index;
+    updateLightboxMedia();
+    lightbox.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeLightbox() {
+    lightbox.classList.remove('active');
+    document.body.style.overflow = '';
+    lightboxVideo.innerHTML = '';
+}
+
+function updateLightboxMedia() {
+    const item = APP_CONFIG.media[currentMediaIndex];
+    
+    lightboxImg.style.opacity = '0';
+    lightboxVideo.style.opacity = '0';
+    lightboxVideo.innerHTML = ''; 
+    
+    setTimeout(() => {
+        if (item.type === 'youtube') {
+            lightboxImg.style.display = 'none';
+            lightboxVideo.style.display = 'block';
+            lightboxVideo.innerHTML = `<iframe src="https://www.youtube.com/embed/${item.id}?autoplay=1&rel=0&modestbranding=1" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+            lightboxVideo.style.opacity = '1';
+        } else {
+            lightboxVideo.style.display = 'none';
+            lightboxImg.style.display = 'block';
+            const tempImg = new Image();
+            tempImg.src = item.src;
+            tempImg.onload = () => { lightboxImg.src = tempImg.src; lightboxImg.style.opacity = '1'; };
+            tempImg.onerror = () => { lightboxImg.src = BLANK_IMG_SVG; lightboxImg.style.opacity = '1'; };
+        }
+    }, 150);
+}
+
+function prevMedia(e) {
+    if(e) e.stopPropagation();
+    currentMediaIndex = (currentMediaIndex > 0) ? currentMediaIndex - 1 : APP_CONFIG.media.length - 1;
+    updateLightboxMedia();
+}
+
+function nextMedia(e) {
+    if(e) e.stopPropagation();
+    currentMediaIndex = (currentMediaIndex < APP_CONFIG.media.length - 1) ? currentMediaIndex + 1 : 0;
+    updateLightboxMedia();
+}
+
+lightbox.addEventListener('click', (e) => {
+    if (e.target === lightbox) closeLightbox();
+});
+
+let touchStartX = 0;
+let touchEndX = 0;
+lightbox.addEventListener('touchstart', e => {
+    touchStartX = e.changedTouches[0].screenX;
+});
+lightbox.addEventListener('touchend', e => {
+    touchEndX = e.changedTouches[0].screenX;
+    const swipeThreshold = 50;
+    if (touchEndX < touchStartX - swipeThreshold) nextMedia();
+    if (touchEndX > touchStartX + swipeThreshold) prevMedia();
+});
+
+window.onload = renderUI;
+</script>
+</body>
+</html>
