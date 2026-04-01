@@ -90,10 +90,8 @@
   .member-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 4px; }
   .member-check-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border); cursor: pointer; background: var(--paper); transition: all 0.15s; user-select: none; -webkit-user-select: none; }
   .member-check-item.present { background: var(--present-bg); border-color: var(--present); }
-  .member-check-item.late    { background: #fff3e0; border-color: #ffcc80; }
   .check-indicator { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--border); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 700; transition: all 0.15s; }
   .member-check-item.present .check-indicator { background: var(--present); border-color: var(--present); color: white; }
-  .member-check-item.late    .check-indicator { background: #e65100; border-color: #e65100; color: white; }
   .check-name { font-size: 0.85rem; font-weight: 500; }
   .check-label { font-size: 0.68rem; color: #e65100; margin-left: 2px; }
 
@@ -116,6 +114,21 @@
   /* toast */
   .toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(10px); background: rgba(26,26,46,0.92); color: #f5f0e8; padding: 9px 18px; border-radius: 24px; font-size: 0.8rem; font-weight: 500; z-index: 500; opacity: 0; transition: opacity 0.3s, transform 0.3s; pointer-events: none; white-space: nowrap; max-width: 90vw; text-align: center; }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  /* ── LOCK ── */
+  .lock-btn { background: none; border: 1px solid rgba(255,255,255,0.18); color: rgba(255,255,255,0.6); font-size: 0.72rem; padding: 3px 10px; border-radius: 20px; cursor: pointer; font-family: inherit; transition: all 0.2s; display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+  .lock-btn:hover { background: rgba(255,255,255,0.1); color: white; }
+  .lock-btn.unlocked { border-color: rgba(184,134,11,0.6); color: #f0c040; }
+  /* ロック時：編集UIを視覚的にdim（操作はJS側でガード） */
+  body.locked .section input, body.locked .section textarea { opacity: 0.5; pointer-events: none; }
+  body.locked .drag-handle { opacity: 0.15; pointer-events: none; }
+  body.locked .btn-danger   { opacity: 0.3;  pointer-events: none; }
+  body.locked .btn-primary:not(#lock-btn), body.locked .btn-accent,
+  body.locked .btn-sage, body.locked .ms-chip { opacity: 0.5; }
+  /* 閲覧可能な操作は普通に使える */
+  body.locked .tab-btn, body.locked .date-chip,
+  body.locked .member-check-item, body.locked .member-chip,
+  body.locked .song-row-header, body.locked .sync-pill,
+  body.locked #toggle-track, body.locked #lock-btn { opacity: 1; pointer-events: auto; }
 
   /* ── MEMBER SELECTOR (admin) ── */
   .member-selector { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 8px; }
@@ -206,6 +219,7 @@
       <div class="sync-dot"></div>
       <span id="hdr-sync-text">同期OFF</span>
     </div>
+    <button class="lock-btn lock-safe" id="lock-btn" onclick="toggleLock()">🔒 閲覧中</button>
   </div>
 </div>
 <div class="tab-bar">
@@ -239,7 +253,7 @@
     </div>
     <div class="section">
       <div class="section-title">🎶 曲目・メンバー一覧</div>
-      <p class="notice">🎵 曲名をタップ→練習フラグON/OFF　👤 名前をタップ→参加曲確認</p>
+      <p class="notice">🎵 曲名をタップ→練習フラグON/OFF<br>👤 名前タップ→参加曲確認<br>⏰ 名前を長押し→遅刻/早退（その曲のみ）</p>
       <div id="song-table"></div>
     </div>
   </div>
@@ -390,12 +404,36 @@
 
 <script>
 // ══════════════════════════════════════════════════════
+// UTILS (最初に定義 - 他の関数から参照されるため)
+// ══════════════════════════════════════════════════════
+let _toastTimer = null;
+function showToast(msg, duration) {
+  duration = duration || 4000;
+  const el = document.getElementById('toast');
+  if (!el) return;
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(function() { el.classList.remove('show'); }, duration);
+}
+
+function fmtDate(s) {
+  const d = new Date(s + 'T00:00:00');
+  return d.getFullYear() + '年' + (d.getMonth()+1) + '月' + d.getDate() + '日（' + '日月火水木金土'[d.getDay()] + '）';
+}
+function esc(s) {
+  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ══════════════════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════════════════
-let data = { members:[], dates:[], songs:[], attendance:{}, practiced:{} };
-// attendance[dateId][memberId] = 'present' | 'absent' | 'late'
+let data = { members:[], dates:[], songs:[], attendance:{}, practiced:{}, partialAbsence:{} };
+// attendance[dateId][memberId] = 'present' | 'absent'  (出席/欠席)
+// partialAbsence[dateId][songId] = [memberId,...]       (遅刻/早退で演奏不参加)
 // (旧形式: attendance[dateId] = [memberId,...] も自動マイグレーション)
 let selectedDateId = null;
+let editLocked = true; // 起動時は必ずロック
 
 // ══════════════════════════════════════════════════════
 // PERSISTENCE (localStorage)
@@ -408,6 +446,7 @@ function loadData() {
   if (!data.attendance) data.attendance = {};
   if (!data.practiced)  data.practiced  = {};
   if (!data._updatedAt) data._updatedAt = 0;
+  if (!data.partialAbsence) data.partialAbsence = {};
   // 旧形式(配列)→新形式(オブジェクト)マイグレーション
   Object.keys(data.attendance).forEach(did => {
     if (Array.isArray(data.attendance[did])) {
@@ -415,6 +454,21 @@ function loadData() {
       data.attendance[did].forEach(mid => { obj[mid] = 'present'; });
       data.attendance[did] = obj;
     }
+  });
+  // 旧attendance[late]→partialAbsence マイグレーション（全曲欠席として移行）
+  Object.keys(data.attendance).forEach(did => {
+    Object.keys(data.attendance[did]||{}).forEach(mid => {
+      if (data.attendance[did][mid] === 'late') {
+        data.attendance[did][mid] = 'present'; // 出席に戻す
+        // 全曲に遅刻/早退設定（旧データの最善マイグレーション）
+        data.songs.forEach(s => {
+          if (!data.partialAbsence[did]) data.partialAbsence[did] = {};
+          if (!data.partialAbsence[did][s.id]) data.partialAbsence[did][s.id] = [];
+          if (!data.partialAbsence[did][s.id].includes(mid))
+            data.partialAbsence[did][s.id].push(mid);
+        });
+      }
+    });
   });
 }
 
@@ -484,12 +538,14 @@ function startDrag(e, item, container, getArr, setArr, rerender) {
 // MEMBERS
 // ══════════════════════════════════════════════════════
 function addMember() {
+  if(editLocked) { lockTapWarn(); return; }
   const inp=document.getElementById('new-member');
   const name=inp.value.trim(); if(!name) return;
   data.members.push({id:uid(), name}); inp.value='';
   saveData(); renderMemberList();
 }
 function deleteMember(id) {
+  if(editLocked) { lockTapWarn(); return; }
   if(!confirm('このメンバーを削除しますか？')) return;
   data.members=data.members.filter(m=>m.id!==id);
   data.songs.forEach(s=>{ s.memberIds=s.memberIds.filter(x=>x!==id); });
@@ -508,6 +564,7 @@ function startEditMember(id) {
   document.getElementById('em-'+id).focus();
 }
 function saveMember(id) {
+  if(editLocked) { lockTapWarn(); return; }
   const v=document.getElementById('em-'+id).value.trim(); if(!v) return;
   const m=data.members.find(m=>m.id===id); if(m) m.name=v;
   saveData(); renderMemberList();
@@ -531,6 +588,7 @@ function renderMemberList() {
 // DATES
 // ══════════════════════════════════════════════════════
 function addDate() {
+  if(editLocked) { lockTapWarn(); return; }
   const di=document.getElementById('new-date'), mi=document.getElementById('new-date-memo');
   if(!di.value) return;
   data.dates.push({id:uid(), date:di.value, memo:mi.value.trim()});
@@ -538,6 +596,7 @@ function addDate() {
   di.value=''; mi.value=''; saveData(); renderDateList();
 }
 function deleteDate(id) {
+  if(editLocked) { lockTapWarn(); return; }
   if(!confirm('この日程を削除しますか？')) return;
   data.dates=data.dates.filter(d=>d.id!==id);
   delete data.attendance[id]; delete data.practiced[id];
@@ -556,6 +615,7 @@ function startEditDate(id) {
     </div>`;
 }
 function saveDate(id) {
+  if(editLocked) { lockTapWarn(); return; }
   const dv=document.getElementById('ed-'+id).value, mv=document.getElementById('em2-'+id).value.trim();
   const d=data.dates.find(d=>d.id===id); if(d&&dv){d.date=dv;d.memo=mv;}
   data.dates.sort((a,b)=>a.date.localeCompare(b.date)); saveData(); renderDateList();
@@ -580,6 +640,7 @@ function renderDateList() {
 // SONGS
 // ══════════════════════════════════════════════════════
 function addSong() {
+  if(editLocked) { lockTapWarn(); return; }
   const inp=document.getElementById('new-song');
   const name=inp.value.trim(); if(!name) return;
   data.songs.push({id:uid(), name, memberIds:[]}); inp.value='';
@@ -587,6 +648,7 @@ function addSong() {
   if(selectedDateId) renderSongTable();
 }
 function deleteSong(id) {
+  if(editLocked) { lockTapWarn(); return; }
   if(!confirm('この曲を削除しますか？')) return;
   data.songs=data.songs.filter(s=>s.id!==id);
   Object.keys(data.practiced).forEach(d=>{data.practiced[d]=(data.practiced[d]||[]).filter(x=>x!==id);});
@@ -604,12 +666,14 @@ function startEditSong(id) {
     </div>`;
 }
 function saveSong(id) {
+  if(editLocked) { lockTapWarn(); return; }
   const v=document.getElementById('es-'+id).value.trim(); if(!v) return;
   const s=data.songs.find(s=>s.id===id); if(s) s.name=v;
   saveData(); renderSongList();
   if(selectedDateId) renderSongTable();
 }
 function toggleSongMember(songId, memberId) {
+  if(editLocked) { lockTapWarn(); return; }
   const s=data.songs.find(s=>s.id===songId); if(!s) return;
   const idx=s.memberIds.indexOf(memberId);
   if(idx>=0) s.memberIds.splice(idx,1); else s.memberIds.push(memberId);
@@ -618,6 +682,7 @@ function toggleSongMember(songId, memberId) {
   if(chip) chip.classList.toggle('selected', s.memberIds.includes(memberId));
 }
 function selectAllSongMembers(songId, val) {
+  if(editLocked) { lockTapWarn(); return; }
   const s=data.songs.find(s=>s.id===songId); if(!s) return;
   s.memberIds=val?data.members.map(m=>m.id):[];
   saveData(); renderSongList();
@@ -668,132 +733,132 @@ function renderPracticeDates() {
 }
 function selectPracticeDate(dateId) {
   selectedDateId=dateId;
-  if(!data.attendance[dateId]) data.attendance[dateId]={};
-  if(!data.practiced[dateId])  data.practiced[dateId]=[];
+  if(!data.attendance[dateId])    data.attendance[dateId]={};
+  if(!data.practiced[dateId])     data.practiced[dateId]=[];
+  if(!data.partialAbsence[dateId]) data.partialAbsence[dateId]={};
   renderPracticeDates();
   document.getElementById('attendance-section').style.display='';
   renderAttendanceGrid(); renderSongTable();
 }
 function selectAllAtt(val) {
+  if(editLocked) { lockTapWarn(); return; }
   if(!selectedDateId) return;
   const obj={};
   if(val) data.members.forEach(m=>{ obj[m.id]='present'; });
   data.attendance[selectedDateId]=obj;
   saveData(); renderAttendanceGrid(); renderSongTable();
 }
+// ── 出席状態 (present / absent) ──
 function attState(memberId) {
   const att = data.attendance[selectedDateId] || {};
-  return att[memberId] || 'absent';
+  return att[memberId] === 'present' ? 'present' : 'absent';
 }
 function setAttState(memberId, state) {
   if(!selectedDateId) return;
   if(!data.attendance[selectedDateId]) data.attendance[selectedDateId]={};
   if(state==='absent') delete data.attendance[selectedDateId][memberId];
-  else data.attendance[selectedDateId][memberId]=state;
+  else data.attendance[selectedDateId][memberId]='present';
   saveData();
   updateAttItemUI(memberId);
   renderSongTable();
 }
 function toggleAttendance(memberId) {
-  // tap: absent→present→absent
+  if(editLocked) { lockTapWarn(); return; }
   const cur=attState(memberId);
   setAttState(memberId, cur==='absent'?'present':'absent');
 }
 function updateAttItemUI(memberId) {
   const item=document.getElementById('att-'+memberId); if(!item) return;
   const s=attState(memberId);
-  item.className='member-check-item '+(s==='absent'?'':s);
+  item.className='member-check-item '+(s==='present'?'present':'');
   const ind=item.querySelector('.check-indicator');
-  ind.textContent = s==='present'?'✓': s==='late'?'⏰':'';
-  const lbl=item.querySelector('.check-label');
-  if(lbl) lbl.textContent = s==='late'?'遅刻/早退':'';
+  ind.textContent = s==='present'?'✓':'';
+}
+
+// ── 遅刻/早退 = partialAbsence (曲ごと) ──
+function isPartialAbsent(songId, memberId) {
+  return ((data.partialAbsence[selectedDateId]||{})[songId]||[]).includes(memberId);
+}
+function togglePartialAbsence(songId, memberId) {
+  if(editLocked) { lockTapWarn(); return; }
+  if(!selectedDateId) return;
+  if(!data.partialAbsence[selectedDateId]) data.partialAbsence[selectedDateId]={};
+  if(!data.partialAbsence[selectedDateId][songId]) data.partialAbsence[selectedDateId][songId]=[];
+  const list = data.partialAbsence[selectedDateId][songId];
+  const idx  = list.indexOf(memberId);
+  if(idx >= 0) {
+    list.splice(idx,1);
+    showToast('✅ 遅刻/早退を解除 → 演奏参加に戻しました');
+  } else {
+    list.push(memberId);
+    showToast('⏰ この曲を遅刻/早退（演奏不参加）に設定しました');
+  }
+  saveData();
+  renderSongTable();
 }
 function renderAttendanceGrid() {
   const el=document.getElementById('attendance-grid');
   if(!data.members.length){el.innerHTML='<p style="font-size:0.8rem;color:var(--muted)">管理画面でメンバーを追加してください</p>';return;}
   el.innerHTML=data.members.map(m=>{
     const s=attState(m.id);
-    return `<div class="member-check-item ${s==='absent'?'':s}" id="att-${m.id}"
-      onclick="toggleAttendance('${m.id}')"
-      oncontextmenu="ctxLate(event,'${m.id}')"
-      data-longpress-id="${m.id}">
-      <div class="check-indicator">${s==='present'?'✓':s==='late'?'⏰':''}</div>
-      <div style="flex:1;min-width:0">
-        <span class="check-name">${esc(m.name)}</span>
-        <span class="check-label">${s==='late'?'遅刻/早退':''}</span>
-      </div>
+    return `<div class="member-check-item ${s==='present'?'present':''}" id="att-${m.id}"
+      onclick="toggleAttendance('${m.id}')">
+      <div class="check-indicator">${s==='present'?'✓':''}</div>
+      <span class="check-name">${esc(m.name)}</span>
     </div>`;
   }).join('');
-  initLongPress();
 }
-function showToast(msg, duration=4000) {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.classList.add('show');
-  clearTimeout(showToast._timer);
-  showToast._timer = setTimeout(() => el.classList.remove('show'), duration);
-}
+// ══════════════════════════════════════════════════════
+// LONG-PRESS (曲チップの遅刻/早退トグル)
+// ══════════════════════════════════════════════════════
+let _lpTimer  = null;
+let _lpFired  = false;  // 長押しが発火したかフラグ
 
-function toggleLate(memberId) {
-  const cur = attState(memberId);
-  // absent→present→late→absent の3ステートサイクルではなく
-  // 出席チェック(タップ)は present↔absent、長押しで late↔present トグル
-  if (cur === 'late') {
-    setAttState(memberId, 'present');
-    showToast('⏰ 遅刻/早退を解除 → 出席に変更しました');
-  } else {
-    setAttState(memberId, 'late');
-    showToast('⏰ 遅刻/早退に設定しました（演奏欠席扱い）');
-  }
-}
+function attachLongPress(el, onLongPress) {
+  // 既に登録済みならスキップ
+  if (el._lpAttached) return;
+  el._lpAttached = true;
 
-let _lpTimer = null;
-let _lpMoved = false;
+  el.addEventListener('touchstart', e => {
+    _lpFired = false;
+    _lpTimer = setTimeout(() => {
+      _lpFired = true;
+      onLongPress();
+    }, 600);
+  }, { passive: true });
 
-function initLongPress() {
-  document.querySelectorAll('[data-longpress-id]').forEach(el => {
-    const mid = el.dataset.longpressId;
+  el.addEventListener('touchmove', () => {
+    clearTimeout(_lpTimer);
+  }, { passive: true });
 
-    el.addEventListener('touchstart', e => {
-      _lpMoved = false;
-      _lpTimer = setTimeout(() => {
-        if (!_lpMoved) {
-          e.preventDefault();
-          toggleLate(mid);
-        }
-      }, 600);
-    }, { passive: true });
+  el.addEventListener('touchend', e => {
+    clearTimeout(_lpTimer);
+    // 長押しが発火していた場合、直後のclickをキャンセル
+    if (_lpFired) {
+      e.preventDefault();
+      e.stopPropagation();
+      _lpFired = false;
+    }
+  });
 
-    el.addEventListener('touchmove',  () => { _lpMoved = true; clearTimeout(_lpTimer); }, { passive: true });
-    el.addEventListener('touchend',   () => clearTimeout(_lpTimer),   { passive: true });
-    el.addEventListener('touchcancel',() => clearTimeout(_lpTimer),   { passive: true });
+  // デスクトップ: 右クリック
+  el.addEventListener('contextmenu', e => {
+    e.preventDefault();
+    onLongPress();
   });
 }
 
 function initSongChipLongPress() {
   document.querySelectorAll('[data-song-chip-member]').forEach(el => {
     const mid = el.dataset.songChipMember;
-    el.addEventListener('touchstart', e => {
-      _lpMoved = false;
-      _lpTimer = setTimeout(() => {
-        if (!_lpMoved) {
-          e.preventDefault();
-          toggleLate(mid);
-          // update all chips for this member across all songs
-          renderSongTable();
-        }
-      }, 600);
-    }, { passive: true });
-    el.addEventListener('touchmove',  () => { _lpMoved = true; clearTimeout(_lpTimer); }, { passive: true });
-    el.addEventListener('touchend',   () => clearTimeout(_lpTimer), { passive: true });
-    el.addEventListener('touchcancel',() => clearTimeout(_lpTimer), { passive: true });
-    // desktop: right-click
-    el.addEventListener('contextmenu', e => { e.preventDefault(); toggleLate(mid); renderSongTable(); });
+    const sid = el.dataset.songId;
+    attachLongPress(el, () => togglePartialAbsence(sid, mid));
   });
 }
 
-function ctxLate(e,memberId){ e.preventDefault(); toggleLate(memberId); }
+
 function togglePracticed(songId) {
+  if(editLocked) { lockTapWarn(); return; }
   if(!selectedDateId) return;
   const list=data.practiced[selectedDateId]||[];
   const idx=list.indexOf(songId);
@@ -808,27 +873,32 @@ function togglePracticed(songId) {
 function renderSongTable() {
   const el=document.getElementById('song-table');
   if(!data.songs.length){el.innerHTML='<div class="empty-state">曲が登録されていません</div>';return;}
-  const attObj=data.attendance[selectedDateId]||{};
-  const pracList=data.practiced[selectedDateId]||[];
-  // present=出席, late=遅刻/早退(欠席扱い), absent=欠席
+  const attObj   = data.attendance[selectedDateId]||{};
+  const pracList = data.practiced[selectedDateId]||[];
+  const pa       = (data.partialAbsence[selectedDateId])||{};  // pa[songId]=[mid,...]
+
   const isPresent = mid => attObj[mid]==='present';
-  const isLate    = mid => attObj[mid]==='late';
+
   const rows=data.songs.map(s=>{
     if(!s.memberIds.length) return '';
-    // present のみカウント（late は欠席扱い）
-    const pres=s.memberIds.filter(id=>isPresent(id));
-    const pct=Math.round(pres.length/s.memberIds.length*100);
-    const pc=pct>=80?'high':pct>=50?'mid':'low';
-    const on=pracList.includes(s.id);
-    const chips=s.memberIds.map(mid=>{
+    const partialList = pa[s.id]||[];
+    // 出席かつ遅刻/早退でない人が「演奏参加」
+    const pres = s.memberIds.filter(id => isPresent(id) && !partialList.includes(id));
+    const pct  = Math.round(pres.length/s.memberIds.length*100);
+    const pc   = pct>=80?'high':pct>=50?'mid':'low';
+    const on   = pracList.includes(s.id);
+    const chips = s.memberIds.map(mid=>{
       const m=data.members.find(m=>m.id===mid); if(!m) return '';
-      const chipState = isPresent(mid)?'present': isLate(mid)?'late':'absent';
-      const chipLabel = isLate(mid)?` <span style="font-size:0.65rem">⏰</span>`:'';
-      return `<span class="member-chip ${chipState}"
+      const absent  = !isPresent(mid);
+      const partial = isPresent(mid) && partialList.includes(mid);
+      const present = isPresent(mid) && !partialList.includes(mid);
+      const chipCls = present?'present': partial?'late':'absent';
+      const lateIcon= partial?' <span style="font-size:0.65rem;font-style:normal">⏰</span>':'';
+      return `<span class="member-chip ${chipCls}"
         onclick="showMemberPopup('${mid}')"
         data-song-chip-member="${mid}"
         data-song-id="${s.id}"
-      >${esc(m.name)}${chipLabel}</span>`;
+      >${esc(m.name)}${lateIcon}</span>`;
     }).join('');
     return `<div class="song-row">
       <div class="song-row-header" id="srhdr-${s.id}" style="${on?'background:#2d3a2e':''}" onclick="togglePracticed('${s.id}')">
@@ -843,18 +913,15 @@ function renderSongTable() {
   initSongChipLongPress();
 }
 
-// ══════════════════════════════════════════════════════
-// POPUPS
-// ══════════════════════════════════════════════════════
 function showMemberPopup(memberId) {
   if(!selectedDateId) return;
   const m=data.members.find(m=>m.id===memberId); if(!m) return;
-  const attObj=data.attendance[selectedDateId]||{};
-  const prac=data.practiced[selectedDateId]||[];
-  const memberState=attObj[memberId]||'absent';
-  const isPresent=memberState==='present';
-  const badgeCls = memberState==='present'?'badge-present': memberState==='late'?'badge-late':'badge-absent';
-  const badgeTxt = memberState==='present'?'出席': memberState==='late'?'遅刻/早退':'欠席';
+  const attObj = data.attendance[selectedDateId]||{};
+  const prac   = data.practiced[selectedDateId]||[];
+  const pa     = data.partialAbsence[selectedDateId]||{};
+  const isPresent = attObj[memberId]==='present';
+  const badgeCls  = isPresent?'badge-present':'badge-absent';
+  const badgeTxt  = isPresent?'出席':'欠席';
   document.getElementById('pop-member-name').innerHTML=
     `${esc(m.name)} <span class="badge ${badgeCls}">${badgeTxt}</span>`;
   const songs=data.songs.filter(s=>s.memberIds.includes(memberId));
@@ -862,12 +929,15 @@ function showMemberPopup(memberId) {
     document.getElementById('pop-member-songs').innerHTML='<p style="color:var(--muted);font-size:0.82rem">参加曲はありません</p>';
   } else {
     document.getElementById('pop-member-songs').innerHTML=songs.map(s=>{
-      const pr=s.memberIds.filter(id=>attObj[id]==='present');
-      const pct=Math.round(pr.length/s.memberIds.length*100);
-      const pc=pct>=80?'high':pct>=50?'mid':'low';
-      const on=prac.includes(s.id);
+      const partialList = pa[s.id]||[];
+      const isPartial   = isPresent && partialList.includes(memberId);
+      const pr = s.memberIds.filter(id=>attObj[id]==='present' && !partialList.includes(id));
+      const pct= Math.round(pr.length/s.memberIds.length*100);
+      const pc = pct>=80?'high':pct>=50?'mid':'low';
+      const on = prac.includes(s.id);
+      const lateTag = isPartial?'<span class="badge badge-late" style="margin-left:4px">⏰遅刻/早退</span>':'';
       return `<div style="padding:10px 0;border-bottom:1px solid var(--cream);display:flex;align-items:center;gap:8px">
-        <span style="flex:1;font-size:0.88rem;font-weight:500">🎵 ${esc(s.name)}</span>
+        <span style="flex:1;font-size:0.88rem;font-weight:500">🎵 ${esc(s.name)}${lateTag}</span>
         ${on?'<span class="badge badge-practiced">練習済</span>':''}
         <span class="progress-pill ${pc}" style="background:${pc==='high'?'var(--present-bg)':pc==='mid'?'#fef3cd':'var(--absent-bg)'};color:${pc==='high'?'var(--present)':pc==='mid'?'var(--gold)':'var(--absent)'}">${pct}%</span>
       </div>`;
@@ -875,25 +945,36 @@ function showMemberPopup(memberId) {
   }
   document.getElementById('overlay-member').classList.add('open');
 }
+
 function closeOverlay(e,id){ if(e.target===document.getElementById(id)) document.getElementById(id).classList.remove('open'); }
 
 // ══════════════════════════════════════════════════════
 // STATS
 // ══════════════════════════════════════════════════════
 function cntSong(songId){ return Object.values(data.practiced).filter(l=>l.includes(songId)).length; }
-function wasPresent(did,memberId){
-  const s=(data.attendance[did]||{})[memberId];
-  return s==='present'; // late は欠席扱いなのでカウントしない
+function wasPresent(did, memberId, songId) {
+  // 出席 かつ その曲でpartialAbsentでない
+  const att = (data.attendance[did]||{})[memberId];
+  if(att !== 'present') return false;
+  if(songId) {
+    const partial = ((data.partialAbsence[did]||{})[songId]||[]);
+    if(partial.includes(memberId)) return false;
+  }
+  return true;
 }
 function cntMemberSong(memberId,songId){
   return Object.keys(data.practiced).filter(did=>
-    (data.practiced[did]||[]).includes(songId)&&wasPresent(did,memberId)
+    (data.practiced[did]||[]).includes(songId) && wasPresent(did,memberId,songId)
   ).length;
 }
 function cntMemberTotal(memberId){
-  return Object.keys(data.practiced).filter(did=>
-    (data.practiced[did]||[]).length>0&&wasPresent(did,memberId)
-  ).length;
+  // 1日でも1曲でも演奏参加していたらカウント
+  return Object.keys(data.practiced).filter(did=>{
+    if(!(data.practiced[did]||[]).length) return false;
+    return data.songs.some(s =>
+      (data.practiced[did]||[]).includes(s.id) && wasPresent(did,memberId,s.id)
+    );
+  }).length;
 }
 function renderStats(){
   const se=document.getElementById('stats-songs');
@@ -985,10 +1066,10 @@ function importTxt(event) {
       if(!imported.members||!imported.dates||!imported.songs) throw 0;
       if(!confirm(`「${file.name}」のデータをインポートします。現在のデータは上書きされます。`)) return;
       data=imported;
-      if(!data.attendance) data.attendance={};
-      if(!data.practiced)  data.practiced={};
-      if(!data._updatedAt) data._updatedAt=Date.now();
-      // マイグレーション
+      if(!data.attendance)     data.attendance={};
+      if(!data.practiced)       data.practiced={};
+      if(!data.partialAbsence)  data.partialAbsence={};
+      if(!data._updatedAt)      data._updatedAt=Date.now();
       Object.keys(data.attendance).forEach(did=>{
         if(Array.isArray(data.attendance[did])){
           const obj={};
@@ -1002,6 +1083,37 @@ function importTxt(event) {
     event.target.value='';
   };
   reader.readAsText(file,'utf-8');
+}
+
+// ══════════════════════════════════════════════════════
+// EDIT LOCK
+// ══════════════════════════════════════════════════════
+const LOCK_KEY = 'ensemble_edit_lock';
+
+function toggleLock() {
+  editLocked = !editLocked;
+  localStorage.setItem(LOCK_KEY, editLocked ? '1' : '0');
+  applyLockState(true); // trueでtoast表示
+}
+
+function applyLockState(withToast) {
+  const btn = document.getElementById('lock-btn');
+  if(!btn) return;
+  if(editLocked) {
+    document.body.classList.add('locked');
+    btn.textContent = '🔒 閲覧中';
+    btn.classList.remove('unlocked');
+    if(withToast) showToast('🔒 閲覧モードに戻りました', 3000);
+  } else {
+    document.body.classList.remove('locked');
+    btn.textContent = '🔓 編集中';
+    btn.classList.add('unlocked');
+    if(withToast) showToast('🔓 編集モードになりました', 3000);
+  }
+}
+
+function lockTapWarn() {
+  showToast('🔒 閲覧モードです。右上のボタンで編集モードに切替できます', 3000);
 }
 
 // ══════════════════════════════════════════════════════
@@ -1145,8 +1257,9 @@ async function syncPull(manual=false) {
 
 function applyCloud(cloudData, savedAt) {
   data = cloudData;
-  if(!data.attendance) data.attendance={};
-  if(!data.practiced)  data.practiced={};
+  if(!data.attendance)    data.attendance={};
+  if(!data.practiced)     data.practiced={};
+  if(!data.partialAbsence) data.partialAbsence={};
   Object.keys(data.attendance).forEach(did=>{
     if(Array.isArray(data.attendance[did])){
       const obj={};
@@ -1264,20 +1377,17 @@ function copyGasCode(){
     });
 }
 
-// ══════════════════════════════════════════════════════
-// UTILS
-// ══════════════════════════════════════════════════════
-function fmtDate(s){
-  const d=new Date(s+'T00:00:00');
-  return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日（${'日月火水木金土'[d.getDay()]}）`;
-}
-function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+// (fmtDate / esc はスクリプト先頭で定義済み)
 
 // ══════════════════════════════════════════════════════
 // BOOT
 // ══════════════════════════════════════════════════════
 loadData();
 initGasCodeBlock();
+
+// 編集ロック: 起動時は必ずロック状態（localStorageに関わらず）
+editLocked = true;
+applyLockState();
 
 // 最後に開いていたタブを復元
 (function restoreTab() {
