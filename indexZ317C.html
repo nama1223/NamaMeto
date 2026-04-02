@@ -1269,7 +1269,7 @@
         <div class="cl-body">
 
             <p class="cl-ver">Z317C</p>
-            <p class="cl-desc">リピート設定画面のレイアウト調整：左/右括弧を横並び、反復番号括弧にサンプル表示を追加、セーニョとD.S.、toコーダとコーダ、D.C.とFineをそれぞれ横並びに変更。</p>
+            <p class="cl-desc">リピート設定画面のレイアウト調整：左/右括弧を横並び、反復番号括弧にサンプル表示を追加、セーニョとD.S.、toコーダとコーダ、D.C.とFineをそれぞれ横並びに変更。音声保存のカウント読み上げ処理を再生モードと同一ロジックに統一（弱拍スキップ設定・読み上げ番号の小節内カウンター・最終拍の「はい」音声に対応）。</p>
             <p class="cl-ver">Z316C</p>
             <p class="cl-desc">リピート設定の複数記号に関するバグ修正：小節群の内容変更時に番号括弧の設定が消えていた問題、番号括弧と右括弧を同一小節群に設定した際の再生順序の誤りを修正。番号括弧の最大番号の初期値を5に変更。</p>
             <p class="cl-ver">Z315C</p>
@@ -7476,32 +7476,61 @@ async function startMp3Export() {
             }
         }
         setMp3Progress(25);
+
+        // 開始ボイスバッファをコピー（startVoiceBuffersはリアルタイムCtx用のためコピーが必要）
+        await loadStartVoiceAudio();
+        const offStartVoiceBufs = {};
+        for (const key of ['ready', 'high']) {
+            const copied = copyBuf(startVoiceBuffers[key]);
+            if (copied) offStartVoiceBufs[key] = copied;
+        }
         await new Promise(r => setTimeout(r, 10));
 
-        // ノートをスケジュール
+        // ノートをスケジュール（再生側と同一ロジック）
         let cursor = 0;
         const ttsOn = document.getElementById('ttsToggle')?.checked;
+        const skipWeak = ttsDetail.countSkipWeakEnabled !== false;
+        const minLvl = skipWeak ? 2 : 1;
+        let offCountInBarSeq = 0; // 再生側の _countInBarSeq 相当（小節頭でリセット）
         for (const n of notes) {
             const time = cursor;
             cursor += n.duration;
             if (n.level > 0) {
                 playSoundOffline(offCtx, time, n.level, n.isCountIn, offBuiltinBufs, offCustomBufs);
             }
-            if (ttsOn && n.beatCountInBar !== undefined && !n.isClickBeat) {
+            if (ttsOn && !n.isClickBeat && n.beatCountInBar !== undefined && n.level >= minLvl) {
+                if (n.isBarStart) offCountInBarSeq = 0;
                 const shouldCount = ttsDetail.countAlwaysEnabled
-                    || (ttsDetail.countRitEnabled && n.isRit && !n.isClickBeat)
+                    || (ttsDetail.countRitEnabled && n.isRit)
                     || (ttsDetail.countPrecountEnabled && n.isLastPrecountBar);
                 if (shouldCount) {
-                    const key = ((n.beatCountInBar % 10) + 1) + countLang;
-                    const buf = offCountBufs[key];
-                    if (buf) {
-                        const src = offCtx.createBufferSource();
-                        const g   = offCtx.createGain();
-                        src.buffer = buf; src.connect(g); g.connect(offCtx.destination);
-                        g.gain.setValueAtTime(ttsVol * ttsVolCount, Math.max(0, time));
-                        src.start(Math.max(0, time));
+                    const isStartVoiceBeat = n.isLastCountInBar &&
+                        (n.isLastPrecountBar || n.isBar1Group);
+                    if (isStartVoiceBeat) {
+                        const svKey = (countLang === 'en') ? 'ready' : 'high';
+                        const svBuf = offStartVoiceBufs[svKey];
+                        if (svBuf) {
+                            const src = offCtx.createBufferSource();
+                            const g   = offCtx.createGain();
+                            src.buffer = svBuf; src.connect(g); g.connect(offCtx.destination);
+                            g.gain.setValueAtTime(ttsVol * ttsVolCount, Math.max(0, time));
+                            src.start(Math.max(0, time));
+                        }
+                    } else {
+                        const key = ((offCountInBarSeq % 10) + 1) + countLang;
+                        const buf = offCountBufs[key];
+                        if (buf) {
+                            const src = offCtx.createBufferSource();
+                            const g   = offCtx.createGain();
+                            src.buffer = buf; src.connect(g); g.connect(offCtx.destination);
+                            g.gain.setValueAtTime(ttsVol * ttsVolCount, Math.max(0, time));
+                            src.start(Math.max(0, time));
+                        }
                     }
                 }
+                offCountInBarSeq++;
+            } else if (n.isBarStart && !n.isClickBeat) {
+                offCountInBarSeq = 0;
             }
         }
 
