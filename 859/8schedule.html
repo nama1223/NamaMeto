@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>アンサンブル練習アシスト</title>
+<title>はちこくアシスト</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -237,7 +237,7 @@
 
 <!-- ── HEADER ── -->
 <div class="app-header">
-  <h1>🎼 アンサンブル練習アシスト <span style="font-size:0.55rem;font-weight:400;opacity:0.5;letter-spacing:0.05em;vertical-align:middle">v1.01</span></h1>
+  <h1>🎼 はちこく練習アシスト <span style="font-size:0.55rem;font-weight:400;opacity:0.5;letter-spacing:0.05em;vertical-align:middle">v1.02</span></h1>
   <div class="header-sync">
     <div class="sync-pill off" id="hdr-sync-pill">
       <div class="sync-dot"></div>
@@ -319,12 +319,13 @@
       </div>
       <div id="date-list"></div>
     </div>
+  </div>
 
     <!-- 出欠登録（日程タップ後に表示） -->
     <div id="admin-attendance-wrap" style="display:none">
       <div class="section">
         <div class="section-title">👥 出欠登録 — <span id="admin-att-date-label" style="font-weight:400;text-transform:none;letter-spacing:0;font-size:0.82rem;color:var(--ink)"></span></div>
-        <p class="notice" style="margin-bottom:10px">タップで「未定 → 出席 → 欠席 → 未定」と切替。コメントも入力できます。</p>
+        <p class="notice" style="margin-bottom:10px">タップで「未定 → 出席 → 欠席 → 未定」と切替。</p>
         <div id="admin-attendance-grid"></div>
       </div>
     </div>
@@ -353,7 +354,6 @@
     </div>
   </div>
 </div>
-
 <!-- ── 同期・データ ── -->
 <div id="screen-data" class="screen">
 
@@ -545,7 +545,7 @@ function switchTab(name, btn) {
   localStorage.setItem('ensemble_last_tab', name);
   if (name==='practice') renderPracticeDates();
   if (name==='stats')    renderStats();
-  if (name==='data')     { loadGasUrl(); initGasCodeBlock(); }
+  if (name==='data')     { initGasCodeBlock(); }
   if (name==='admin')    {
     // 子タブを復元
     const lastSub = localStorage.getItem('ensemble_last_subtab') || 'date';
