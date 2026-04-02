@@ -318,7 +318,7 @@
 <!-- ── HEADER ── -->
 <div class="app-header">
   <h1>🎼 はちこく練習アシスト <span style="font-size:0.55rem;font-weight:400;opacity:0.5;letter-spacing:0.05em;vertical-align:middle">
-  v1.08</span></h1>
+  v1.09</span></h1>
   <div class="header-sync">
     <div class="sync-pill off" id="hdr-sync-pill">
       <div class="sync-dot"></div>
@@ -1042,12 +1042,16 @@ function setAttRecord(memberId, status, comment) {
   if(!selectedDateId) return;
   if(!data.attendance[selectedDateId]) data.attendance[selectedDateId] = {};
   const old = attRecord(memberId);
-  data.attendance[selectedDateId][memberId] = {
+  const existing = data.attendance[selectedDateId][memberId];
+  // ゲストの _name フィールドを保持する
+  const _name = (existing && typeof existing === 'object') ? existing._name : undefined;
+  const newRec = {
     status:  status  !== undefined ? status  : old.status,
     comment: comment !== undefined ? comment : old.comment
   };
+  if(_name !== undefined) newRec._name = _name;
+  data.attendance[selectedDateId][memberId] = newRec;
   saveData();
-  // コメント変更時はsong-tableの再描画は不要。状態変更時はtoggleAttendanceが担う
 }
 function setAttState(memberId, state) { // 後方互換
   setAttRecord(memberId, state);
@@ -1148,8 +1152,8 @@ function renderAdminAttendanceGrid() {
       ? ` <span class="guest-name-badge">👤 ゲスト</span>`
       : '';
     const guestBtns = entry.isGuest
-      ? `<button class="btn btn-sm btn-ghost" onclick="renameGuest('${entry.id}')" style="padding:2px 7px;font-size:0.68rem">編集</button>
-         <button class="btn btn-sm btn-danger" onclick="deleteGuest('${entry.id}')" style="padding:2px 7px;font-size:0.68rem">削除</button>`
+      ? `<button class="btn btn-sm btn-ghost guest-rename-btn" data-gid="${esc(entry.id)}" style="padding:2px 7px;font-size:0.68rem">編集</button>
+         <button class="btn btn-sm btn-danger guest-delete-btn" data-gid="${esc(entry.id)}" style="padding:2px 7px;font-size:0.68rem">削除</button>`
       : '';
     return `<div class="att-card s-${s}${guestCardCls}" id="admin-att-card-${entry.id}">
       <div class="att-card-top" onclick="toggleAttendance('${entry.id}')">
@@ -1170,6 +1174,14 @@ function renderAdminAttendanceGrid() {
 
   el.innerHTML = countBar + cards +
     `<div class="guest-add-row"><button class="btn-guest" onclick="addGuest()">＋ ゲスト追加</button></div>`;
+
+  // ゲスト編集・削除ボタンのイベントデリゲーション
+  el.querySelectorAll('.guest-rename-btn').forEach(btn => {
+    btn.addEventListener('click', e => { e.stopPropagation(); renameGuest(btn.dataset.gid); });
+  });
+  el.querySelectorAll('.guest-delete-btn').forEach(btn => {
+    btn.addEventListener('click', e => { e.stopPropagation(); deleteGuest(btn.dataset.gid); });
+  });
 }
 
 function addGuest() {
