@@ -318,7 +318,7 @@
 <!-- ── HEADER ── -->
 <div class="app-header">
   <h1>🎼 はちこく練習アシスト <span style="font-size:0.55rem;font-weight:400;opacity:0.5;letter-spacing:0.05em;vertical-align:middle">
-  v1.09</span></h1>
+  v1.10</span></h1>
   <div class="header-sync">
     <div class="sync-pill off" id="hdr-sync-pill">
       <div class="sync-dot"></div>
@@ -394,7 +394,7 @@
   </div>
 
   <div class="sub-screen active" id="sub-date">
-    <div class="collapsible-section open" id="cs-add-date">
+    <div class="collapsible-section" id="cs-add-date">
       <div class="collapsible-header" onclick="toggleCollapsible('cs-add-date')">
         <div class="section-title">📅 練習予定日を追加</div>
         <span class="collapsible-arrow">▶</span>
@@ -421,11 +421,16 @@
     </div>
 
 
-    <!-- 出欠登録（日程タップ後に表示） -->
-    <div id="admin-attendance-wrap" style="display:none">
+    <!-- 出欠登録（常時表示・リストボックスで日付選択） -->
+    <div id="admin-attendance-wrap">
       <div class="section">
-        <div class="section-title">👥 出欠登録 — <span id="admin-att-date-label" style="font-weight:400;text-transform:none;letter-spacing:0;font-size:0.82rem;color:var(--ink)"></span></div>
-        <p class="notice" style="margin-bottom:10px">タップで「未定 → 出席 → 欠席 → 未定」と切替。</p>
+        <div class="section-title">👥 出欠登録</div>
+        <div style="margin-bottom:10px">
+          <select id="att-date-select" onchange="selectPracticeDate(this.value)" style="width:100%;font-family:'Noto Sans JP',sans-serif;font-size:0.88rem;padding:8px 10px;border:1px solid var(--border);border-radius:7px;background:var(--paper);color:var(--ink);outline:none">
+            <option value="">── 練習日を選んでください ──</option>
+          </select>
+        </div>
+        <p class="notice" id="att-notice" style="margin-bottom:10px;display:none">タップで「未定 → 出席 → 欠席 → 未定」と切替。</p>
         <div id="admin-attendance-grid"></div>
       </div>
     </div>
@@ -1094,14 +1099,32 @@ function wasPresent(did, memberId, songId) {
 }
 
 function renderAdminAttendanceGrid() {
-  if(!selectedDateId) return;
-  const d    = data.dates.find(d=>d.id===selectedDateId);
-  const wrap = document.getElementById('admin-attendance-wrap');
-  const lbl  = document.getElementById('admin-att-date-label');
-  if(wrap) wrap.style.display = '';
-  if(lbl && d) lbl.textContent = fmtDate(d.date);
+  // リストボックスを常に最新の日程リストで更新
+  const sel = document.getElementById('att-date-select');
+  if(sel) {
+    const cur = sel.value;
+    sel.innerHTML = '<option value="">── 練習日を選んでください ──</option>' +
+      data.dates.map(d => {
+        const label = (d.confirmed ? '' : '【仮】') + fmtDate(d.date) + (d.memo ? '　' + d.memo : '');
+        return `<option value="${d.id}"${d.id===selectedDateId?' selected':''}>${esc(label)}</option>`;
+      }).join('');
+  }
+
+  const notice = document.getElementById('att-notice');
   const el = document.getElementById('admin-attendance-grid');
   if(!el) return;
+
+  if(!selectedDateId) {
+    if(notice) notice.style.display = 'none';
+    el.innerHTML = '<div class="empty-state" style="padding:16px 0"><div class="ei">📅</div>上のリストから練習日を選んでください</div>';
+    return;
+  }
+
+  if(notice) notice.style.display = '';
+
+  const d    = data.dates.find(d=>d.id===selectedDateId);
+  const wrap = document.getElementById('admin-attendance-wrap');
+  if(wrap) wrap.style.display = '';
 
   // ゲストを含む全メンバーリスト
   const att = data.attendance[selectedDateId] || {};
@@ -1126,7 +1149,6 @@ function renderAdminAttendanceGrid() {
   // 人数集計
   const presentEntries = allEntries.filter(e => attStatus(e.id) === 'present');
   const presentCount = presentEntries.length;
-  // 頭文字（アルファベット）別集計
   const alphaCounts = {};
   presentEntries.forEach(e => {
     const m = e.name.match(/^([A-Za-z])/);
