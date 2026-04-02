@@ -237,7 +237,8 @@
 
 <!-- ── HEADER ── -->
 <div class="app-header">
-  <h1>🎼 はちこく練習アシスト <span style="font-size:0.55rem;font-weight:400;opacity:0.5;letter-spacing:0.05em;vertical-align:middle">v1.02</span></h1>
+  <h1>🎼 はちこく練習アシスト <span style="font-size:0.55rem;font-weight:400;opacity:0.5;letter-spacing:0.05em;vertical-align:middle">
+  v1.03</span></h1>
   <div class="header-sync">
     <div class="sync-pill off" id="hdr-sync-pill">
       <div class="sync-dot"></div>
@@ -725,7 +726,7 @@ function renderDateList() {
     const confirmBtnCls   = isConf ? 'btn-sage' : 'btn-ghost';
     const isSelected = selectedDateId === d.id;
     return `<div class="list-item ${isConf?'date-confirmed':'date-provisional'}" id="date-item-${d.id}" style="${isSelected?'background:var(--cream);border-radius:8px':''}">
-      <div class="item-main" onclick="selectPracticeDate('${d.id}')" style="cursor:pointer;padding:2px 0">
+      <div class="item-main" onclick="selectPracticeDate('${d.id}')" renderDateList();" style="cursor:pointer;padding:2px 0">
         <div class="item-name">${provBadge}${fmtDate(d.date)}${isSelected?' <span style="font-size:0.68rem;color:var(--sage);font-weight:700;margin-left:4px">✓選択中</span>':''}</div>
         ${d.memo?`<div class="item-sub">${esc(d.memo)}</div>`:''}
       </div>
