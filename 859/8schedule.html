@@ -114,10 +114,7 @@
   /* toast */
   .toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(10px); background: rgba(26,26,46,0.92); color: #f5f0e8; padding: 9px 18px; border-radius: 24px; font-size: 0.8rem; font-weight: 500; z-index: 500; opacity: 0; transition: opacity 0.3s, transform 0.3s; pointer-events: none; white-space: nowrap; max-width: 90vw; text-align: center; }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-  /* ── LOCK ── */
-  .lock-btn { background: none; border: 1px solid rgba(255,255,255,0.18); color: rgba(255,255,255,0.6); font-size: 0.72rem; padding: 3px 10px; border-radius: 20px; cursor: pointer; font-family: inherit; transition: all 0.2s; display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
-  .lock-btn:hover { background: rgba(255,255,255,0.1); color: white; }
-  .lock-btn.unlocked { border-color: rgba(184,134,11,0.6); color: #f0c040; }
+  /* ── LOCK ── (定義は下部のキラキラブロックへ移動) */
   /* ロック時：編集UIを視覚的にdim（操作はJS側でガード） */
   body.locked .section input, body.locked .section textarea { opacity: 0.5; pointer-events: none; }
   body.locked .drag-handle { opacity: 0.15; pointer-events: none; }
@@ -211,19 +208,7 @@
   .date-provisional .prov-badge { display: inline-block; font-size: 0.65rem; background: var(--cream); color: var(--muted); border: 1px solid var(--border); border-radius: 4px; padding: 1px 5px; margin-right: 5px; vertical-align: middle; font-weight: 600; letter-spacing: 0.04em; }
   .date-confirmed .prov-badge { display: none; }
   .date-confirmed .item-name { color: var(--ink); }
-  /* ── 出欠カード ── */
-  .att-card { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--paper); margin-bottom: 8px; transition: border-color 0.15s, background 0.15s; }
-  .att-card.s-present   { background: var(--present-bg); border-color: var(--present); }
-  .att-card.s-absent    { background: var(--absent-bg);  border-color: #f0b8b8; }
-  .att-card.s-undecided { background: var(--cream);      border-color: var(--border); }
-  .att-card-top { display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; -webkit-user-select: none; margin-bottom: 7px; }
-  .att-badge { font-size: 0.72rem; font-weight: 700; padding: 3px 11px; border-radius: 20px; flex-shrink: 0; }
-  .s-present   .att-badge { background: var(--present); color: white; }
-  .s-absent    .att-badge { background: var(--absent);  color: white; }
-  .s-undecided .att-badge { background: #c8bfaa;        color: white; }
-  .att-member-name { font-size: 0.9rem; font-weight: 600; flex: 1; }
-  .att-comment { font-family: inherit; font-size: 0.8rem; padding: 5px 9px; border: 1px solid var(--border); border-radius: 6px; width: 100%; background: rgba(255,255,255,0.6); color: var(--ink); outline: none; }
-  .att-comment:focus { border-color: var(--sage); background: white; }
+  /* ── 出欠カード ── (定義は下部の「att-card縦幅圧縮」ブロックへ移動) */
   /* misc */
   .empty-state { text-align: center; padding: 20px 0; color: var(--muted); font-size: 0.82rem; }
   .empty-state .ei { font-size: 2rem; margin-bottom: 6px; }
@@ -231,6 +216,101 @@
   .notice { font-size: 0.73rem; color: var(--sage); background: #eaf4ee; padding: 8px 12px; border-radius: 7px; margin-bottom: 10px; border: 1px solid #c8e6d0; }
   ::-webkit-scrollbar { width: 4px; }
   ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  /* ── 人数集計バー ── */
+  .att-count-bar { background: var(--cream); border-radius: 8px; padding: 8px 12px; margin-bottom: 10px; font-size: 0.82rem; display: flex; align-items: center; flex-wrap: wrap; gap: 6px; border: 1px solid var(--border); }
+  .att-count-total { font-weight: 700; color: var(--ink); }
+  .att-count-chip { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 2px 9px; font-size: 0.75rem; font-weight: 600; color: var(--muted); }
+
+  /* ── コメント強調 ── */
+  .att-comment-wrap { position: relative; }
+  .att-comment-wrap.has-comment .att-comment { border-color: var(--gold); background: #fffbe8; font-weight: 600; box-shadow: 0 0 0 2px rgba(184,134,11,0.18); }
+  .att-comment-icon { display: none; position: absolute; right: 8px; top: 50%; transform: translateY(-50%); font-size: 1rem; pointer-events: none; }
+  .att-comment-wrap.has-comment .att-comment-icon { display: block; animation: commentPop 0.4s ease; }
+  @keyframes commentPop { 0%{transform:translateY(-50%) scale(0.5);opacity:0} 60%{transform:translateY(-50%) scale(1.3);opacity:1} 100%{transform:translateY(-50%) scale(1);opacity:1} }
+
+  /* 閲覧モード：コメントなし枠を非表示 */
+  body.locked .att-comment-wrap:not(.has-comment) { display: none; }
+
+  /* ゲスト追加ボタン行 */
+  .guest-add-row { display: flex; justify-content: center; margin-top: 8px; }
+  .btn-guest { background: none; border: 1.5px dashed var(--border); color: var(--muted); font-size: 0.78rem; padding: 7px 18px; border-radius: 20px; cursor: pointer; font-family: inherit; transition: all 0.18s; }
+  .btn-guest:hover { border-color: var(--sage); color: var(--sage); }
+
+  /* ── 過去ログ details ── */
+  .past-dates-details { margin-top: 4px; }
+  .past-dates-summary { display: flex; align-items: center; gap: 6px; padding: 9px 12px; border-radius: 8px; background: var(--cream); border: 1px solid var(--border); cursor: pointer; font-size: 0.82rem; font-weight: 600; color: var(--muted); user-select: none; -webkit-user-select: none; list-style: none; }
+  .past-dates-summary::-webkit-details-marker { display: none; }
+  .past-dates-summary::before { content: '▶'; font-size: 0.65rem; transition: transform 0.2s; }
+  details[open] .past-dates-summary::before { transform: rotate(90deg); }
+  .past-dates-inner { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
+
+  /* ── 折りたたみsection（練習日選択・日程追加フォーム） ── */
+  .collapsible-section { background: white; border-radius: 10px; margin-bottom: 14px; box-shadow: var(--shadow); border: 1px solid var(--border); overflow: hidden; }
+  .collapsible-header { display: flex; align-items: center; gap: 8px; padding: 11px 14px; cursor: pointer; user-select: none; -webkit-user-select: none; }
+  .collapsible-header .section-title { margin: 0; padding: 0; border: none; flex: 1; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+  .collapsible-arrow { font-size: 0.6rem; color: var(--muted); transition: transform 0.22s; flex-shrink: 0; }
+  .collapsible-section.open .collapsible-arrow { transform: rotate(90deg); }
+  .collapsible-body { display: none; padding: 0 14px 14px; }
+  .collapsible-section.open .collapsible-body { display: block; }
+  .collapsible-peek { font-size: 0.75rem; color: var(--sage); font-weight: 600; flex-shrink: 0; max-width: 55%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* ── 🔒ボタン キラキラ ── */
+  @keyframes shimmer {
+    0%   { box-shadow: 0 0 0px rgba(240,192,64,0); }
+    30%  { box-shadow: 0 0 7px 2px rgba(240,192,64,0.7), 0 0 14px 4px rgba(255,220,100,0.35); }
+    60%  { box-shadow: 0 0 4px 1px rgba(240,192,64,0.4); }
+    100% { box-shadow: 0 0 0px rgba(240,192,64,0); }
+  }
+  @keyframes sparkle-rotate {
+    0%   { transform: rotate(0deg) scale(1); }
+    50%  { transform: rotate(5deg) scale(1.08); }
+    100% { transform: rotate(0deg) scale(1); }
+  }
+  .lock-btn {
+    background: none; border: 1px solid rgba(255,255,255,0.18); color: rgba(255,255,255,0.6);
+    font-size: 0.72rem; padding: 3px 10px; border-radius: 20px; cursor: pointer;
+    font-family: inherit; transition: all 0.2s;
+    display: flex; align-items: center; gap: 4px; flex-shrink: 0;
+    animation: shimmer 1.4s ease-in-out infinite;
+    border-color: rgba(240,192,64,0.5); color: #f0d898;
+    background: rgba(240,192,64,0.08);
+  }
+  .lock-btn:hover { background: rgba(255,255,255,0.1); color: white; }
+  .lock-btn .lock-icon { display: inline-block; animation: sparkle-rotate 1.4s ease-in-out infinite; }
+  .lock-btn.unlocked { border-color: rgba(184,134,11,0.6); color: #f0c040; animation: none; background: rgba(184,134,11,0.15); }
+
+  /* ── ヘッダー送信ボタン ── */
+  .hdr-push-btn { position: relative; background: none; border: 1px solid rgba(255,255,255,0.18); color: rgba(255,255,255,0.55); font-size: 0.72rem; padding: 3px 10px; border-radius: 20px; cursor: pointer; font-family: inherit; transition: all 0.2s; display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+  .hdr-push-btn:hover { background: rgba(255,255,255,0.1); color: white; }
+  .hdr-push-ok { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(45,106,79,0.85); border-radius: 20px; font-size: 0.78rem; font-weight: 700; color: #b8f0cc; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+  body.locked #hdr-push-btn { opacity: 0.3; pointer-events: none; }
+
+  /* ── ゲストカード強調 ── */
+  .att-card.is-guest { border: 2px solid #1a7abf; }
+  .att-card.is-guest.s-undecided { background: #e8f4fd; border-color: #1a7abf; }
+  .att-card.is-guest.s-present   { background: #ddf0ff; border-color: #1a7abf; }
+  .att-card.is-guest.s-absent    { background: #fce8e8; border-color: #c0392b; }
+  .guest-name-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 0.65rem; background: #1a7abf; color: white; border-radius: 4px; padding: 1px 6px; font-weight: 700; flex-shrink: 0; }
+
+  /* ── att-card縦幅圧縮 ── */
+  .att-card { padding: 6px 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--paper); margin-bottom: 5px; transition: border-color 0.15s, background 0.15s; }
+  .att-card.s-present   { background: var(--present-bg); border-color: var(--present); }
+  .att-card.s-absent    { background: var(--absent-bg);  border-color: #f0b8b8; }
+  .att-card.s-undecided { background: var(--cream);      border-color: var(--border); }
+  .s-present   .att-badge { background: var(--present); color: white; }
+  .s-absent    .att-badge { background: var(--absent);  color: white; }
+  .s-undecided .att-badge { background: #c8bfaa;        color: white; }
+  .att-comment:focus { border-color: var(--sage); background: white; }
+  .att-card-top { display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; -webkit-user-select: none; margin-bottom: 4px; }
+  .att-badge { font-size: 0.68rem; font-weight: 700; padding: 2px 8px; border-radius: 20px; flex-shrink: 0; }
+  .att-member-name { font-size: 0.85rem; font-weight: 600; flex: 1; }
+  .att-comment { font-family: inherit; font-size: 0.75rem; padding: 3px 8px; border: 1px solid var(--border); border-radius: 5px; width: 100%; background: rgba(255,255,255,0.6); color: var(--ink); outline: none; }
+
+  /* ── ソートボタン ── */
+  .sort-btn { font-size: 0.68rem; padding: 2px 8px; border-radius: 12px; border: 1px solid var(--border); background: var(--paper); color: var(--muted); cursor: pointer; font-family: inherit; transition: all 0.15s; white-space: nowrap; flex-shrink: 0; }
+  .sort-btn.active-asc  { background: var(--practiced-bg); color: var(--practiced); border-color: var(--practiced); font-weight: 700; }
+  .sort-btn.active-desc { background: var(--ink); color: var(--paper); border-color: var(--ink); font-weight: 700; }
 </style>
 </head>
 <body>
@@ -238,13 +318,18 @@
 <!-- ── HEADER ── -->
 <div class="app-header">
   <h1>🎼 はちこく練習アシスト <span style="font-size:0.55rem;font-weight:400;opacity:0.5;letter-spacing:0.05em;vertical-align:middle">
-  v1.03</span></h1>
+  v1.08</span></h1>
   <div class="header-sync">
     <div class="sync-pill off" id="hdr-sync-pill">
       <div class="sync-dot"></div>
       <span id="hdr-sync-text">同期OFF</span>
     </div>
-    <button class="lock-btn lock-safe" id="lock-btn" onclick="toggleLock()">🔒 閲覧中</button>
+    <button class="lock-btn lock-safe" id="lock-btn" onclick="toggleLock()"><span class="lock-icon">🔒</span> 閲覧中</button>
+    <span style="display:inline-block;width:18px;flex-shrink:0"></span>
+    <button class="hdr-push-btn" id="hdr-push-btn" onclick="hdrSyncPush()" title="クラウドに今すぐ送信">
+      📡 保存
+      <div class="hdr-push-ok" id="hdr-push-ok">✅</div>
+    </button>
   </div>
 </div>
 <div class="tab-bar">
@@ -263,13 +348,23 @@
       <button class="btn btn-sm btn-ghost" onclick="dismissConflict()" style="flex:1">このまま続ける</button>
     </span>
   </div>
-  <div class="section">
-    <div class="section-title">📅 練習日を選ぶ</div>
-    <div id="practice-date-list" class="date-chip-list"><div class="empty-state"><div class="ei">📅</div>管理画面で練習日を追加してください</div></div>
+  <div class="collapsible-section open" id="cs-practice-dates">
+    <div class="collapsible-header" onclick="toggleCollapsible('cs-practice-dates')">
+      <div class="section-title">📅 練習日を選ぶ</div>
+      <span class="collapsible-peek" id="peek-practice-dates"></span>
+      <span class="collapsible-arrow">▶</span>
+    </div>
+    <div class="collapsible-body" style="padding-top:0">
+      <div id="practice-date-list" class="date-chip-list" style="padding-bottom:4px"><div class="empty-state"><div class="ei">📅</div>管理画面で練習日を追加してください</div></div>
+    </div>
   </div>
   <div id="attendance-section" style="display:none">
     <div class="section">
-      <div class="section-title">🎶 曲目・メンバー一覧</div>
+      <div class="section-title" style="flex-wrap:wrap;gap:6px 8px">
+        <span style="flex:1;white-space:nowrap">🎶 曲目・メンバー一覧</span>
+        <button class="sort-btn" id="sort-att-btn"  onclick="cycleSongSort('att')"  title="出席率でソート">出席率 ↕</button>
+        <button class="sort-btn" id="sort-prac-btn" onclick="cycleSongSort('prac')" title="練習済/未練習でソート">練習済 ↕</button>
+      </div>
       <p class="notice">🎵 曲名をタップ→練習フラグON/OFF<br>👤 名前タップ→参加曲確認<br>⏰ 名前を長押し→遅刻/早退（その曲のみ）</p>
       <div id="song-table"></div>
     </div>
@@ -298,27 +393,31 @@
     <button class="sub-tab-btn"        id="stab-member" onclick="switchSubTab('member',this)">🎺 メンバー</button>
   </div>
 
-  <!-- 日程タブ -->
   <div class="sub-screen active" id="sub-date">
-    <div class="section">
-      <div class="section-title">📅 練習予定日を追加</div>
-      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px">
-        <input type="date" id="new-date" style="width:100%" />
-        <div style="display:flex;gap:6px">
-          <button class="btn btn-ghost btn-sm" onclick="insertTimeToMemo('9:00-')"  style="flex:1">9:00-</button>
-          <button class="btn btn-ghost btn-sm" onclick="insertTimeToMemo('13:00-')" style="flex:1">13:00-</button>
-          <button class="btn btn-ghost btn-sm" onclick="insertTimeToMemo('18:00-')" style="flex:1">18:00-</button>
-        </div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap">
-          <button class="btn btn-ghost btn-sm" onclick="appendPlaceToMemo('宮戸市民センター')"       style="flex:1;min-width:0;font-size:0.68rem">宮戸</button>
-          <button class="btn btn-ghost btn-sm" onclick="appendPlaceToMemo('膝折市民センター')"       style="flex:1;min-width:0;font-size:0.68rem">膝折</button>
-          <button class="btn btn-ghost btn-sm" onclick="appendPlaceToMemo('鶴瀬コミュニティセンター')" style="flex:1;min-width:0;font-size:0.68rem">鶴瀬</button>
-          <button class="btn btn-ghost btn-sm" onclick="appendPlaceToMemo('ふじみ野交流センター')"    style="flex:1;min-width:0;font-size:0.68rem">ふじみ野</button>
-        </div>
-        <input type="text" id="new-date-memo" placeholder="メモ（任意）" style="width:100%" />
-        <button class="btn btn-primary" onclick="addDate()" style="width:100%">追加（仮日程として登録）</button>
+    <div class="collapsible-section open" id="cs-add-date">
+      <div class="collapsible-header" onclick="toggleCollapsible('cs-add-date')">
+        <div class="section-title">📅 練習予定日を追加</div>
+        <span class="collapsible-arrow">▶</span>
       </div>
-      <div id="date-list"></div>
+      <div class="collapsible-body">
+        <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px">
+          <input type="date" id="new-date" style="width:100%" />
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-ghost btn-sm" onclick="insertTimeToMemo('9:00-')"  style="flex:1">9:00-</button>
+            <button class="btn btn-ghost btn-sm" onclick="insertTimeToMemo('13:00-')" style="flex:1">13:00-</button>
+            <button class="btn btn-ghost btn-sm" onclick="insertTimeToMemo('18:00-')" style="flex:1">18:00-</button>
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="btn btn-ghost btn-sm" onclick="appendPlaceToMemo('宮戸市民センター')"       style="flex:1;min-width:0;font-size:0.68rem">宮戸</button>
+            <button class="btn btn-ghost btn-sm" onclick="appendPlaceToMemo('膝折市民センター')"       style="flex:1;min-width:0;font-size:0.68rem">膝折</button>
+            <button class="btn btn-ghost btn-sm" onclick="appendPlaceToMemo('鶴瀬コミュニティセンター')" style="flex:1;min-width:0;font-size:0.68rem">鶴瀬</button>
+            <button class="btn btn-ghost btn-sm" onclick="appendPlaceToMemo('ふじみ野交流センター')"    style="flex:1;min-width:0;font-size:0.68rem">ふじみ野</button>
+          </div>
+          <input type="text" id="new-date-memo" placeholder="メモ（任意）" style="width:100%" />
+          <button class="btn btn-primary" onclick="addDate()" style="width:100%">追加（仮日程として登録）</button>
+        </div>
+        <div id="date-list"></div>
+      </div>
     </div>
 
 
@@ -536,9 +635,45 @@ function saveData() {
 
 function uid() { return '_' + Math.random().toString(36).substr(2,9); }
 
-// ══════════════════════════════════════════════════════
-// TABS
-// ══════════════════════════════════════════════════════
+// ── 折りたたみsection ──
+function toggleCollapsible(id) {
+  const el = document.getElementById(id);
+  if(el) el.classList.toggle('open');
+}
+
+// ── ソート状態 ──
+// 'att': 出席率, 'prac': 練習済み
+// state: null → 'asc' → 'desc' → null
+let songSortKey   = null; // 'att' | 'prac' | null
+let songSortState = null; // 'asc' | 'desc' | null
+
+function cycleSongSort(key) {
+  if(songSortKey !== key) {
+    songSortKey   = key;
+    songSortState = 'asc';
+  } else {
+    if(songSortState === 'asc')       songSortState = 'desc';
+    else if(songSortState === 'desc') { songSortKey = null; songSortState = null; }
+  }
+  // ボタンUI更新
+  ['att','prac'].forEach(k => {
+    const btn = document.getElementById('sort-'+k+'-btn');
+    if(!btn) return;
+    if(songSortKey === k) {
+      btn.className = 'sort-btn active-' + songSortState;
+      const labels = k==='att'
+        ? {asc:'出席率 ↑', desc:'出席率 ↓'}
+        : {asc:'未練習優先', desc:'練習済優先'};
+      btn.textContent = labels[songSortState];
+    } else {
+      btn.className = 'sort-btn';
+      btn.textContent = k==='att' ? '出席率 ↕' : '練習済 ↕';
+    }
+  });
+  renderSongTable();
+}
+
+
 function switchTab(name, btn) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -719,14 +854,19 @@ function saveDate(id) {
 function renderDateList() {
   const el=document.getElementById('date-list');
   if(!data.dates.length){el.innerHTML='<div class="empty-state"><div class="ei">📅</div>練習日がありません</div>';return;}
-  el.innerHTML=data.dates.map(d=>{
+
+  const today = new Date().toISOString().split('T')[0];
+  const future = data.dates.filter(d => d.date >= today);
+  const past   = data.dates.filter(d => d.date <  today).slice().sort((a,b)=>b.date.localeCompare(a.date));
+
+  function makeItem(d) {
     const isConf = d.confirmed === true;
     const provBadge = isConf ? '' : '<span class="prov-badge">仮</span>';
     const confirmBtnLabel = isConf ? '確定済' : '仮→確定';
     const confirmBtnCls   = isConf ? 'btn-sage' : 'btn-ghost';
     const isSelected = selectedDateId === d.id;
     return `<div class="list-item ${isConf?'date-confirmed':'date-provisional'}" id="date-item-${d.id}" style="${isSelected?'background:var(--cream);border-radius:8px':''}">
-      <div class="item-main" onclick="selectPracticeDate('${d.id}')" renderDateList();" style="cursor:pointer;padding:2px 0">
+      <div class="item-main" onclick="selectPracticeDate('${d.id}')" style="cursor:pointer;padding:2px 0">
         <div class="item-name">${provBadge}${fmtDate(d.date)}${isSelected?' <span style="font-size:0.68rem;color:var(--sage);font-weight:700;margin-left:4px">✓選択中</span>':''}</div>
         ${d.memo?`<div class="item-sub">${esc(d.memo)}</div>`:''}
       </div>
@@ -736,7 +876,17 @@ function renderDateList() {
         <button class="btn btn-sm btn-danger" onclick="deleteDate('${d.id}')">削除</button>
       </div>
     </div>`;
-  }).join('');
+  }
+
+  let html = future.map(makeItem).join('');
+  if(past.length) {
+    html += `<details class="past-dates-details">
+      <summary class="past-dates-summary">過去の練習記録（${past.length}件）</summary>
+      <div class="past-dates-inner">${past.map(makeItem).join('')}</div>
+    </details>`;
+  }
+  el.innerHTML = html;
+
   // 日程タブに出席チェックが表示されている場合は更新
   renderAdminAttendanceGrid();
 }
@@ -828,7 +978,12 @@ function renderSongList() {
 function renderPracticeDates() {
   const el=document.getElementById('practice-date-list');
   if(!data.dates.length){el.innerHTML='<div class="empty-state"><div class="ei">📅</div>管理画面で練習日を追加してください</div>';return;}
-  el.innerHTML=data.dates.map(d=>{
+
+  const today = new Date().toISOString().split('T')[0];
+  const future = data.dates.filter(d => d.date >= today);
+  const past   = data.dates.filter(d => d.date <  today).slice().sort((a,b)=>b.date.localeCompare(a.date));
+
+  function makeChip(d) {
     const isConf = d.confirmed === true;
     return `<div class="date-chip ${selectedDateId===d.id?'selected':''}" onclick="selectPracticeDate('${d.id}')" style="${!isConf?'opacity:0.65':''}">
       <span style="font-size:1.1rem">${isConf?'📅':'🗓'}</span>
@@ -837,7 +992,25 @@ function renderPracticeDates() {
         ${d.memo?`<div class="date-memo">${esc(d.memo)}</div>`:''}
       </div>
     </div>`;
-  }).join('');
+  }
+
+  let html = future.map(makeChip).join('');
+
+  if(past.length) {
+    html += `<details class="past-dates-details">
+      <summary class="past-dates-summary">過去の練習記録（${past.length}件）</summary>
+      <div class="past-dates-inner">${past.map(makeChip).join('')}</div>
+    </details>`;
+  }
+
+  el.innerHTML = html;
+
+  // 畳んでいても選択中の日付が見えるようにpeekを更新
+  const peekEl = document.getElementById('peek-practice-dates');
+  if(peekEl) {
+    const sel = data.dates.find(d=>d.id===selectedDateId);
+    peekEl.textContent = sel ? fmtDate(sel.date) : '';
+  }
 }
 function selectPracticeDate(dateId) {
   selectedDateId=dateId;
@@ -885,16 +1058,23 @@ function toggleAttendance(memberId) {
   const cur  = attStatus(memberId);
   const next = cur==='undecided'?'present': cur==='present'?'absent':'undecided';
   setAttRecord(memberId, next, undefined);
-  // カードのクラスとバッジを即時更新
+  // カードのクラスとバッジを即時更新（is-guestクラスを保持）
   const card  = document.getElementById('admin-att-card-'+memberId); if(!card) return;
   const badge = card.querySelector('.att-badge'); if(!badge) return;
   const label = next==='present'?'出席': next==='absent'?'欠席':'未定';
-  card.className = 'att-card s-'+next;
+  const isGuest = card.classList.contains('is-guest');
+  card.className = 'att-card s-'+next + (isGuest ? ' is-guest' : '');
   badge.textContent = label;
 }
 function setAttComment(memberId, comment) {
   if(editLocked) { lockTapWarn(); return; }
   setAttRecord(memberId, undefined, comment);
+  // has-comment クラスをリアルタイム更新
+  const card = document.getElementById('admin-att-card-'+memberId);
+  if(card) {
+    const wrap = card.querySelector('.att-comment-wrap');
+    if(wrap) wrap.classList.toggle('has-comment', comment.trim() !== '');
+  }
 }
 
 // wasPresent: 出席(present)かチェック（曲別遅刻も考慮）
@@ -918,26 +1098,111 @@ function renderAdminAttendanceGrid() {
   if(lbl && d) lbl.textContent = fmtDate(d.date);
   const el = document.getElementById('admin-attendance-grid');
   if(!el) return;
-  if(!data.members.length) {
+
+  // ゲストを含む全メンバーリスト
+  const att = data.attendance[selectedDateId] || {};
+  const guests = Object.keys(att).filter(mid =>
+    !data.members.find(m=>m.id===mid) && mid.startsWith('guest_')
+  );
+  // ゲストを最上段、メンバーをその後に並べる
+  const allEntries = [
+    ...guests.map(gid=>{
+      const rec = att[gid];
+      const name = (typeof rec==='object' && rec._name) ? rec._name : 'ゲスト';
+      return {id:gid, name, isGuest:true};
+    }),
+    ...data.members.map(m=>({id:m.id, name:m.name, isGuest:false}))
+  ];
+
+  if(!allEntries.length) {
     el.innerHTML = '<p style="font-size:0.8rem;color:var(--muted)">メンバーがいません</p>';
     return;
   }
-  el.innerHTML = data.members.map(m => {
-    const rec   = attRecord(m.id);
+
+  // 人数集計
+  const presentEntries = allEntries.filter(e => attStatus(e.id) === 'present');
+  const presentCount = presentEntries.length;
+  // 頭文字（アルファベット）別集計
+  const alphaCounts = {};
+  presentEntries.forEach(e => {
+    const m = e.name.match(/^([A-Za-z])/);
+    if (m) {
+      const ch = m[1].toUpperCase();
+      alphaCounts[ch] = (alphaCounts[ch]||0) + 1;
+    }
+  });
+  const alphaChips = Object.entries(alphaCounts).sort((a,b)=>a[0].localeCompare(b[0]))
+    .map(([ch,cnt])=>`<span class="att-count-chip">${ch}：${cnt}人</span>`).join('');
+  const countBar = `<div class="att-count-bar">
+    <span class="att-count-total">参加人数：${presentCount}人</span>${alphaChips}
+  </div>`;
+
+  const cards = allEntries.map(entry => {
+    const rec   = attRecord(entry.id);
     const s     = rec.status;
     const label = s==='present'?'出席': s==='absent'?'欠席':'未定';
-    return `<div class="att-card s-${s}" id="admin-att-card-${m.id}">
-      <div class="att-card-top" onclick="toggleAttendance('${m.id}')">
+    const hasComment = rec.comment && rec.comment.trim() !== '';
+    const commentWrapCls = hasComment ? 'att-comment-wrap has-comment' : 'att-comment-wrap';
+    const guestCardCls = entry.isGuest ? ` is-guest` : '';
+    const guestTag = entry.isGuest
+      ? ` <span class="guest-name-badge">👤 ゲスト</span>`
+      : '';
+    const guestBtns = entry.isGuest
+      ? `<button class="btn btn-sm btn-ghost" onclick="renameGuest('${entry.id}')" style="padding:2px 7px;font-size:0.68rem">編集</button>
+         <button class="btn btn-sm btn-danger" onclick="deleteGuest('${entry.id}')" style="padding:2px 7px;font-size:0.68rem">削除</button>`
+      : '';
+    return `<div class="att-card s-${s}${guestCardCls}" id="admin-att-card-${entry.id}">
+      <div class="att-card-top" onclick="toggleAttendance('${entry.id}')">
         <span class="att-badge">${label}</span>
-        <span class="att-member-name">${esc(m.name)}</span>
+        <span class="att-member-name">${esc(entry.name)}${guestTag}</span>
+        ${guestBtns}
       </div>
-      <input class="att-comment" type="text"
-        placeholder="コメント（任意）"
-        value="${esc(rec.comment)}"
-        oninput="setAttComment('${m.id}',this.value)"
-        onclick="event.stopPropagation()" />
+      <div class="${commentWrapCls}">
+        <input class="att-comment" type="text"
+          placeholder="コメント（任意）"
+          value="${esc(rec.comment)}"
+          oninput="setAttComment('${entry.id}',this.value)"
+          onclick="event.stopPropagation()" />
+        <span class="att-comment-icon">💬</span>
+      </div>
     </div>`;
   }).join('');
+
+  el.innerHTML = countBar + cards +
+    `<div class="guest-add-row"><button class="btn-guest" onclick="addGuest()">＋ ゲスト追加</button></div>`;
+}
+
+function addGuest() {
+  if(editLocked) { lockTapWarn(); return; }
+  if(!selectedDateId) return;
+  const name = prompt('ゲストの名前を入力してください');
+  if(!name || !name.trim()) return;
+  const gid = 'guest_' + Math.random().toString(36).substr(2,8);
+  if(!data.attendance[selectedDateId]) data.attendance[selectedDateId] = {};
+  data.attendance[selectedDateId][gid] = { status:'present', comment:'', _name: name.trim() };
+  saveData();
+  renderAdminAttendanceGrid();
+}
+
+function renameGuest(gid) {
+  if(editLocked) { lockTapWarn(); return; }
+  if(!selectedDateId) return;
+  const rec = data.attendance[selectedDateId][gid];
+  const oldName = (typeof rec==='object' && rec._name) ? rec._name : 'ゲスト';
+  const newName = prompt('ゲストの名前を変更', oldName);
+  if(!newName || !newName.trim()) return;
+  data.attendance[selectedDateId][gid]._name = newName.trim();
+  saveData();
+  renderAdminAttendanceGrid();
+}
+
+function deleteGuest(gid) {
+  if(editLocked) { lockTapWarn(); return; }
+  if(!selectedDateId) return;
+  if(!confirm('ゲストを削除しますか？')) return;
+  delete data.attendance[selectedDateId][gid];
+  saveData();
+  renderAdminAttendanceGrid();
 }
 
 // 旧関数の後方互換ダミー
@@ -1049,10 +1314,29 @@ function renderSongTable() {
     return v.status === 'present';
   };
 
-  const rows=data.songs.map(s=>{
-    if(!s.memberIds.length) return '';
+  let songsToRender = data.songs.filter(s=>s.memberIds.length);
+
+  // ソート適用
+  if(songSortKey && songSortState) {
+    songsToRender = songsToRender.slice().sort((a,b)=>{
+      if(songSortKey === 'att') {
+        const pa2 = (data.partialAbsence[selectedDateId])||{};
+        const getPct = s => {
+          const pl = pa2[s.id]||[];
+          const pr = s.memberIds.filter(id => isPresent(id) && !pl.includes(id));
+          return s.memberIds.length ? pr.length/s.memberIds.length : 0;
+        };
+        return songSortState==='asc' ? getPct(b)-getPct(a) : getPct(a)-getPct(b);
+      } else { // prac
+        const aOn = pracList.includes(a.id) ? 1 : 0;
+        const bOn = pracList.includes(b.id) ? 1 : 0;
+        return songSortState==='asc' ? aOn-bOn : bOn-aOn; // asc=未練習優先
+      }
+    });
+  }
+
+  const rows=songsToRender.map(s=>{
     const partialList = pa[s.id]||[];
-    // 出席かつ遅刻/早退でない人が「演奏参加」
     const pres = s.memberIds.filter(id => isPresent(id) && !partialList.includes(id));
     const pct  = Math.round(pres.length/s.memberIds.length*100);
     const pc   = pct>=80?'high':pct>=50?'mid':'low';
@@ -1078,7 +1362,7 @@ function renderSongTable() {
       </div>
       <div class="song-members-list">${chips}</div>
     </div>`;
-  }).filter(Boolean).join('');
+  }).join('');
   el.innerHTML=rows||'<div class="empty-state">メンバーが設定されている曲がありません</div>';
   initSongChipLongPress();
 }
@@ -1265,14 +1549,17 @@ function toggleLock() {
 function applyLockState(withToast) {
   const btn = document.getElementById('lock-btn');
   if(!btn) return;
+  const iconEl = btn.querySelector('.lock-icon');
   if(editLocked) {
     document.body.classList.add('locked');
-    btn.textContent = '🔒 閲覧中';
+    if(iconEl) iconEl.textContent = '🔒';
+    btn.childNodes[btn.childNodes.length-1].textContent = ' 閲覧中';
+    btn.innerHTML = '<span class="lock-icon">🔒</span> 閲覧中';
     btn.classList.remove('unlocked');
     if(withToast) showToast('🔒 閲覧モードに戻りました', 3000);
   } else {
     document.body.classList.remove('locked');
-    btn.textContent = '🔓 編集中';
+    btn.innerHTML = '<span class="lock-icon">🔓</span> 編集中';
     btn.classList.add('unlocked');
     if(withToast) showToast('🔓 編集モードになりました', 3000);
   }
@@ -1372,6 +1659,33 @@ async function syncPush(manual=false) {
     setTimeout(()=>{ if(autoSync) updateSyncUI('idle','待機中',''); }, 4000);
   } catch(e) {
     updateSyncUI('err','送信失敗', e.message);
+  }
+}
+
+async function hdrSyncPush() {
+  const url = getGasUrl();
+  if(!url) { showToast('⚠️ GAS URLが設定されていません', 3000); return; }
+  const btn = document.getElementById('hdr-push-btn');
+  const ok  = document.getElementById('hdr-push-ok');
+  if(btn) btn.style.opacity = '0.5';
+  try {
+    await fetch(url, {
+      method: 'POST', mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ action:'save', data:data, savedAt:data._updatedAt })
+    });
+    const t = new Date().toLocaleTimeString('ja-JP');
+    showToast('📡 送信完了：' + t, 3000);
+    if(ok) {
+      ok.classList.add('show');
+      setTimeout(()=>ok.classList.remove('show'), 2500);
+    }
+    updateSyncUI('ok','送信完了','最終送信：'+t);
+    setTimeout(()=>{ if(autoSync) updateSyncUI('idle','待機中',''); }, 4000);
+  } catch(e) {
+    showToast('❌ 送信失敗: ' + e.message, 4000);
+  } finally {
+    if(btn) btn.style.opacity = '';
   }
 }
 
