@@ -123,7 +123,7 @@
   body.locked .drag-handle { opacity: 0.15; pointer-events: none; }
   body.locked .btn-danger   { opacity: 0.3;  pointer-events: none; }
   body.locked .btn-primary:not(#lock-btn), body.locked .btn-accent,
-  body.locked .btn-sage, body.locked .ms-chip { opacity: 0.5; }
+  body.locked .btn-sage:not(.sync-safe), body.locked .ms-chip { opacity: 0.5; }
   /* 閲覧可能な操作は普通に使える */
   body.locked .tab-btn, body.locked .date-chip,
   body.locked .member-check-item, body.locked .member-chip,
@@ -200,6 +200,17 @@
   details summary { list-style: none; }
   details summary::-webkit-details-marker { display: none; }
 
+  /* ── ADMIN SUB-TABS ── */
+  .sub-tab-bar { display: flex; background: var(--cream); border-radius: 10px; padding: 4px; gap: 4px; margin-bottom: 14px; }
+  .sub-tab-btn { flex: 1; padding: 8px 4px; background: none; border: none; color: var(--muted); font-family: 'Noto Sans JP', sans-serif; font-size: 0.78rem; font-weight: 500; cursor: pointer; border-radius: 7px; transition: all 0.18s; }
+  .sub-tab-btn.active { background: white; color: var(--ink); box-shadow: 0 1px 4px rgba(0,0,0,0.10); font-weight: 700; }
+  .sub-screen { display: none; }
+  .sub-screen.active { display: block; }
+  /* 仮日程 */
+  .date-provisional .item-name { color: var(--muted); }
+  .date-provisional .prov-badge { display: inline-block; font-size: 0.65rem; background: var(--cream); color: var(--muted); border: 1px solid var(--border); border-radius: 4px; padding: 1px 5px; margin-right: 5px; vertical-align: middle; font-weight: 600; letter-spacing: 0.04em; }
+  .date-confirmed .prov-badge { display: none; }
+  .date-confirmed .item-name { color: var(--ink); }
   /* misc */
   .empty-state { text-align: center; padding: 20px 0; color: var(--muted); font-size: 0.82rem; }
   .empty-state .ei { font-size: 2rem; margin-bottom: 6px; }
@@ -244,14 +255,6 @@
   </div>
   <div id="attendance-section" style="display:none">
     <div class="section">
-      <div class="section-title">👥 出席チェック</div>
-      <div class="select-all-row">
-        <button class="btn btn-sage btn-sm" onclick="selectAllAtt(true)">全員出席</button>
-        <button class="btn btn-ghost btn-sm" onclick="selectAllAtt(false)">全員欠席</button>
-      </div>
-      <div id="attendance-grid" class="member-grid"></div>
-    </div>
-    <div class="section">
       <div class="section-title">🎶 曲目・メンバー一覧</div>
       <p class="notice">🎵 曲名をタップ→練習フラグON/OFF<br>👤 名前タップ→参加曲確認<br>⏰ 名前を長押し→遅刻/早退（その曲のみ）</p>
       <div id="song-table"></div>
@@ -274,30 +277,60 @@
 
 <!-- ── 管理 ── -->
 <div id="screen-admin" class="screen">
-  <div class="section">
-    <div class="section-title">🎺 メンバーリスト</div>
-    <div class="input-row">
-      <input type="text" id="new-member" placeholder="メンバー名を入力" />
-      <button class="btn btn-primary" onclick="addMember()">追加</button>
-    </div>
-    <div id="member-list"></div>
+  <!-- 子タブバー -->
+  <div class="sub-tab-bar">
+    <button class="sub-tab-btn active" id="stab-date"   onclick="switchSubTab('date',this)">📅 日程</button>
+    <button class="sub-tab-btn"        id="stab-song"   onclick="switchSubTab('song',this)">🎵 曲目</button>
+    <button class="sub-tab-btn"        id="stab-member" onclick="switchSubTab('member',this)">🎺 メンバー</button>
   </div>
-  <div class="section">
-    <div class="section-title">📅 練習予定日</div>
-    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px">
-      <input type="date" id="new-date" style="width:100%" />
-      <input type="text" id="new-date-memo" placeholder="メモ（任意）" style="width:100%" />
-      <button class="btn btn-primary" onclick="addDate()" style="width:100%">追加</button>
+
+  <!-- 日程タブ -->
+  <div class="sub-screen active" id="sub-date">
+    <div class="section">
+      <div class="section-title">📅 練習予定日を追加</div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px">
+        <input type="date" id="new-date" style="width:100%" />
+        <input type="text" id="new-date-memo" placeholder="メモ（任意）" style="width:100%" />
+        <button class="btn btn-primary" onclick="addDate()" style="width:100%">追加（仮日程として登録）</button>
+      </div>
+      <div id="date-list"></div>
     </div>
-    <div id="date-list"></div>
+
+    <!-- 出席チェック（練習日選択後に表示） -->
+    <div id="admin-attendance-wrap" style="display:none">
+      <div class="section">
+        <div class="section-title">👥 出席チェック — <span id="admin-att-date-label" style="font-weight:400;text-transform:none;letter-spacing:0;font-size:0.82rem;color:var(--ink)"></span></div>
+        <div class="select-all-row">
+          <button class="btn btn-sage btn-sm" onclick="selectAllAtt(true)">全員出席</button>
+          <button class="btn btn-ghost btn-sm" onclick="selectAllAtt(false)">全員欠席</button>
+        </div>
+        <div id="admin-attendance-grid" class="member-grid"></div>
+      </div>
+    </div>
   </div>
-  <div class="section">
-    <div class="section-title">🎵 曲目リスト</div>
-    <div class="input-row">
-      <input type="text" id="new-song" placeholder="曲名を入力" />
-      <button class="btn btn-primary" onclick="addSong()">追加</button>
+
+  <!-- 曲目タブ -->
+  <div class="sub-screen" id="sub-song">
+    <div class="section">
+      <div class="section-title">🎵 曲目リスト</div>
+      <div class="input-row">
+        <input type="text" id="new-song" placeholder="曲名を入力" />
+        <button class="btn btn-primary" onclick="addSong()">追加</button>
+      </div>
+      <div id="song-list"></div>
     </div>
-    <div id="song-list"></div>
+  </div>
+
+  <!-- メンバータブ -->
+  <div class="sub-screen" id="sub-member">
+    <div class="section">
+      <div class="section-title">🎺 メンバーリスト</div>
+      <div class="input-row">
+        <input type="text" id="new-member" placeholder="メンバー名を入力" />
+        <button class="btn btn-primary" onclick="addMember()">追加</button>
+      </div>
+      <div id="member-list"></div>
+    </div>
   </div>
 </div>
 
@@ -326,7 +359,7 @@
     </label>
 
     <div class="input-row">
-      <button class="btn btn-sage"    onclick="syncPull(true)" style="flex:1">🔄 今すぐ取得</button>
+      <button class="btn btn-sage sync-safe" onclick="syncPull(true)" style="flex:1">🔄 今すぐ取得</button>
       <button class="btn btn-primary" onclick="syncPush(true)" style="flex:1">📡 今すぐ送信</button>
     </div>
 
@@ -492,7 +525,25 @@ function switchTab(name, btn) {
   localStorage.setItem('ensemble_last_tab', name);
   if (name==='practice') renderPracticeDates();
   if (name==='stats')    renderStats();
-  if (name==='admin')    { renderMemberList(); renderDateList(); renderSongList(); }
+  if (name==='admin')    {
+    // 子タブを復元
+    const lastSub = localStorage.getItem('ensemble_last_subtab') || 'date';
+    const subBtn = document.getElementById('stab-'+lastSub);
+    if(subBtn) switchSubTab(lastSub, subBtn);
+    else switchSubTab('date', document.getElementById('stab-date'));
+  }
+}
+
+function switchSubTab(name, btn) {
+  document.querySelectorAll('.sub-tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.sub-screen').forEach(s => s.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  const el = document.getElementById('sub-'+name);
+  if(el) el.classList.add('active');
+  localStorage.setItem('ensemble_last_subtab', name);
+  if(name==='date')   renderDateList();
+  if(name==='song')   renderSongList();
+  if(name==='member') renderMemberList();
 }
 
 // ══════════════════════════════════════════════════════
@@ -591,10 +642,17 @@ function addDate() {
   if(editLocked) { lockTapWarn(); return; }
   const di=document.getElementById('new-date'), mi=document.getElementById('new-date-memo');
   if(!di.value) return;
-  data.dates.push({id:uid(), date:di.value, memo:mi.value.trim()});
+  data.dates.push({id:uid(), date:di.value, memo:mi.value.trim(), confirmed:false});
   data.dates.sort((a,b)=>a.date.localeCompare(b.date));
   di.value=''; mi.value=''; saveData(); renderDateList();
 }
+function toggleConfirmed(id) {
+  if(editLocked) { lockTapWarn(); return; }
+  const d = data.dates.find(d=>d.id===id); if(!d) return;
+  d.confirmed = !d.confirmed;
+  saveData(); renderDateList();
+}
+
 function deleteDate(id) {
   if(editLocked) { lockTapWarn(); return; }
   if(!confirm('この日程を削除しますか？')) return;
@@ -623,17 +681,25 @@ function saveDate(id) {
 function renderDateList() {
   const el=document.getElementById('date-list');
   if(!data.dates.length){el.innerHTML='<div class="empty-state"><div class="ei">📅</div>練習日がありません</div>';return;}
-  el.innerHTML=data.dates.map(d=>`
-    <div class="list-item" id="date-item-${d.id}">
+  el.innerHTML=data.dates.map(d=>{
+    const isConf = d.confirmed === true;
+    const provBadge = isConf ? '' : '<span class="prov-badge">仮</span>';
+    const confirmBtnLabel = isConf ? '確定済' : '仮→確定';
+    const confirmBtnCls   = isConf ? 'btn-sage' : 'btn-ghost';
+    return `<div class="list-item ${isConf?'date-confirmed':'date-provisional'}" id="date-item-${d.id}">
       <div class="item-main">
-        <div class="item-name">${fmtDate(d.date)}</div>
+        <div class="item-name">${provBadge}${fmtDate(d.date)}</div>
         ${d.memo?`<div class="item-sub">${esc(d.memo)}</div>`:''}
       </div>
       <div class="item-actions">
+        <button class="btn btn-sm ${confirmBtnCls}" onclick="toggleConfirmed('${d.id}')" title="${isConf?'仮に戻す':'確定にする'}">${confirmBtnLabel}</button>
         <button class="btn btn-sm btn-ghost" onclick="startEditDate('${d.id}')">編集</button>
         <button class="btn btn-sm btn-danger" onclick="deleteDate('${d.id}')">削除</button>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
+  // 日程タブに出席チェックが表示されている場合は更新
+  renderAdminAttendanceGrid();
 }
 
 // ══════════════════════════════════════════════════════
@@ -722,23 +788,27 @@ function renderSongList() {
 function renderPracticeDates() {
   const el=document.getElementById('practice-date-list');
   if(!data.dates.length){el.innerHTML='<div class="empty-state"><div class="ei">📅</div>管理画面で練習日を追加してください</div>';return;}
-  el.innerHTML=data.dates.map(d=>`
-    <div class="date-chip ${selectedDateId===d.id?'selected':''}" onclick="selectPracticeDate('${d.id}')">
-      <span style="font-size:1.1rem">📅</span>
+  el.innerHTML=data.dates.map(d=>{
+    const isConf = d.confirmed === true;
+    return `<div class="date-chip ${selectedDateId===d.id?'selected':''}" onclick="selectPracticeDate('${d.id}')" style="${!isConf?'opacity:0.65':''}">
+      <span style="font-size:1.1rem">${isConf?'📅':'🗓'}</span>
       <div>
-        <div class="date-text">${fmtDate(d.date)}</div>
+        <div class="date-text">${isConf?'':`<span style="font-size:0.68rem;background:var(--cream);color:var(--muted);border:1px solid var(--border);border-radius:3px;padding:1px 4px;margin-right:4px;font-weight:600">仮</span>`}${fmtDate(d.date)}</div>
         ${d.memo?`<div class="date-memo">${esc(d.memo)}</div>`:''}
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 function selectPracticeDate(dateId) {
   selectedDateId=dateId;
-  if(!data.attendance[dateId])    data.attendance[dateId]={};
-  if(!data.practiced[dateId])     data.practiced[dateId]=[];
+  if(!data.attendance[dateId])     data.attendance[dateId]={};
+  if(!data.practiced[dateId])      data.practiced[dateId]=[];
   if(!data.partialAbsence[dateId]) data.partialAbsence[dateId]={};
   renderPracticeDates();
   document.getElementById('attendance-section').style.display='';
-  renderAttendanceGrid(); renderSongTable();
+  renderSongTable();
+  // 日程タブ側の出席チェックも更新
+  renderAdminAttendanceGrid();
 }
 function selectAllAtt(val) {
   if(editLocked) { lockTapWarn(); return; }
@@ -796,50 +866,84 @@ function togglePartialAbsence(songId, memberId) {
   saveData();
   renderSongTable();
 }
-function renderAttendanceGrid() {
-  const el=document.getElementById('attendance-grid');
-  if(!data.members.length){el.innerHTML='<p style="font-size:0.8rem;color:var(--muted)">管理画面でメンバーを追加してください</p>';return;}
+function _buildAttGrid(gridId, itemIdPrefix) {
+  const el = document.getElementById(gridId); if(!el) return;
+  if(!data.members.length){
+    el.innerHTML='<p style="font-size:0.8rem;color:var(--muted)">管理画面でメンバーを追加してください</p>';return;
+  }
   el.innerHTML=data.members.map(m=>{
     const s=attState(m.id);
-    return `<div class="member-check-item ${s==='present'?'present':''}" id="att-${m.id}"
+    return `<div class="member-check-item ${s==='present'?'present':''}" id="${itemIdPrefix}${m.id}"
       onclick="toggleAttendance('${m.id}')">
       <div class="check-indicator">${s==='present'?'✓':''}</div>
       <span class="check-name">${esc(m.name)}</span>
     </div>`;
   }).join('');
 }
+
+function renderAttendanceGrid() {
+  // 練習タブ（現在は未使用だが互換性のため残す）
+  _buildAttGrid('attendance-grid', 'att-');
+}
+
+function renderAdminAttendanceGrid() {
+  if(!selectedDateId) return;
+  const d = data.dates.find(d=>d.id===selectedDateId);
+  const wrap = document.getElementById('admin-attendance-wrap');
+  const lbl  = document.getElementById('admin-att-date-label');
+  if(wrap) wrap.style.display = '';
+  if(lbl && d) lbl.textContent = fmtDate(d.date);
+  _buildAttGrid('admin-attendance-grid', 'admin-att-');
+}
+
+// toggleAttendance のUI更新を両グリッド対応に
+function updateAttItemUI(memberId) {
+  ['att-', 'admin-att-'].forEach(prefix => {
+    const item = document.getElementById(prefix+memberId); if(!item) return;
+    const s = attState(memberId);
+    item.className = 'member-check-item '+(s==='present'?'present':'');
+    item.querySelector('.check-indicator').textContent = s==='present'?'✓':'';
+  });
+}
 // ══════════════════════════════════════════════════════
 // LONG-PRESS (曲チップの遅刻/早退トグル)
 // ══════════════════════════════════════════════════════
 let _lpTimer  = null;
-let _lpFired  = false;  // 長押しが発火したかフラグ
+let _lpTarget = null; // 長押し発火したelementを記録
 
 function attachLongPress(el, onLongPress) {
-  // 既に登録済みならスキップ
   if (el._lpAttached) return;
   el._lpAttached = true;
 
+  // passive:false にしないとtouchendでpreventDefaultできない
   el.addEventListener('touchstart', e => {
-    _lpFired = false;
+    _lpTarget = null;
+    clearTimeout(_lpTimer);
     _lpTimer = setTimeout(() => {
-      _lpFired = true;
+      _lpTarget = el; // 発火したことを記録
       onLongPress();
     }, 600);
-  }, { passive: true });
+  }, { passive: false });
 
   el.addEventListener('touchmove', () => {
     clearTimeout(_lpTimer);
+    _lpTarget = null;
   }, { passive: true });
 
   el.addEventListener('touchend', e => {
     clearTimeout(_lpTimer);
-    // 長押しが発火していた場合、直後のclickをキャンセル
-    if (_lpFired) {
+    if (_lpTarget === el) {
+      // 長押し発火済み → click イベントをキャンセル
       e.preventDefault();
-      e.stopPropagation();
-      _lpFired = false;
+      e.stopImmediatePropagation();
+      _lpTarget = null;
     }
-  });
+  }, { passive: false });
+
+  el.addEventListener('touchcancel', () => {
+    clearTimeout(_lpTimer);
+    _lpTarget = null;
+  }, { passive: true });
 
   // デスクトップ: 右クリック
   el.addEventListener('contextmenu', e => {
@@ -1402,7 +1506,11 @@ applyLockState();
   if(btns[idx]) btns[idx].classList.add('active');
   if(name==='practice') renderPracticeDates();
   if(name==='stats')    renderStats();
-  if(name==='admin')    { renderMemberList(); renderDateList(); renderSongList(); }
+  if(name==='admin') {
+    const lastSub = localStorage.getItem('ensemble_last_subtab') || 'date';
+    const subBtn  = document.getElementById('stab-'+lastSub);
+    switchSubTab(lastSub, subBtn || document.getElementById('stab-date'));
+  }
 })();
 
 // URLをinputに反映（ハードコードされていれば表示）
