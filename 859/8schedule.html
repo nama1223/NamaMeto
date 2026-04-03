@@ -99,9 +99,9 @@
   .song-row { background: white; border-radius: 10px; margin-bottom: 12px; border: 1px solid var(--border); overflow: hidden; box-shadow: var(--shadow); }
   .song-row-header { background: var(--ink); color: var(--paper); padding: 10px 14px; display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; }
   .song-row-header .song-title { font-size: 0.88rem; font-weight: 500; flex: 1; }
-  .prac-badge { font-size: 0.68rem; padding: 2px 7px; border-radius: 10px; background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.7); font-weight: 600; flex-shrink: 0; transition: all 0.2s; }
+  .prac-badge { font-size: 0.62rem; padding: 2px 5px; border-radius: 3px; background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.7); font-weight: 600; flex-shrink: 0; transition: all 0.2s; }
   .prac-badge.on { background: var(--practiced); color: white; }
-  .progress-pill { font-size: 0.72rem; font-weight: 700; padding: 3px 9px; border-radius: 20px; background: rgba(255,255,255,0.15); color: white; flex-shrink: 0; }
+  .progress-pill { font-size: 0.62rem; font-weight: 700; padding: 2px 5px; border-radius: 3px; background: rgba(255,255,255,0.15); color: white; flex-shrink: 0; }
   .progress-pill.high { background: rgba(45,106,79,0.75); }
   .progress-pill.mid  { background: rgba(184,134,11,0.75); }
   .progress-pill.low  { background: rgba(192,57,43,0.75); }
@@ -307,18 +307,65 @@
   .att-member-name { font-size: 0.85rem; font-weight: 600; flex: 1; }
   .att-comment { font-family: inherit; font-size: 0.75rem; padding: 3px 8px; border: 1px solid var(--border); border-radius: 5px; width: 100%; background: rgba(255,255,255,0.6); color: var(--ink); outline: none; }
 
-  /* ── ソートボタン ── */
   .sort-btn { font-size: 0.68rem; padding: 2px 8px; border-radius: 12px; border: 1px solid var(--border); background: var(--paper); color: var(--muted); cursor: pointer; font-family: inherit; transition: all 0.15s; white-space: nowrap; flex-shrink: 0; }
   .sort-btn.active-asc  { background: var(--practiced-bg); color: var(--practiced); border-color: var(--practiced); font-weight: 700; }
   .sort-btn.active-desc { background: var(--ink); color: var(--paper); border-color: var(--ink); font-weight: 700; }
+
+  /* ── 初回起動モーダル ── */
+  .init-modal-bg { position: fixed; inset: 0; background: rgba(26,26,46,0.72); z-index: 500; display: flex; align-items: center; justify-content: center; padding: 20px; }
+  .init-modal-bg.hidden { display: none; }
+  .init-modal { background: var(--paper); border-radius: 16px; padding: 28px 22px 24px; max-width: 400px; width: 100%; box-shadow: 0 8px 40px rgba(0,0,0,0.35); animation: slideUp 0.3s ease; }
+  .init-modal-icon { font-size: 2.4rem; text-align: center; margin-bottom: 10px; }
+  .init-modal-title { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 700; text-align: center; margin-bottom: 8px; color: var(--ink); }
+  .init-modal-body { font-size: 0.82rem; color: var(--muted); text-align: center; line-height: 1.7; margin-bottom: 18px; }
+  .init-modal-check { display: flex; align-items: center; gap: 8px; background: var(--cream); border-radius: 8px; padding: 10px 12px; margin-bottom: 18px; cursor: pointer; }
+  .init-modal-check input { width: 16px; height: 16px; cursor: pointer; accent-color: var(--sage); flex-shrink: 0; }
+  .init-modal-check span { font-size: 0.82rem; font-weight: 500; color: var(--ink); }
+  .init-modal-btns { display: flex; gap: 10px; }
+  .init-modal-btns .btn { flex: 1; padding: 11px; font-size: 0.88rem; border-radius: 9px; }
+
+  /* ── 一括出欠オーバーレイ ── */
+  .overlay-bulk { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 300; align-items: flex-end; }
+  .overlay-bulk.open { display: flex; }
+  .bulk-popup { background: var(--paper); width: 100%; max-width: 520px; margin: 0 auto; border-radius: 18px 18px 0 0; padding: 18px 16px 32px; animation: slideUp 0.25s ease; max-height: 88vh; overflow-y: auto; }
+  .bulk-popup-name { font-size: 1.05rem; font-weight: 700; margin-bottom: 2px; }
+  .bulk-popup-sub  { font-size: 0.75rem; color: var(--muted); margin-bottom: 14px; }
+  .bulk-date-row { display: flex; align-items: center; gap: 8px; padding: 7px 0; border-bottom: 1px solid var(--cream); }
+  .bulk-date-row:last-child { border-bottom: none; }
+  .bulk-date-label { flex: 1; font-size: 0.82rem; }
+  .bulk-date-memo  { font-size: 0.7rem; color: var(--muted); }
+  .bulk-att-btn { font-size: 0.72rem; font-weight: 700; padding: 4px 10px; border-radius: 5px; border: none; cursor: pointer; font-family: inherit; transition: all 0.12s; min-width: 44px; text-align: center; }
+  .bulk-att-btn.present   { background: var(--present); color: white; }
+  .bulk-att-btn.absent    { background: var(--absent);  color: white; }
+  .bulk-att-btn.undecided { background: #c8bfaa;        color: white; }
 </style>
 </head>
 <body>
 
+<!-- ── 初回起動モーダル ── -->
+<div id="init-modal-bg" class="init-modal-bg hidden">
+  <div class="init-modal">
+    <div class="init-modal-icon">☁️</div>
+    <div class="init-modal-title">最新データを読み込みますか？</div>
+    <div class="init-modal-body">
+      クラウドに保存されたデータがあります。<br>
+      読み込むと現在の（空の）データと置き換わります。
+    </div>
+    <label class="init-modal-check">
+      <input type="checkbox" id="init-auto-sync-check">
+      <span>常に最新データに自動同期する</span>
+    </label>
+    <div class="init-modal-btns">
+      <button class="btn btn-ghost" onclick="dismissInitModal()">スキップ</button>
+      <button class="btn btn-sage" onclick="confirmInitModal()">読み込む</button>
+    </div>
+  </div>
+</div>
+
 <!-- ── HEADER ── -->
 <div class="app-header">
   <h1>🎼 はちこく練習アシスト <span style="font-size:0.55rem;font-weight:400;opacity:0.5;letter-spacing:0.05em;vertical-align:middle">
-  v1.10</span></h1>
+  v1.12</span></h1>
   <div class="header-sync">
     <div class="sync-pill off" id="hdr-sync-pill">
       <div class="sync-dot"></div>
@@ -334,8 +381,8 @@
 </div>
 <div class="tab-bar">
   <button class="tab-btn active" onclick="switchTab('practice',this)">🎵 練習</button>
-  <button class="tab-btn"        onclick="switchTab('stats',this)">📊 集計</button>
   <button class="tab-btn"        onclick="switchTab('admin',this)">✏️ 入力</button>
+  <button class="tab-btn"        onclick="switchTab('stats',this)">📊 集計</button>
   <button class="tab-btn"        onclick="switchTab('data',this)">☁️ 同期</button>
 </div>
 
@@ -351,6 +398,10 @@
   <div class="collapsible-section open" id="cs-practice-dates">
     <div class="collapsible-header" onclick="toggleCollapsible('cs-practice-dates')">
       <div class="section-title">📅 練習日を選ぶ</div>
+      <label style="display:flex;align-items:center;gap:4px;font-size:0.72rem;color:var(--muted);font-weight:500;cursor:pointer;flex-shrink:0;letter-spacing:0" onclick="event.stopPropagation()">
+        <input type="checkbox" id="show-provisional" onchange="renderPracticeDates()" style="width:14px;height:14px;cursor:pointer;accent-color:var(--muted)">
+        <span style="white-space:nowrap">[仮]</span>
+      </label>
       <span class="collapsible-peek" id="peek-practice-dates"></span>
       <span class="collapsible-arrow">▶</span>
     </div>
@@ -558,6 +609,14 @@
     <div class="popup-title" id="mstats-name"></div>
     <div class="popup-sub" id="mstats-sub"></div>
     <div id="mstats-list"></div>
+  </div>
+</div>
+<div id="overlay-bulk" class="overlay-bulk" onclick="closeBulkOverlay(event)">
+  <div class="bulk-popup">
+    <div class="popup-handle"></div>
+    <div class="bulk-popup-name" id="bulk-member-name"></div>
+    <div class="bulk-popup-sub">今日以降の日程の出欠をまとめて入力</div>
+    <div id="bulk-date-list"></div>
   </div>
 </div>
 
@@ -985,8 +1044,12 @@ function renderPracticeDates() {
   if(!data.dates.length){el.innerHTML='<div class="empty-state"><div class="ei">📅</div>管理画面で練習日を追加してください</div>';return;}
 
   const today = new Date().toISOString().split('T')[0];
-  const future = data.dates.filter(d => d.date >= today);
-  const past   = data.dates.filter(d => d.date <  today).slice().sort((a,b)=>b.date.localeCompare(a.date));
+  const showProv = document.getElementById('show-provisional')?.checked ?? false;
+
+  // 今日以降・確定済み（または仮表示ONなら仮も含める）
+  const future = data.dates.filter(d => d.date >= today && (d.confirmed || showProv));
+  const past   = data.dates.filter(d => d.date <  today && (d.confirmed || showProv))
+                            .slice().sort((a,b)=>b.date.localeCompare(a.date));
 
   function makeChip(d) {
     const isConf = d.confirmed === true;
@@ -999,7 +1062,8 @@ function renderPracticeDates() {
     </div>`;
   }
 
-  let html = future.map(makeChip).join('');
+  let html = future.length ? future.map(makeChip).join('')
+    : '<div class="empty-state" style="padding:12px 0;font-size:0.8rem">表示できる日程がありません</div>';
 
   if(past.length) {
     html += `<details class="past-dates-details">
@@ -1010,7 +1074,6 @@ function renderPracticeDates() {
 
   el.innerHTML = html;
 
-  // 畳んでいても選択中の日付が見えるようにpeekを更新
   const peekEl = document.getElementById('peek-practice-dates');
   if(peekEl) {
     const sel = data.dates.find(d=>d.id===selectedDateId);
@@ -1023,9 +1086,11 @@ function selectPracticeDate(dateId) {
   if(!data.practiced[dateId])      data.practiced[dateId]=[];
   if(!data.partialAbsence[dateId]) data.partialAbsence[dateId]={};
   renderPracticeDates();
+  // 選択後にアコーディオンを畳む
+  const cs = document.getElementById('cs-practice-dates');
+  if(cs) cs.classList.remove('open');
   document.getElementById('attendance-section').style.display='';
   renderSongTable();
-  // 日程タブ側：選択中表示と出欠グリッドを更新
   renderDateList();
   renderAdminAttendanceGrid();
 }
@@ -1102,9 +1167,9 @@ function renderAdminAttendanceGrid() {
   // リストボックスを常に最新の日程リストで更新
   const sel = document.getElementById('att-date-select');
   if(sel) {
-    const cur = sel.value;
+    const today2 = new Date().toISOString().split('T')[0];
     sel.innerHTML = '<option value="">── 練習日を選んでください ──</option>' +
-      data.dates.map(d => {
+      data.dates.filter(d => d.date >= today2).map(d => {
         const label = (d.confirmed ? '' : '【仮】') + fmtDate(d.date) + (d.memo ? '　' + d.memo : '');
         return `<option value="${d.id}"${d.id===selectedDateId?' selected':''}>${esc(label)}</option>`;
       }).join('');
@@ -1173,6 +1238,9 @@ function renderAdminAttendanceGrid() {
     const guestTag = entry.isGuest
       ? ` <span class="guest-name-badge">👤 ゲスト</span>`
       : '';
+    const memberNameEl = entry.isGuest
+      ? `<span class="att-member-name">${esc(entry.name)}${guestTag}</span>`
+      : `<span class="att-member-name att-member-longpress" data-member-id="${entry.id}" style="cursor:pointer">${esc(entry.name)}<span style="font-size:0.6rem;color:var(--muted);margin-left:4px;font-weight:400">長押し</span></span>`;
     const guestBtns = entry.isGuest
       ? `<button class="btn btn-sm btn-ghost guest-rename-btn" data-gid="${esc(entry.id)}" style="padding:2px 7px;font-size:0.68rem">編集</button>
          <button class="btn btn-sm btn-danger guest-delete-btn" data-gid="${esc(entry.id)}" style="padding:2px 7px;font-size:0.68rem">削除</button>`
@@ -1180,7 +1248,7 @@ function renderAdminAttendanceGrid() {
     return `<div class="att-card s-${s}${guestCardCls}" id="admin-att-card-${entry.id}">
       <div class="att-card-top" onclick="toggleAttendance('${entry.id}')">
         <span class="att-badge">${label}</span>
-        <span class="att-member-name">${esc(entry.name)}${guestTag}</span>
+        ${memberNameEl}
         ${guestBtns}
       </div>
       <div class="${commentWrapCls}">
@@ -1203,6 +1271,12 @@ function renderAdminAttendanceGrid() {
   });
   el.querySelectorAll('.guest-delete-btn').forEach(btn => {
     btn.addEventListener('click', e => { e.stopPropagation(); deleteGuest(btn.dataset.gid); });
+  });
+
+  // 通常メンバーのメンバー名を長押し → 一括出欠オーバーレイ
+  el.querySelectorAll('.att-member-longpress').forEach(span => {
+    const mid = span.dataset.memberId;
+    attachLongPress(span, () => showBulkAttPopup(mid));
   });
 }
 
@@ -1386,6 +1460,7 @@ function renderSongTable() {
         onclick="showMemberPopup('${mid}')"
         data-song-chip-member="${mid}"
         data-song-id="${s.id}"
+        data-member-id="${mid}"
       >${esc(m.name)}${lateIcon}</span>`;
     }).join('');
     return `<div class="song-row">
@@ -1440,6 +1515,70 @@ function showMemberPopup(memberId) {
 }
 
 function closeOverlay(e,id){ if(e.target===document.getElementById(id)) document.getElementById(id).classList.remove('open'); }
+
+// ══════════════════════════════════════════════════════
+// 一括出欠オーバーレイ（メンバー名長押し）
+// ══════════════════════════════════════════════════════
+function showBulkAttPopup(memberId) {
+  const m = data.members.find(m=>m.id===memberId); if(!m) return;
+  const today = new Date().toISOString().split('T')[0];
+  const futureDates = data.dates.filter(d => d.date >= today);
+
+  document.getElementById('bulk-member-name').textContent = m.name;
+
+  if(!futureDates.length) {
+    document.getElementById('bulk-date-list').innerHTML =
+      '<p style="color:var(--muted);font-size:0.82rem;padding:8px 0">今日以降の日程がありません</p>';
+  } else {
+    document.getElementById('bulk-date-list').innerHTML = futureDates.map(d => {
+      const att = (data.attendance[d.id]||{})[memberId];
+      const st  = !att ? 'undecided' : typeof att==='string' ? att : (att.status||'undecided');
+      const provTag = d.confirmed ? '' : '<span style="font-size:0.65rem;background:var(--cream);color:var(--muted);border:1px solid var(--border);border-radius:3px;padding:1px 4px;margin-right:4px;font-weight:600">仮</span>';
+      return `<div class="bulk-date-row">
+        <div class="bulk-date-label">
+          ${provTag}${fmtDate(d.date)}
+          ${d.memo?`<div class="bulk-date-memo">${esc(d.memo)}</div>`:''}
+        </div>
+        <div style="display:flex;gap:4px">
+          <button class="bulk-att-btn ${st==='present'?'present':'undecided'}" onclick="setBulkAtt('${d.id}','${memberId}','present',this)">出席</button>
+          <button class="bulk-att-btn ${st==='absent'?'absent':'undecided'}"  onclick="setBulkAtt('${d.id}','${memberId}','absent',this)">欠席</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+  document.getElementById('overlay-bulk').classList.add('open');
+}
+
+function setBulkAtt(dateId, memberId, newStatus, btn) {
+  if(editLocked) { lockTapWarn(); return; }
+  if(!data.attendance[dateId]) data.attendance[dateId] = {};
+  const existing = data.attendance[dateId][memberId];
+  const old = !existing ? {status:'undecided',comment:''}
+    : typeof existing==='string' ? {status:existing,comment:''}
+    : {status:existing.status||'undecided', comment:existing.comment||''};
+
+  // 同じボタンを押したらundecidedに戻す（トグル）
+  const nextStatus = old.status === newStatus ? 'undecided' : newStatus;
+  data.attendance[dateId][memberId] = { status: nextStatus, comment: old.comment };
+  saveData();
+
+  // 同じ行のボタンをまとめて更新
+  const row = btn.closest('.bulk-date-row');
+  row.querySelectorAll('.bulk-att-btn').forEach(b => b.className = 'bulk-att-btn undecided');
+  if(nextStatus !== 'undecided') {
+    const target = nextStatus === 'present' ? row.querySelector('.bulk-att-btn:first-child')
+                                            : row.querySelector('.bulk-att-btn:last-child');
+    if(target) target.className = 'bulk-att-btn ' + nextStatus;
+  }
+
+  // selectedDateIdと同じ日ならグリッドも更新
+  if(dateId === selectedDateId) renderAdminAttendanceGrid();
+}
+
+function closeBulkOverlay(e) {
+  const ol = document.getElementById('overlay-bulk');
+  if(e.target === ol) ol.classList.remove('open');
+}
 
 // ══════════════════════════════════════════════════════
 // STATS
@@ -1894,6 +2033,29 @@ function copyGasCode(){
 // (fmtDate / esc はスクリプト先頭で定義済み)
 
 // ══════════════════════════════════════════════════════
+// 初回起動モーダル
+// ══════════════════════════════════════════════════════
+function showInitModal() {
+  const bg = document.getElementById('init-modal-bg');
+  if(bg) bg.classList.remove('hidden');
+}
+function dismissInitModal() {
+  const bg = document.getElementById('init-modal-bg');
+  if(bg) bg.classList.add('hidden');
+}
+async function confirmInitModal() {
+  const wantAutoSync = document.getElementById('init-auto-sync-check')?.checked;
+  dismissInitModal();
+  if(wantAutoSync) {
+    autoSync = true;
+    localStorage.setItem(GAS_AUTO_KEY, '1');
+    applyAutoSyncState();
+    startPollTimer();
+  }
+  await syncPull('force');
+}
+
+// ══════════════════════════════════════════════════════
 // BOOT
 // ══════════════════════════════════════════════════════
 loadData();
@@ -1906,7 +2068,7 @@ applyLockState();
 // 最後に開いていたタブを復元
 (function restoreTab() {
   const saved = localStorage.getItem('ensemble_last_tab') || 'practice';
-  const tabNames = ['practice','stats','admin','data'];
+  const tabNames = ['practice','admin','stats','data'];
   const name = tabNames.includes(saved) ? saved : 'practice';
   const btns = document.querySelectorAll('.tab-btn');
   const idx  = tabNames.indexOf(name);
@@ -1934,6 +2096,12 @@ if(autoSync){
   // 起動時：確認なしで強制取得
   syncPull('force');
   startPollTimer();
+} else {
+  // データが空（初期状態）でGAS URLがある場合 → 初回モーダルを表示
+  const _isEmpty = !data.members.length && !data.dates.length && !data.songs.length;
+  if(_isEmpty && getGasUrl()) {
+    showInitModal();
+  }
 }
 </script>
 <div id="toast" class="toast"></div>
