@@ -120,7 +120,7 @@
   body.locked .drag-handle { opacity: 0.15; pointer-events: none; }
   body.locked .btn-danger   { opacity: 0.3;  pointer-events: none; }
   body.locked .btn-primary:not(#lock-btn), body.locked .btn-accent,
-  body.locked .btn-sage:not(.sync-safe), body.locked .ms-chip { opacity: 0.5; }
+  body.locked .btn-sage:not(.sync-safe):not(.init-safe), body.locked .ms-chip { opacity: 0.5; }
   /* 閲覧可能な操作は普通に使える */
   body.locked .tab-btn, body.locked .date-chip,
   body.locked .member-check-item, body.locked .member-chip,
@@ -357,7 +357,7 @@
     </label>
     <div class="init-modal-btns">
       <button class="btn btn-ghost" onclick="dismissInitModal()">スキップ</button>
-      <button class="btn btn-sage" onclick="confirmInitModal()">読み込む</button>
+      <button class="btn init-safe" onclick="confirmInitModal()" style="background:#2d6a4f;color:white;font-weight:700">読み込む</button>
     </div>
   </div>
 </div>
@@ -365,7 +365,7 @@
 <!-- ── HEADER ── -->
 <div class="app-header">
   <h1>🎼 はちこく練習アシスト <span style="font-size:0.55rem;font-weight:400;opacity:0.5;letter-spacing:0.05em;vertical-align:middle">
-  v1.12</span></h1>
+  v1.13</span></h1>
   <div class="header-sync">
     <div class="sync-pill off" id="hdr-sync-pill">
       <div class="sync-dot"></div>
@@ -481,7 +481,7 @@
             <option value="">── 練習日を選んでください ──</option>
           </select>
         </div>
-        <p class="notice" id="att-notice" style="margin-bottom:10px;display:none">タップで「未定 → 出席 → 欠席 → 未定」と切替。</p>
+        <p class="notice" id="att-notice" style="margin-bottom:10px;display:none">タップで「未定 → 出席 → 欠席 → 未定」と切替。<br>名前を長押しで個人の日程をまとめて入力。</p>
         <div id="admin-attendance-grid"></div>
       </div>
     </div>
@@ -1240,7 +1240,7 @@ function renderAdminAttendanceGrid() {
       : '';
     const memberNameEl = entry.isGuest
       ? `<span class="att-member-name">${esc(entry.name)}${guestTag}</span>`
-      : `<span class="att-member-name att-member-longpress" data-member-id="${entry.id}" style="cursor:pointer">${esc(entry.name)}<span style="font-size:0.6rem;color:var(--muted);margin-left:4px;font-weight:400">長押し</span></span>`;
+      : `<span class="att-member-name att-member-longpress" data-member-id="${entry.id}" style="cursor:pointer">${esc(entry.name)}</span>`;
     const guestBtns = entry.isGuest
       ? `<button class="btn btn-sm btn-ghost guest-rename-btn" data-gid="${esc(entry.id)}" style="padding:2px 7px;font-size:0.68rem">編集</button>
          <button class="btn btn-sm btn-danger guest-delete-btn" data-gid="${esc(entry.id)}" style="padding:2px 7px;font-size:0.68rem">削除</button>`
