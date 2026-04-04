@@ -311,6 +311,16 @@
   .sort-btn.active-asc  { background: var(--practiced-bg); color: var(--practiced); border-color: var(--practiced); font-weight: 700; }
   .sort-btn.active-desc { background: var(--ink); color: var(--paper); border-color: var(--ink); font-weight: 700; }
 
+  /* ── 競合確認モーダル ── */
+  .conflict-modal-bg { position: fixed; inset: 0; background: rgba(26,26,46,0.72); z-index: 500; display: flex; align-items: center; justify-content: center; padding: 20px; }
+  .conflict-modal-bg.hidden { display: none; }
+  .conflict-modal { background: var(--paper); border-radius: 16px; padding: 24px 20px 20px; max-width: 400px; width: 100%; box-shadow: 0 8px 40px rgba(0,0,0,0.35); animation: slideUp 0.25s ease; }
+  .conflict-modal-icon { font-size: 2rem; text-align: center; margin-bottom: 8px; }
+  .conflict-modal-title { font-size: 1rem; font-weight: 700; text-align: center; margin-bottom: 6px; }
+  .conflict-modal-body { font-size: 0.8rem; color: var(--muted); text-align: center; line-height: 1.7; margin-bottom: 16px; }
+  .conflict-modal-btns { display: flex; gap: 10px; }
+  .conflict-modal-btns .btn { flex: 1; padding: 10px; font-size: 0.85rem; border-radius: 9px; }
+
   /* ── 初回起動モーダル ── */
   .init-modal-bg { position: fixed; inset: 0; background: rgba(26,26,46,0.72); z-index: 500; display: flex; align-items: center; justify-content: center; padding: 20px; }
   .init-modal-bg.hidden { display: none; }
@@ -342,6 +352,19 @@
 </head>
 <body>
 
+<!-- ── 競合確認モーダル ── -->
+<div id="conflict-modal-bg" class="conflict-modal-bg hidden">
+  <div class="conflict-modal">
+    <div class="conflict-modal-icon">⚠️</div>
+    <div class="conflict-modal-title">クラウドに新しいデータがあります</div>
+    <div class="conflict-modal-body" id="conflict-modal-body"></div>
+    <div class="conflict-modal-btns">
+      <button class="btn btn-ghost" onclick="dismissConflictModal()">このまま続ける</button>
+      <button class="btn init-safe" onclick="applyConflictModal()" style="background:#2d6a4f;color:white;font-weight:700">クラウドを適用</button>
+    </div>
+  </div>
+</div>
+
 <!-- ── 初回起動モーダル ── -->
 <div id="init-modal-bg" class="init-modal-bg hidden">
   <div class="init-modal">
@@ -365,7 +388,7 @@
 <!-- ── HEADER ── -->
 <div class="app-header">
   <h1>🎼 はちこく練習アシスト <span style="font-size:0.55rem;font-weight:400;opacity:0.5;letter-spacing:0.05em;vertical-align:middle">
-  v1.13</span></h1>
+  v1.14</span></h1>
   <div class="header-sync">
     <div class="sync-pill off" id="hdr-sync-pill">
       <div class="sync-dot"></div>
@@ -388,17 +411,11 @@
 
 <!-- ── 練習アシスト ── -->
 <div id="screen-practice" class="screen active">
-  <div id="conflict-banner" class="conflict-banner">
-    ⚠️ クラウドに新しいデータがあります。<br>
-    <span style="display:flex;gap:8px;margin-top:8px">
-      <button class="btn btn-sm btn-sage" onclick="applyCloudData()" style="flex:1">クラウドを適用</button>
-      <button class="btn btn-sm btn-ghost" onclick="dismissConflict()" style="flex:1">このまま続ける</button>
-    </span>
-  </div>
+  <div id="conflict-banner" class="conflict-banner" style="display:none!important"></div>
   <div class="collapsible-section open" id="cs-practice-dates">
     <div class="collapsible-header" onclick="toggleCollapsible('cs-practice-dates')">
-      <div class="section-title">📅 練習日を選ぶ</div>
-      <label style="display:flex;align-items:center;gap:4px;font-size:0.72rem;color:var(--muted);font-weight:500;cursor:pointer;flex-shrink:0;letter-spacing:0" onclick="event.stopPropagation()">
+      <div class="section-title" style="flex:none">📅 練習日を選ぶ</div>
+      <label style="display:flex;align-items:center;gap:4px;font-size:0.72rem;color:var(--muted);font-weight:500;cursor:pointer;flex:1;margin-left:6px;letter-spacing:0" onclick="event.stopPropagation()">
         <input type="checkbox" id="show-provisional" onchange="renderPracticeDates()" style="width:14px;height:14px;cursor:pointer;accent-color:var(--muted)">
         <span style="white-space:nowrap">[仮]</span>
       </label>
@@ -1739,7 +1756,7 @@ function applyLockState(withToast) {
 }
 
 function lockTapWarn() {
-  showToast('🔒 閲覧モードです。右上のボタンで編集モードに切替できます', 3000);
+  showToast('🔒 閲覧モードです。上のボタンで編集モードに切替できます', 3000);
 }
 
 // ══════════════════════════════════════════════════════
@@ -1755,6 +1772,7 @@ let autoSync    = false;
 let pushTimer   = null;   // debounce用
 let pullTimer   = null;   // polling用
 let pendingCloudData = null; // 競合検出用
+let lastPulledAt    = 0;    // クラウドから受け取った時点の_updatedAt
 
 function getGasUrl() {
   // ハードコードURLがあればそちらを優先
@@ -1865,7 +1883,7 @@ async function hdrSyncPush() {
 // ── PULL (fetch from GAS) ──
 function startPollTimer() {
   stopPollTimer();
-  pullTimer = setInterval(()=>syncPull(false), 30000); // 30秒ごと
+  pullTimer = setInterval(()=>syncPull(false), 15000); // 15秒ごと
 }
 function stopPollTimer() {
   if(pullTimer) { clearInterval(pullTimer); pullTimer=null; }
@@ -1880,22 +1898,31 @@ async function syncPull(manual=false) {
     const json=await res.json();
     if(!json.data||!json.data.members) throw new Error('データなし');
 
-    const cloudTime  = json.data._updatedAt || 0;
-    const localTime  = data._updatedAt || 0;
+    const cloudTime = json.data._updatedAt || 0;
+    const localTime = data._updatedAt || 0;
 
     if (cloudTime > localTime) {
       if (manual === 'force') {
-        // 起動時強制適用（確認なし）
+        // 起動時・初回モーダル：確認なしで即適用
+        lastPulledAt = cloudTime;
         applyCloud(json.data, json.savedAt);
       } else if (manual) {
-        // 手動ボタン：確認ダイアログ
-        if(confirm(`クラウドに新しいデータがあります（${new Date(cloudTime).toLocaleString('ja-JP')}）。適用しますか？`)){
-          applyCloud(json.data, json.savedAt);
-        }
-      } else {
-        // 定期ポーリング：バックグラウンドで差分を通知
+        // 手動「今すぐ取得」ボタン：モーダルで確認
         pendingCloudData = { data:json.data, savedAt:json.savedAt };
-        showConflictBanner();
+        showConflictModal(cloudTime, '手動取得');
+      } else {
+        // 定期ポーリング：端末側が未変更かどうか判定
+        const localUnchanged = (localTime === lastPulledAt);
+        if (localUnchanged) {
+          // 閲覧のみ → 自動で即適用（トーストのみ）
+          lastPulledAt = cloudTime;
+          applyCloud(json.data, json.savedAt);
+          showToast('☁️ 最新データに自動更新しました', 3000);
+        } else {
+          // 端末側に変更あり → モーダルで確認
+          pendingCloudData = { data:json.data, savedAt:json.savedAt };
+          showConflictModal(cloudTime, 'polling');
+        }
       }
     } else {
       const t=new Date().toLocaleTimeString('ja-JP');
@@ -1904,7 +1931,6 @@ async function syncPull(manual=false) {
     }
   } catch(e) {
     if(manual) updateSyncUI('err','取得失敗',e.message);
-    // 自動の場合はエラーを静かにスルー（ネット切れなど）
   }
 }
 
@@ -1920,10 +1946,10 @@ function applyCloud(cloudData, savedAt) {
       data.attendance[did]=obj;
     }
   });
-  localStorage.setItem('ensemble_data', JSON.stringify(data)); // saveDataは呼ばない（再送信しない）
+  lastPulledAt = data._updatedAt || 0; // 適用時点を記録
+  localStorage.setItem('ensemble_data', JSON.stringify(data));
   selectedDateId=null;
   renderPracticeDates();
-  // 管理画面が開いていたらリフレッシュ
   if(document.getElementById('screen-admin').classList.contains('active')){
     renderMemberList(); renderDateList(); renderSongList();
   }
@@ -1937,10 +1963,29 @@ function applyCloudData() {
   if(pendingCloudData) { applyCloud(pendingCloudData.data, pendingCloudData.savedAt); pendingCloudData=null; }
 }
 
-function showConflictBanner() {
-  const b=document.getElementById('conflict-banner');
-  if(b) b.classList.add('show');
+// ── 競合確認モーダル ──
+function showConflictModal(cloudTime, mode) {
+  const timeStr = new Date(cloudTime).toLocaleString('ja-JP');
+  const bodyEl = document.getElementById('conflict-modal-body');
+  if(bodyEl) {
+    bodyEl.innerHTML = mode === 'polling'
+      ? `クラウドに新しいデータがあります。<br>（更新日時：${timeStr}）<br><br>端末側にも未送信の変更があります。<br>クラウドを適用すると端末の変更は失われます。`
+      : `クラウドに新しいデータがあります。<br>（更新日時：${timeStr}）<br>適用しますか？`;
+  }
+  const bg = document.getElementById('conflict-modal-bg');
+  if(bg) bg.classList.remove('hidden');
 }
+function dismissConflictModal() {
+  const bg = document.getElementById('conflict-modal-bg');
+  if(bg) bg.classList.add('hidden');
+  pendingCloudData = null;
+}
+function applyConflictModal() {
+  dismissConflictModal();
+  if(pendingCloudData) { applyCloud(pendingCloudData.data, pendingCloudData.savedAt); pendingCloudData=null; }
+}
+
+function showConflictBanner() {} // 旧バナー（モーダルに移行済み・互換のため残す）
 function dismissConflict() {
   const b=document.getElementById('conflict-banner');
   if(b) b.classList.remove('show');
