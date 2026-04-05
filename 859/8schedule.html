@@ -105,7 +105,7 @@
   .progress-pill.high { background: rgba(45,106,79,0.75); }
   .progress-pill.mid  { background: rgba(184,134,11,0.75); }
   .progress-pill.low  { background: rgba(192,57,43,0.75); }
-  .song-members-list { padding: 10px 14px; display: flex; flex-wrap: wrap; gap: 6px; }
+  .song-members-list { padding: 10px 14px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
   .member-chip { font-size: 0.76rem; padding: 4px 10px; border-radius: 20px; font-weight: 500; cursor: pointer; transition: transform 0.12s; user-select: none; -webkit-user-select: none; }
   .member-chip:active { transform: scale(0.93); }
   .member-chip.present { background: var(--present-bg); color: var(--present); border: 1px solid #a8d8bc; }
@@ -415,9 +415,10 @@
 
   /* ── 練習タブ：パート分け済み曲のチップ縮小 ── */
   .song-members-list.has-parts .member-chip { font-size: 0.68rem; padding: 3px 7px; }
-  .song-members-list.has-parts { gap: 4px; }
-  .part-sep { display: inline-block; width: 8px; height: 1px; } /* パート間スペーサー */
+  .song-members-list.has-parts { gap: 6px; }
+  .part-sep { display: none; } /* gap:6pxで区切るので不要 */
   .part-name-label { font-size: 0.65rem; font-weight: 700; color: var(--muted); opacity: 0.8; vertical-align: middle; }
+  .part-group { display: inline-flex; align-items: center; gap: 0; }
 </style>
 </head>
 <body>
@@ -458,7 +459,7 @@
 <!-- ── HEADER ── -->
 <div class="app-header">
   <h1>🎼 はちこく練習アシスト <span style="font-size:0.55rem;font-weight:400;opacity:0.5;letter-spacing:0.05em;vertical-align:middle">
-  v1.23</span></h1>
+  v1.25</span></h1>
   <div class="header-sync">
     <div class="sync-pill off" id="hdr-sync-pill">
       <div class="sync-dot"></div>
@@ -1780,8 +1781,7 @@ function renderSongTable() {
         if(!mids.length) continue;
         if(inlineChips) inlineChips += '<span class="part-sep"></span>';
         const pname = names[pi] || String(pi+1);
-        inlineChips += '<span class="part-name-label">' + esc(pname) + '</span>';
-        inlineChips += mids.map(makeChip).join('');
+        inlineChips += '<span class="part-group"><span class="part-name-label">' + esc(pname) + '</span>' + mids.map(makeChip).join('') + '</span>';
       }
       // 未割当
       const unassigned = s.memberIds.filter(mid => {
@@ -1790,8 +1790,7 @@ function renderSongTable() {
       });
       if(unassigned.length) {
         if(inlineChips) inlineChips += '<span class="part-sep"></span>';
-        inlineChips += '<span class="part-name-label" style="opacity:0.5">未</span>';
-        inlineChips += unassigned.map(makeChip).join('');
+        inlineChips += '<span class="part-group"><span class="part-name-label" style="opacity:0.5">未</span>' + unassigned.map(makeChip).join('') + '</span>';
       }
       membersHtml = `<div class="song-members-list has-parts">${inlineChips}</div>`;
     } else {
@@ -2317,7 +2316,7 @@ const GAS_URL_KEY  = 'ensemble_gas_url';
 const GAS_AUTO_KEY = 'ensemble_gas_auto';
 // URLをここに直接埋め込むと全員が同じURLを自動で使用できる
 // 空文字にするとlocalStorageのURLを使う
-const HARDCODED_GAS_URL = ''; // URLはlocalStorageまたはinput欄で管理
+const HARDCODED_GAS_URL = 'https://script.google.com/macros/s/AKfycbyqCF4QILT0mpWA0jHuo7Ko-G_gsjaJxk6lP6a2aBDvwKFHVKYAqNA7Y5izDGKaOCs/exec';
 
 let autoSync    = false;
 let pushTimer   = null;   // debounce用
@@ -2327,14 +2326,17 @@ let lastPulledAt        = 0;    // クラウドから受け取った時点の_up
 let lastPulledSnapshot  = null; // 前回pull時点のデータスナップショット（差分比較用）
 
 function getGasUrl() {
-  // ハードコードURLがあればそちらを優先
   if (HARDCODED_GAS_URL) return HARDCODED_GAS_URL;
-  return localStorage.getItem(GAS_URL_KEY) || '';
+  // data._gasUrl（クラウド同期される）を優先、なければlocalStorage
+  return (data && data._gasUrl) || localStorage.getItem(GAS_URL_KEY) || '';
 }
 
 function onGasUrlChange() {
   const url=document.getElementById('gas-url').value.trim();
   localStorage.setItem(GAS_URL_KEY, url);
+  // data._gasUrlにも保存して同期対象に含める
+  data._gasUrl = url;
+  saveData();
   const msg=document.getElementById('url-saved-msg');
   msg.style.display='block';
   setTimeout(()=>{ msg.style.display='none'; }, 2000);
@@ -2517,6 +2519,12 @@ function applyCloud(cloudData, savedAt) {
   });
   lastPulledAt       = data._updatedAt || 0; // 適用時点を記録
   lastPulledSnapshot = JSON.parse(JSON.stringify(data)); // 差分比較用スナップショット
+  // クラウドデータにURLが含まれていれば反映
+  if (data._gasUrl) {
+    localStorage.setItem(GAS_URL_KEY, data._gasUrl);
+    const urlEl = document.getElementById('gas-url');
+    if (urlEl && !urlEl.value) urlEl.value = data._gasUrl;
+  }
   localStorage.setItem('ensemble_data', JSON.stringify(data));
   selectedDateId=null;
   renderPracticeDates();
