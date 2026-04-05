@@ -416,7 +416,8 @@
   /* ── 練習タブ：パート分け済み曲のチップ縮小 ── */
   .song-members-list.has-parts .member-chip { font-size: 0.68rem; padding: 3px 7px; }
   .song-members-list.has-parts { gap: 4px; }
-  .part-sep { display: inline-block; width: 10px; height: 1px; } /* パート間スペーサー */
+  .part-sep { display: inline-block; width: 8px; height: 1px; } /* パート間スペーサー */
+  .part-name-label { font-size: 0.65rem; font-weight: 700; color: var(--muted); margin-right: 2px; opacity: 0.8; vertical-align: middle; }
 </style>
 </head>
 <body>
@@ -457,7 +458,7 @@
 <!-- ── HEADER ── -->
 <div class="app-header">
   <h1>🎼 はちこく練習アシスト <span style="font-size:0.55rem;font-weight:400;opacity:0.5;letter-spacing:0.05em;vertical-align:middle">
-  v1.21</span></h1>
+  v1.22</span></h1>
   <div class="header-sync">
     <div class="sync-pill off" id="hdr-sync-pill">
       <div class="sync-dot"></div>
@@ -653,7 +654,10 @@
   <div class="section" id="cloud-backup-section">
     <div class="section-title">📦 クラウドバックアップ</div>
     <p style="font-size:0.8rem;color:var(--muted);margin-bottom:10px">12時間ごとに自動作成・最大20件保持。</p>
-    <button class="btn btn-ghost" style="width:100%" onclick="loadBackupList()">📋 バックアップ一覧を取得</button>
+    <div style="display:flex;gap:8px;margin-bottom:8px">
+      <button class="btn btn-ghost" style="flex:1" onclick="loadBackupList()">📋 一覧を取得</button>
+      <button class="btn btn-sage" style="flex:1" onclick="forceBackupNow()">💾 今すぐバックアップ</button>
+    </div>
     <div id="bk-list-area"></div>
   </div>
 
@@ -1769,20 +1773,24 @@ function renderSongTable() {
     if(partData && partData.count > 0) {
       const assign = partData.assign || {};
       // パート順にチップを並べ、パート間に細い区切りスペースだけ入れる
+      const names  = partData.names || [];
       let inlineChips = '';
       for(let pi=0; pi<partData.count; pi++) {
         const mids = s.memberIds.filter(mid => assign[mid] === pi);
         if(!mids.length) continue;
         if(inlineChips) inlineChips += '<span class="part-sep"></span>';
+        const pname = names[pi] || String(pi+1);
+        inlineChips += '<span class="part-name-label">' + esc(pname) + '</span>';
         inlineChips += mids.map(makeChip).join('');
       }
-      // 未割当（パート間と同じ区切り）
+      // 未割当
       const unassigned = s.memberIds.filter(mid => {
         const v = assign[mid];
         return v===undefined || v===null || v===-1;
       });
       if(unassigned.length) {
         if(inlineChips) inlineChips += '<span class="part-sep"></span>';
+        inlineChips += '<span class="part-name-label" style="opacity:0.5">未</span>';
         inlineChips += unassigned.map(makeChip).join('');
       }
       membersHtml = `<div class="song-members-list has-parts">${inlineChips}</div>`;
@@ -2834,6 +2842,26 @@ function dismissConflict() {
 // ══════════════════════════════════════════════════════
 let _pendingBkData  = null; // 読み込み確認待ちバックアップデータ
 
+async function forceBackupNow() {
+  const url = getGasUrl();
+  if(!url) { showToast('⚠️ GAS URLが設定されていません', 3000); return; }
+  showToast('💾 バックアップを作成中…', 3000);
+  try {
+    const res  = await fetch(url, {
+      method: 'POST', mode: 'cors',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ action: 'forceBackup', data: data, savedAt: data._updatedAt || Date.now() })
+    });
+    const json = await res.json();
+    if(json.status !== 'ok') throw new Error(json.message || '失敗');
+    showToast('✅ バックアップを作成しました：' + json.label, 4000);
+    // 一覧を自動更新
+    loadBackupList();
+  } catch(e) {
+    showToast('❌ バックアップ失敗: ' + e.message, 4000);
+  }
+}
+
 async function loadBackupList() {
   const url = getGasUrl();
   if(!url) { showToast('⚠️ GAS URLが設定されていません', 3000); return; }
@@ -3012,8 +3040,9 @@ function doPost(e) {
     const body = JSON.parse(e.postData.contents);
     const ss   = SpreadsheetApp.openById(SHEET_ID);
 
-    if (body.action === 'listBackups') { return listBackups_(ss); }
-    if (body.action === 'loadBackup')  { return loadBackup_(ss, body.index); }
+    if (body.action === 'listBackups')  { return listBackups_(ss); }
+    if (body.action === 'loadBackup')   { return loadBackup_(ss, body.index); }
+    if (body.action === 'forceBackup')  { return forceBackup_(ss, body.data, body.savedAt); }
     if (body.action !== 'save') throw new Error('unknown action');
 
     const now     = new Date().toLocaleString('ja-JP');
@@ -3088,6 +3117,19 @@ function loadBackup_(ss, index) {
   return ContentService.createTextOutput(JSON.stringify({
     status:'ok', savedAt:Number(row[0]), label:row[1], data:JSON.parse(row[2])
   })).setMimeType(ContentService.MimeType.JSON);
+}
+
+// 強制バックアップ（12時間ルールを無視して即追記）
+function forceBackup_(ss, data, savedAt) {
+  savedAt = savedAt || Date.now();
+  let bk = ss.getSheetByName('Backup');
+  if (!bk) { bk = ss.insertSheet('Backup'); bk.appendRow(['savedAt','label','data']); }
+  const label = Utilities.formatDate(new Date(savedAt),'Asia/Tokyo','M/d HH:mm') + ' [手動]';
+  bk.appendRow([savedAt, label, JSON.stringify(data)]);
+  const dataRows = bk.getDataRange().getNumRows() - 1;
+  if (dataRows > BACKUP_MAX) bk.deleteRows(2, dataRows - BACKUP_MAX);
+  return ContentService.createTextOutput(JSON.stringify({status:'ok', label:label}))
+    .setMimeType(ContentService.MimeType.JSON);
 }`;
 
 function initGasCodeBlock(){
