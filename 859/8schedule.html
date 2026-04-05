@@ -417,7 +417,7 @@
   .song-members-list.has-parts .member-chip { font-size: 0.68rem; padding: 3px 7px; }
   .song-members-list.has-parts { gap: 4px; }
   .part-sep { display: inline-block; width: 8px; height: 1px; } /* パート間スペーサー */
-  .part-name-label { font-size: 0.65rem; font-weight: 700; color: var(--muted); margin-right: 2px; opacity: 0.8; vertical-align: middle; }
+  .part-name-label { font-size: 0.65rem; font-weight: 700; color: var(--muted); opacity: 0.8; vertical-align: middle; }
 </style>
 </head>
 <body>
@@ -458,7 +458,7 @@
 <!-- ── HEADER ── -->
 <div class="app-header">
   <h1>🎼 はちこく練習アシスト <span style="font-size:0.55rem;font-weight:400;opacity:0.5;letter-spacing:0.05em;vertical-align:middle">
-  v1.22</span></h1>
+  v1.23</span></h1>
   <div class="header-sync">
     <div class="sync-pill off" id="hdr-sync-pill">
       <div class="sync-dot"></div>
@@ -2317,7 +2317,7 @@ const GAS_URL_KEY  = 'ensemble_gas_url';
 const GAS_AUTO_KEY = 'ensemble_gas_auto';
 // URLをここに直接埋め込むと全員が同じURLを自動で使用できる
 // 空文字にするとlocalStorageのURLを使う
-const HARDCODED_GAS_URL = 'https://script.google.com/macros/s/AKfycbzhI16funOH5VvcnHJUvHQYsOnp1hhyVyJpw8tRLIxgUPbIMJCLM-ihhK7PZI0xKoA/exec';
+const HARDCODED_GAS_URL = ''; // URLはlocalStorageまたはinput欄で管理
 
 let autoSync    = false;
 let pushTimer   = null;   // debounce用
