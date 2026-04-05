@@ -96,16 +96,21 @@
   .check-label { font-size: 0.68rem; color: #e65100; margin-left: 2px; }
 
   /* ── SONG TABLE ── */
-  .song-row { background: white; border-radius: 10px; margin-bottom: 12px; border: 1px solid var(--border); overflow: hidden; box-shadow: var(--shadow); }
-  .song-row-header { background: var(--ink); color: var(--paper); padding: 10px 14px; display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; }
+  .song-row { background: white; border-radius: 10px; margin-bottom: 6px; border: 1px solid var(--border); overflow: hidden; box-shadow: var(--shadow); }
+  .song-row-header { background: var(--ink); color: var(--paper); padding: 5px 14px 5px 7px; display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; }
   .song-row-header .song-title { font-size: 0.88rem; font-weight: 500; flex: 1; }
   .prac-badge { font-size: 0.62rem; padding: 2px 5px; border-radius: 3px; background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.7); font-weight: 600; flex-shrink: 0; transition: all 0.2s; }
-  .prac-badge.on { background: var(--practiced); color: white; }
+  .prac-badge.on   { background: var(--practiced); color: white; }
+  .prac-badge.skip { background: #555; color: #bbb; }
+  .song-row-header.skipped .song-title { text-decoration: line-through; opacity: 0.6; }
+  .song-members-list.skipped { background: #2a2a2a; }
+  .song-members-list.skipped .part-name-label { color: #aaa; opacity: 1; }
+  .song-members-list.skipped .member-chip { opacity: 0.55; filter: brightness(0.7); }
   .progress-pill { font-size: 0.62rem; font-weight: 700; padding: 2px 5px; border-radius: 3px; background: rgba(255,255,255,0.15); color: white; flex-shrink: 0; }
   .progress-pill.high { background: rgba(45,106,79,0.75); }
   .progress-pill.mid  { background: rgba(184,134,11,0.75); }
   .progress-pill.low  { background: rgba(192,57,43,0.75); }
-  .song-members-list { padding: 10px 14px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .song-members-list { padding: 5px 14px 5px 7px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
   .member-chip { font-size: 0.76rem; padding: 4px 10px; border-radius: 20px; font-weight: 500; cursor: pointer; transition: transform 0.12s; user-select: none; -webkit-user-select: none; }
   .member-chip:active { transform: scale(0.93); }
   .member-chip.present { background: var(--present-bg); color: var(--present); border: 1px solid #a8d8bc; }
@@ -459,7 +464,7 @@
 <!-- ── HEADER ── -->
 <div class="app-header">
   <h1>🎼 はちこく練習アシスト <span style="font-size:0.55rem;font-weight:400;opacity:0.5;letter-spacing:0.05em;vertical-align:middle">
-  v1.25</span></h1>
+  v1.26</span></h1>
   <div class="header-sync">
     <div class="sync-pill off" id="hdr-sync-pill">
       <div class="sync-dot"></div>
@@ -821,6 +826,7 @@ function loadData() {
   if (!data._updatedAt) data._updatedAt = 0;
   if (!data.partialAbsence) data.partialAbsence = {};
   if (!data.parts)         data.parts = {};
+  if (!data.skipped)       data.skipped = {};
   // 旧形式(配列)→新形式(オブジェクト)マイグレーション
   Object.keys(data.attendance).forEach(did => {
     if (Array.isArray(data.attendance[did])) {
@@ -1701,15 +1707,51 @@ function initSongChipLongPress() {
 function togglePracticed(songId) {
   if(editLocked) { lockTapWarn(); return; }
   if(!selectedDateId) return;
-  const list=data.practiced[selectedDateId]||[];
-  const idx=list.indexOf(songId);
-  if(idx>=0) list.splice(idx,1); else list.push(songId);
-  data.practiced[selectedDateId]=list; saveData();
-  const on=list.includes(songId);
-  const hdr=document.getElementById('srhdr-'+songId);
-  const badge=document.getElementById('pbadge-'+songId);
-  if(hdr)  hdr.style.background=on?'#2d3a2e':'var(--ink)';
-  if(badge){ badge.textContent=on?'✅ 練習済':'📝 未練習'; badge.classList.toggle('on',on); }
+  if(!data.practiced[selectedDateId]) data.practiced[selectedDateId]=[];
+  if(!data.skipped[selectedDateId])   data.skipped[selectedDateId]=[];
+  const pracList = data.practiced[selectedDateId];
+  const skipList = data.skipped[selectedDateId];
+  const isPrac = pracList.includes(songId);
+  const isSkip = skipList.includes(songId);
+  // 未練習→練習済→なし→未練習
+  let nextState;
+  if(!isPrac && !isSkip)      nextState = 'on';    // 未練習→練習済
+  else if(isPrac && !isSkip)  nextState = 'skip';  // 練習済→なし
+  else                         nextState = 'none';  // なし→未練習
+  // pracListを更新
+  const pi = pracList.indexOf(songId);
+  if(nextState==='on')   { if(pi<0) pracList.push(songId); }
+  else                   { if(pi>=0) pracList.splice(pi,1); }
+  // skipListを更新
+  const si = skipList.indexOf(songId);
+  if(nextState==='skip') { if(si<0) skipList.push(songId); }
+  else                   { if(si>=0) skipList.splice(si,1); }
+  saveData();
+  applySongRowState(songId, nextState);
+}
+
+function getSongState(songId) {
+  if(!selectedDateId) return 'none';
+  const prac = (data.practiced[selectedDateId]||[]).includes(songId);
+  const skip = (data.skipped[selectedDateId]||[]).includes(songId);
+  if(prac) return 'on';
+  if(skip) return 'skip';
+  return 'none';
+}
+
+function applySongRowState(songId, state) {
+  const hdr   = document.getElementById('srhdr-'+songId);
+  const badge = document.getElementById('pbadge-'+songId);
+  const mlist = document.getElementById('smlist-'+songId);
+  if(hdr) {
+    hdr.style.background = state==='on' ? '#2d3a2e' : 'var(--ink)';
+    hdr.classList.toggle('skipped', state==='skip');
+  }
+  if(badge) {
+    badge.className = 'prac-badge' + (state==='on'?' on': state==='skip'?' skip':'');
+    badge.textContent = state==='on' ? '✅ 練習済' : state==='skip' ? '⛔ なし' : '📝 未練習';
+  }
+  if(mlist) mlist.classList.toggle('skipped', state==='skip');
 }
 function renderSongTable() {
   const el=document.getElementById('song-table');
@@ -1752,7 +1794,9 @@ function renderSongTable() {
     const pres = s.memberIds.filter(id => isPresent(id) && !partialList.includes(id));
     const pct  = Math.round(pres.length/s.memberIds.length*100);
     const pc   = pct>=80?'high':pct>=50?'mid':'low';
-    const on   = pracList.includes(s.id);
+    const _state = getSongState(s.id);
+    const on     = _state === 'on';
+    const skip   = _state === 'skip';
     // チップ生成ヘルパー
     const makeChip = mid => {
       const m=data.members.find(m=>m.id===mid); if(!m) return '';
@@ -1798,13 +1842,18 @@ function renderSongTable() {
       membersHtml = `<div class="song-members-list">${chips}</div>`;
     }
 
+    // membersHtmlにid・skippedクラスを付与
+    const membersHtmlFinal = membersHtml.replace(
+      /^<div class="song-members-list/,
+      '<div id="smlist-'+s.id+'" class="song-members-list' + (skip?' skipped':'')
+    );
     return `<div class="song-row">
-      <div class="song-row-header" id="srhdr-${s.id}" style="${on?'background:#2d3a2e':''}" onclick="togglePracticed('${s.id}')">
+      <div class="song-row-header${skip?' skipped':''}" id="srhdr-${s.id}" style="${on?'background:#2d3a2e':''}" onclick="togglePracticed('${s.id}')">
         <span class="song-title">🎵 ${esc(s.name)}</span>
-        <span class="prac-badge ${on?'on':''}" id="pbadge-${s.id}">${on?'✅ 練習済':'📝 未練習'}</span>
+        <span class="prac-badge${on?' on':skip?' skip':''}" id="pbadge-${s.id}">${on?'✅ 練習済':skip?'⛔ なし':'📝 未練習'}</span>
         <span class="progress-pill ${pc}">${pres.length}/${s.memberIds.length} ${pct}%</span>
       </div>
-      ${membersHtml}
+      ${membersHtmlFinal}
     </div>`;
   }).join('');
   el.innerHTML=rows||'<div class="empty-state">メンバーが設定されている曲がありません</div>';
@@ -2510,6 +2559,7 @@ function applyCloud(cloudData, savedAt) {
   if(!data.practiced)     data.practiced={};
   if(!data.partialAbsence) data.partialAbsence={};
   if(!data.parts)          data.parts={};
+  if(!data.skipped)        data.skipped={};
   Object.keys(data.attendance).forEach(did=>{
     if(Array.isArray(data.attendance[did])){
       const obj={};
@@ -2605,6 +2655,7 @@ function formatConflictVal(key, jsonVal) {
       return s==='present'?'出席': s==='absent'?'欠席':'未定';
     }
     if(type === 'prac') return v==='1'?'練習済':'未練習';
+    if(type === 'skip') return v==='1'?'なし設定':'解除';
     if(type === 'pa')   return Array.isArray(v) ? (v.length?'遅刻/早退あり':'なし') : '?';
     if(type === 'member') return v.name||'?';
     if(type === 'date')   return (v.date||'') + (v.memo?' '+v.memo:'') + (v.confirmed?'（確定）':'（仮）');
@@ -2694,6 +2745,13 @@ function flattenData(d) {
   // parts: 一曲単位
   Object.keys(d.parts||{}).forEach(sid => {
     map['part:'+sid] = J(d.parts[sid]);
+  });
+
+  // skipped: 日付×曲 単位
+  Object.keys(d.skipped||{}).forEach(did => {
+    (d.skipped[did]||[]).forEach(sid => {
+      map['skip:'+did+':'+sid] = '1';
+    });
   });
 
   return map;
@@ -2795,6 +2853,14 @@ function applyItemToData(key, jsonVal, d) {
     const s = (d.songs||[]).find(x=>x.id===sid);
     if(s && val) { s.name=val.name; s.memberIds=val.memberIds; }
 
+  } else if(type === 'skip') {
+    const did=parts[1], sid=parts[2];
+    if(!d.skipped) d.skipped={};
+    if(!d.skipped[did]) d.skipped[did]=[];
+    const list2 = d.skipped[did];
+    const idx2  = list2.indexOf(sid);
+    if(val === '1') { if(idx2<0) list2.push(sid); }
+    else            { if(idx2>=0) list2.splice(idx2,1); }
   } else if(type === 'part') {
     const sid = parts[1];
     if(val === undefined) delete d.parts[sid];
@@ -2810,6 +2876,11 @@ function conflictLabel(key) {
     const d = data.dates.find(x=>x.id===parts[1]);
     const m = data.members.find(x=>x.id===parts[2]);
     return '出欠：' + (d?fmtDate(d.date):'?') + ' / ' + (m?m.name:'?');
+  }
+  if(type === 'skip') {
+    const d = data.dates.find(x=>x.id===parts[1]);
+    const s = data.songs.find(x=>x.id===parts[2]);
+    return 'なし設定：' + (d?fmtDate(d.date):'?') + ' / ' + (s?s.name:'?');
   }
   if(type === 'prac') {
     const d = data.dates.find(x=>x.id===parts[1]);
