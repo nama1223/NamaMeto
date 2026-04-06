@@ -376,6 +376,19 @@
   .bulk-att-btn.absent    { background: var(--absent);  color: white; }
   .bulk-att-btn.undecided { background: #c8bfaa;        color: white; }
 
+  /* ── バルク出欠：コメントボタン・入力欄 ── */
+  .bulk-comment-btn { background: none; border: none; cursor: pointer; font-size: 1rem;
+    padding: 2px 4px; border-radius: 4px; line-height: 1; flex-shrink: 0; opacity: 0.4;
+    transition: opacity 0.15s; }
+  .bulk-comment-btn:hover { opacity: 0.8; }
+  .bulk-comment-btn.has-comment { opacity: 1; color: var(--gold); }
+  .bulk-comment-wrap { display: none; padding: 4px 0 6px 0; }
+  .bulk-comment-wrap.open { display: block; }
+  .bulk-comment-input { font-family: 'Noto Sans JP', sans-serif; font-size: 0.78rem;
+    padding: 5px 8px; border: 1px solid var(--border); border-radius: 6px;
+    width: 100%; background: var(--paper); color: var(--ink); outline: none; }
+  .bulk-comment-input:focus { border-color: var(--gold); }
+
   /* ── 出欠登録 ラジオ+リストボックス行 ── */
   .att-select-row { display: flex; align-items: center; gap: 8px; overflow: hidden; }
   .att-radio-label { display: flex; align-items: center; gap: 5px; flex-shrink: 0; cursor: pointer; padding: 6px 0; }
@@ -464,7 +477,7 @@
 <!-- ── HEADER ── -->
 <div class="app-header">
   <h1>🎼 はちこく練習アシスト <span style="font-size:0.55rem;font-weight:400;opacity:0.5;letter-spacing:0.05em;vertical-align:middle">
-  v1.26</span></h1>
+  v1.27</span></h1>
   <div class="header-sync">
     <div class="sync-pill off" id="hdr-sync-pill">
       <div class="sync-dot"></div>
@@ -1407,6 +1420,98 @@ function showAttGridEmpty(msg) {
 }
 
 // メンバーモード：バルク出欠をグリッドエリアに展開
+// バルク出欠の1行分HTMLを生成（グリッド内・ポップアップ共通）
+function buildBulkRow(d, memberId, setBulkFn) {
+  const att        = (data.attendance[d.id]||{})[memberId];
+  const st         = !att ? 'undecided' : typeof att==='string' ? att : (att.status||'undecided');
+  const comment    = !att ? '' : typeof att==='string' ? '' : (att.comment||'');
+  const hasComment = comment.trim() !== '';
+  const provTag    = d.confirmed ? '' : '<span style="font-size:0.65rem;background:var(--cream);color:var(--muted);border:1px solid var(--border);border-radius:3px;padding:1px 4px;margin-right:4px;font-weight:600">仮</span>';
+  const rowId      = 'bkrow-' + d.id + '-' + memberId;
+  const div = document.createElement('div');
+  div.className = 'bulk-date-row';
+  div.id = rowId;
+
+  // 左側：日付ラベル＋コメント欄
+  const left = document.createElement('div');
+  left.style.cssText = 'flex:1;min-width:0';
+  const label = document.createElement('div');
+  label.className = 'bulk-date-label';
+  label.innerHTML = provTag + fmtDate(d.date) + (d.memo ? '<div class="bulk-date-memo">' + esc(d.memo) + '</div>' : '');
+  const cwrap = document.createElement('div');
+  cwrap.className = 'bulk-comment-wrap' + (hasComment ? ' open' : '');
+  const cinp = document.createElement('input');
+  cinp.className = 'bulk-comment-input';
+  cinp.type = 'text';
+  cinp.placeholder = 'コメント';
+  cinp.value = comment;
+  cinp.dataset.dateId   = d.id;
+  cinp.dataset.memberId = memberId;
+  cinp.addEventListener('input', function(){ saveBulkComment(this.dataset.dateId, this.dataset.memberId, this.value); });
+  cwrap.appendChild(cinp);
+  left.appendChild(label);
+  left.appendChild(cwrap);
+
+  // 右側：コメントボタン＋出欠ボタン
+  const right = document.createElement('div');
+  right.style.cssText = 'display:flex;align-items:center;gap:4px;flex-shrink:0';
+
+  const cbtn = document.createElement('button');
+  cbtn.className = hasComment ? 'bulk-comment-btn has-comment' : 'bulk-comment-btn';
+  cbtn.title = 'コメント';
+  cbtn.textContent = hasComment ? '💬!' : '💬';
+  cbtn.dataset.rowId = rowId;
+  cbtn.addEventListener('click', function(){ toggleBulkComment(this.dataset.rowId); });
+
+  const pBtn = document.createElement('button');
+  pBtn.className = 'bulk-att-btn ' + (st==='present'?'present':'undecided');
+  pBtn.textContent = '出席';
+  pBtn.addEventListener('click', function(){ window[setBulkFn](d.id, memberId, 'present', this); });
+
+  const aBtn = document.createElement('button');
+  aBtn.className = 'bulk-att-btn ' + (st==='absent'?'absent':'undecided');
+  aBtn.textContent = '欠席';
+  aBtn.addEventListener('click', function(){ window[setBulkFn](d.id, memberId, 'absent', this); });
+
+  right.appendChild(cbtn);
+  right.appendChild(pBtn);
+  right.appendChild(aBtn);
+  div.appendChild(left);
+  div.appendChild(right);
+  return div;
+}
+
+function toggleBulkComment(rowId) {
+  const row  = document.getElementById(rowId); if(!row) return;
+  const wrap = row.querySelector('.bulk-comment-wrap');
+  if(!wrap) return;
+  const opening = !wrap.classList.contains('open');
+  wrap.classList.toggle('open', opening);
+  if(opening) {
+    const inp = wrap.querySelector('.bulk-comment-input');
+    if(inp) inp.focus();
+  }
+}
+
+function saveBulkComment(dateId, memberId, comment) {
+  if(editLocked) { lockTapWarn(); return; }
+  if(!data.attendance[dateId]) data.attendance[dateId] = {};
+  const existing = data.attendance[dateId][memberId];
+  const rec = !existing ? {status:'undecided', comment:''}
+    : typeof existing==='string' ? {status:existing, comment:''}
+    : {status:existing.status||'undecided', comment:existing.comment||''};
+  rec.comment = comment;
+  data.attendance[dateId][memberId] = rec;
+  saveData();
+  // コメントボタンのアイコン・スタイルを更新
+  const rowId = 'bkrow-' + dateId + '-' + memberId;
+  const row   = document.getElementById(rowId); if(!row) return;
+  const btn   = row.querySelector('.bulk-comment-btn'); if(!btn) return;
+  const has   = comment.trim() !== '';
+  btn.className = has ? 'bulk-comment-btn has-comment' : 'bulk-comment-btn';
+  btn.textContent = has ? '💬!' : '💬';
+}
+
 function renderBulkAttForMember(memberId) {
   const notice = document.getElementById('att-notice');
   const el = document.getElementById('admin-attendance-grid');
@@ -1420,22 +1525,12 @@ function renderBulkAttForMember(memberId) {
     el.innerHTML = '<p style="font-size:0.8rem;color:var(--muted);padding:8px 0">今日以降の日程がありません</p>';
     return;
   }
-  const rows = futureDates.map(d => {
-    const att = (data.attendance[d.id]||{})[memberId];
-    const st  = !att ? 'undecided' : typeof att==='string' ? att : (att.status||'undecided');
-    const provTag = d.confirmed ? '' : '<span style="font-size:0.65rem;background:var(--cream);color:var(--muted);border:1px solid var(--border);border-radius:3px;padding:1px 4px;margin-right:4px;font-weight:600">仮</span>';
-    return `<div class="bulk-date-row">
-      <div class="bulk-date-label">
-        ${provTag}${fmtDate(d.date)}
-        ${d.memo?`<div class="bulk-date-memo">${esc(d.memo)}</div>`:''}
-      </div>
-      <div style="display:flex;gap:4px">
-        <button class="bulk-att-btn ${st==='present'?'present':'undecided'}" onclick="setBulkAtt2('${d.id}','${memberId}','present',this)">出席</button>
-        <button class="bulk-att-btn ${st==='absent'?'absent':'undecided'}"  onclick="setBulkAtt2('${d.id}','${memberId}','absent',this)">欠席</button>
-      </div>
-    </div>`;
-  }).join('');
-  el.innerHTML = `<div style="font-size:0.78rem;font-weight:600;color:var(--practiced);margin-bottom:8px">👤 ${esc(m.name)} の出欠まとめ入力</div>` + rows;
+  const header = document.createElement('div');
+  header.style.cssText = 'font-size:0.78rem;font-weight:600;color:var(--practiced);margin-bottom:8px';
+  header.textContent = '👤 ' + m.name + ' の出欠まとめ入力';
+  el.innerHTML = '';
+  el.appendChild(header);
+  futureDates.forEach(d => el.appendChild(buildBulkRow(d, memberId, 'setBulkAtt2')));
 }
 
 function setBulkAtt2(dateId, memberId, newStatus, btn) {
@@ -1914,21 +2009,9 @@ function showBulkAttPopup(memberId) {
     document.getElementById('bulk-date-list').innerHTML =
       '<p style="color:var(--muted);font-size:0.82rem;padding:8px 0">今日以降の日程がありません</p>';
   } else {
-    document.getElementById('bulk-date-list').innerHTML = futureDates.map(d => {
-      const att = (data.attendance[d.id]||{})[memberId];
-      const st  = !att ? 'undecided' : typeof att==='string' ? att : (att.status||'undecided');
-      const provTag = d.confirmed ? '' : '<span style="font-size:0.65rem;background:var(--cream);color:var(--muted);border:1px solid var(--border);border-radius:3px;padding:1px 4px;margin-right:4px;font-weight:600">仮</span>';
-      return `<div class="bulk-date-row">
-        <div class="bulk-date-label">
-          ${provTag}${fmtDate(d.date)}
-          ${d.memo?`<div class="bulk-date-memo">${esc(d.memo)}</div>`:''}
-        </div>
-        <div style="display:flex;gap:4px">
-          <button class="bulk-att-btn ${st==='present'?'present':'undecided'}" onclick="setBulkAtt('${d.id}','${memberId}','present',this)">出席</button>
-          <button class="bulk-att-btn ${st==='absent'?'absent':'undecided'}"  onclick="setBulkAtt('${d.id}','${memberId}','absent',this)">欠席</button>
-        </div>
-      </div>`;
-    }).join('');
+    const bkList = document.getElementById('bulk-date-list');
+    bkList.innerHTML = '';
+    futureDates.forEach(d => bkList.appendChild(buildBulkRow(d, memberId, 'setBulkAtt')));
   }
   document.getElementById('overlay-bulk').classList.add('open');
 }
