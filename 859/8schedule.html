@@ -488,7 +488,7 @@
 <!-- ── HEADER ── -->
 <div class="app-header">
   <h1>🎼 はちこく練習アシスト <span style="font-size:0.55rem;font-weight:400;opacity:0.5;letter-spacing:0.05em;vertical-align:middle">
-  v1.28</span></h1>
+  v1.29</span></h1>
   <div class="header-sync">
     <div class="sync-pill off" id="hdr-sync-pill">
       <div class="sync-dot"></div>
@@ -764,7 +764,7 @@
 </div>
 
 <!-- ── 閲覧モード切替確認モーダル ── -->
-<div id="lock-confirm-bg" class="lock-confirm-bg hidden">
+<div id="lock-confirm-bg" class="lock-confirm-bg hidden" onclick="if(event.target===this)dismissLockConfirm()">
   <div class="lock-confirm">
     <div class="lock-confirm-icon">🔒</div>
     <div class="lock-confirm-title">編集操作を検知！<br>現在は閲覧モードですが、<br>編集モードに切り替えますか？</div>
