@@ -1,4 +1,4 @@
-const CACHE_NAME = 'namameto-cache-auto';
+const CACHE_NAME = 'namameto-cache-auto2';
 
 // インストール時に最低限キャッシュしておくもの
 // ※ここにはNamaMeto.htmlも含めておきます（初回インストール直後にオフラインになっても動くようにするため）
