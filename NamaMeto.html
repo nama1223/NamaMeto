@@ -2807,8 +2807,6 @@ const savedRatio = localStorage.getItem('namameto_tempoRatio');
 
         renderCustomSoundUI(); restoreCustomAudioFromStorage(); loadCurrentState(); updatePresetOptions(); cacheI18nForBubbles(); updateTempoMarking();
         initWakeLockUI();
-        loadExtInputConfig();
-        _setupExtInputTrigger();
         // 拍子入力モーダルのscroll-numberも後からバインド
         setTimeout(() => {
             const tsNum = document.getElementById('tsModalNum');
@@ -7904,7 +7902,9 @@ window.addEventListener('DOMContentLoaded', () => {
   }
   localStorage.setItem('namameto_saved_version', currentVersion);
 });
+</script>
 
+<script>
     // ===== 外部機器設定 =====
     let _extInputConfig = null;
     let _extDetected    = null;
@@ -8092,8 +8092,12 @@ window.addEventListener('DOMContentLoaded', () => {
         };
         requestAnimationFrame(gpTriggerPoll);
     }
+    // 外部機器設定の初期化（メインJSのinit()より後に実行されるため個別にDOMContentLoadedで呼ぶ）
+    document.addEventListener('DOMContentLoaded', function() {
+        loadExtInputConfig();
+        _setupExtInputTrigger();
+    });
     // ===== 外部機器設定 ここまで =====
-
 </script>
 <script>if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');</script>
 
