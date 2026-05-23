@@ -725,6 +725,14 @@
                     </span>
                 </label>
             </div>
+            <!-- 外部機器の設定 -->
+            <div id="extInputPanel" style="display:flex; align-items:center; justify-content:space-between; padding:10px 14px; margin-bottom:8px; background:var(--surface-color); border-radius:10px; border:1px solid var(--dot-weak);">
+                <div style="flex:1; min-width:0;">
+                    <div style="font-size:0.9rem; font-weight:bold;">🎹 <span data-i18n="label_ext_input">外部機器の設定</span></div>
+                    <div id="extInputStatus" style="font-size:0.72rem; opacity:0.65; margin-top:2px;" data-i18n="ext_input_none">未設定</div>
+                </div>
+                <button onclick="openExtInputModal()" style="flex-shrink:0; padding:6px 14px; border:none; border-radius:8px; background:var(--primary-color); color:#fff; font-size:0.82rem; font-weight:bold; cursor:pointer;" data-i18n="btn_ext_input_set">設定する</button>
+            </div>
             <div id="settingsPanelContainer">
             <!-- テーマカラー -->
             <div class="accordion-panel help-wrapper help-target" id="themeCtrl" data-help="help_theme" data-help-pos="上">
@@ -1317,7 +1325,8 @@
         <div class="cl-body">
 
             <p class="cl-ver">Z320C</p>
-            <p class="cl-desc">NamaSound+連携対応：アプリ切り替え時に音を止める機能、スリープ防止・言語切り替えの外部一括制御（postMessage）を追加。</p>
+            <p class="cl-desc">NamaSound+連携対応：アプリ切り替え時に音を止める機能、スリープ防止・言語切り替えの外部一括制御（postMessage）を追加。外部機器設定機能を追加。有線・無線で接続した機器からの入力（キーボード・MIDI・ゲームパッド）をスタート/ストップのトリガーとして登録できるようになりました。設定タブから「設定する」ボタンで入力待ちモーダルを開き、検出した入力の詳細を確認して保存します。
+</p>
             <p class="cl-ver">Z319C</p>
             <p class="cl-desc">バックグラウンド復帰時の音途切れ改善：画面に戻った際にAudioContextを自動復帰させ、スケジューラーを再起動する処理を追加。</p>
             <p class="cl-ver">Z318C</p>
@@ -2208,7 +2217,7 @@
             btn_delete: "削除", btn_cancel: "キャンセル", title_song_menu: "楽曲メニュー", ph_song_name: "楽曲名", btn_save_as: "別名保存", btn_save_over: "上書き保存",
             btn_clear_all: "現在の楽曲をクリア(新規作成)", confirm_overwrite_load: "編集中の楽曲に上書きされます。よろしいですか？", btn_close: "閉じる",
             btn_bar_shift: "小節番号ずらす", title_bar_shift: "小節番号をずらす", desc_bar_shift: "この小節群以降の小節番号を指定した数だけずらします。マイナスも入力できます。", desc_bar_shift_ex: "──使い方の例──<br>・弱起の曲で0小節目から始める<br>・第二楽章でカウントをリセットする<br>・フェルマータの後、間をあけて入るために読み上げカウント専用の小節群を挟む", btn_apply: "適用",
-            label_wake_lock_text: "スリープ防止", wake_lock_on: "オン（有効）", wake_lock_off: "オフ", wake_lock_unsupported: "このブラウザは非対応です",
+            label_wake_lock_text: "スリープ防止", wake_lock_on: "オン（有効）", wake_lock_off: "オフ", wake_lock_unsupported: "このブラウザは非対応です", label_ext_input: "外部機器の設定", btn_ext_input_set: "設定する", ext_input_none: "未設定", ext_input_waiting: "入力待ち… 機器のボタンやキーを押してください", btn_ext_retry: "再設定",
             title_load_song: "楽曲の読み込み", sort_name: "名前でソート", sort_date: "日時でソート",
             alert_loaded: " を読込ました。", alert_load_fail: "読込失敗", alert_no_data: "データがありません", alert_multi_del: " 個の小節群を削除しますか？", alert_single_del: "選択中の小節群を削除しますか？", alert_clear_all: "表示中の楽譜がすべてクリアされます。よろしいですか？", alert_saved: "保存しました！", alert_del_file: "この楽曲データを削除しますか？", msg_no_song: "保存された楽曲はありません。", str_now: "(現在: ", str_bar: "小節)", str_untitled: "無題の楽曲",
             btn_start: "スタート", btn_stop: "ストップ",
@@ -2351,7 +2360,7 @@
             btn_delete: "Delete", btn_cancel: "Cancel", title_song_menu: "Song Menu", ph_song_name: "Song Title", btn_save_as: "Save As", btn_save_over: "Overwrite Save",
             btn_clear_all: "New Song (Clear Current)", confirm_overwrite_load: "This will overwrite the song you are currently editing. Continue?", btn_close: "Close",
             btn_bar_shift: "Shift Bar No.", title_bar_shift: "Shift Bar Numbers", desc_bar_shift: "Shift the bar numbers from this group onward by the specified amount. Negative values are allowed.", desc_bar_shift_ex: "Examples:<br>· Start from bar 0 for a pickup (anacrusis)<br>· Reset the count for a new movement<br>· Insert a silent group for a fermata gap with spoken count", btn_apply: "Apply",
-            label_wake_lock_text: "Keep Screen On", wake_lock_on: "On (Active)", wake_lock_off: "Off", wake_lock_unsupported: "Not supported in this browser",
+            label_wake_lock_text: "Keep Screen On", wake_lock_on: "On (Active)", wake_lock_off: "Off", wake_lock_unsupported: "Not supported in this browser", label_ext_input: "External Device", btn_ext_input_set: "Configure", ext_input_none: "Not configured", ext_input_waiting: "Waiting for input… Press a button or key on your device", btn_ext_retry: "Retry",
             title_load_song: "Load Song", sort_name: "Sort by Name", sort_date: "Sort by Date",
             alert_loaded: " loaded.", alert_load_fail: "Load failed.", alert_no_data: "No data available.", alert_multi_del: " groups selected. Delete?", alert_single_del: "Delete selected group?", alert_clear_all: "Clear all sheet data. Are you sure?", alert_saved: "Saved successfully!", alert_del_file: "Delete this song data?", msg_no_song: "No saved songs.", str_now: "(Now: ", str_bar: " bars)", str_untitled: "Untitled Song",
             btn_start: "START", btn_stop: "STOP",
@@ -7131,7 +7140,7 @@ const savedRatio = localStorage.getItem('namameto_tempoRatio');
         document.querySelectorAll('.move-btn').forEach(btn => btn.style.display = (currentSongTab === 'edit' && !isCopyMode && !isMultiSelectMode ? 'flex' : 'none'));
     }
         async function togglePlay() {
-        if(!isPlaying) { await loadBuiltinSounds(); await preloadCountAudio(); }
+       if(!isPlaying) { await loadBuiltinSounds(); await preloadCountAudio(); }
         isPlaying = !isPlaying;
         if (isPlaying) {
             document.getElementById('songPicker').classList.add('playing-lock');
@@ -7894,6 +7903,202 @@ window.addEventListener('DOMContentLoaded', () => {
   localStorage.setItem('namameto_saved_version', currentVersion);
 });
 </script>
+
+<script>
+    // ===== 外部機器設定 =====
+    let _extInputConfig = null;
+    let _extDetected    = null;
+    let _extListeners   = [];
+    let _extGamepadPoll = null;
+    let _extMidiAccess  = null;
+
+    function loadExtInputConfig() {
+        try { const s = localStorage.getItem('namameto_ext_input'); _extInputConfig = s ? JSON.parse(s) : null; } catch(e) { _extInputConfig = null; }
+        _updateExtInputStatusUI();
+    }
+
+    function _updateExtInputStatusUI() {
+        const el = document.getElementById('extInputStatus');
+        if (!el) return;
+        if (!_extInputConfig) { el.setAttribute('data-i18n','ext_input_none'); el.textContent = getText('ext_input_none'); return; }
+        el.removeAttribute('data-i18n');
+        el.textContent = _extInputLabel(_extInputConfig);
+    }
+
+    function _extInputLabel(cfg) {
+        if (!cfg) return '';
+        if (cfg.type === 'keyboard') return '⌨️ ' + (cfg.code || cfg.key);
+        if (cfg.type === 'midi')     return '🎹 MIDI ch' + cfg.channel + ' / ' + cfg.descJa;
+        if (cfg.type === 'gamepad')  return '🕹️ ボタン ' + cfg.buttonIndex;
+        return '?';
+    }
+
+    function _extInputDetail(cfg) {
+        if (!cfg) return '';
+        if (cfg.type === 'keyboard') {
+            return '種別: キーボード<br>キー名: ' + cfg.key + '<br>コード: ' + cfg.code
+                + (cfg.ctrlKey ? '<br>Ctrl: あり' : '') + (cfg.shiftKey ? '<br>Shift: あり' : '') + (cfg.altKey ? '<br>Alt: あり' : '');
+        }
+        if (cfg.type === 'midi') {
+            return '種別: MIDI<br>チャンネル: ' + cfg.channel + '<br>メッセージ: ' + cfg.descJa
+                + '<br>データ1: ' + cfg.data1 + (cfg.data2 !== undefined ? '<br>データ2: ' + cfg.data2 : '')
+                + '<br>生データ: [' + cfg.raw.join(', ') + ']';
+        }
+        if (cfg.type === 'gamepad') {
+            return '種別: ゲームパッド<br>デバイスID: ' + cfg.gamepadId + '<br>ボタン番号: ' + cfg.buttonIndex;
+        }
+        return '';
+    }
+
+    function openExtInputModal() {
+        openModal('extInputModal');
+        _extDetected = null;
+        document.getElementById('extInputWaiting').style.display = '';
+        document.getElementById('extInputResult').style.display = 'none';
+        document.getElementById('extInputResult').innerHTML = '';
+        document.getElementById('extInputRetryBtn').style.display = 'none';
+        document.getElementById('extInputSaveBtn').style.display = 'none';
+        _startExtListen();
+    }
+
+    function cancelExtInputModal() { _stopExtListen(); closeModal('extInputModal'); }
+
+    function retryExtInput() {
+        _extDetected = null;
+        document.getElementById('extInputWaiting').style.display = '';
+        document.getElementById('extInputResult').style.display = 'none';
+        document.getElementById('extInputResult').innerHTML = '';
+        document.getElementById('extInputRetryBtn').style.display = 'none';
+        document.getElementById('extInputSaveBtn').style.display = 'none';
+        _startExtListen();
+    }
+
+    function saveExtInput() {
+        if (!_extDetected) return;
+        _extInputConfig = _extDetected;
+        localStorage.setItem('namameto_ext_input', JSON.stringify(_extInputConfig));
+        _updateExtInputStatusUI();
+        _stopExtListen();
+        closeModal('extInputModal');
+    }
+
+    function _showExtDetected(cfg) {
+        _extDetected = cfg;
+        _stopExtListen();
+        document.getElementById('extInputWaiting').style.display = 'none';
+        const res = document.getElementById('extInputResult');
+        res.innerHTML = _extInputDetail(cfg);
+        res.style.display = '';
+        document.getElementById('extInputRetryBtn').style.display = '';
+        document.getElementById('extInputSaveBtn').style.display = '';
+    }
+
+    function _startExtListen() {
+        _stopExtListen();
+        // キーボード
+        const kbFn = (e) => {
+            const tag = e.target.tagName;
+            if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+            e.preventDefault(); e.stopPropagation();
+            _showExtDetected({ type:'keyboard', key:e.key, code:e.code, ctrlKey:e.ctrlKey, shiftKey:e.shiftKey, altKey:e.altKey });
+        };
+        document.addEventListener('keydown', kbFn, true);
+        _extListeners.push({ target:document, type:'keydown', fn:kbFn });
+        // MIDI
+        if (navigator.requestMIDIAccess) {
+            navigator.requestMIDIAccess().then(access => {
+                _extMidiAccess = access;
+                Array.from(access.inputs.values()).forEach(input => {
+                    const fn = (msg) => {
+                        const [status, data1, data2] = msg.data;
+                        const mtype = status >> 4; const ch = (status & 0xf) + 1;
+                        if (mtype < 8) return;
+                        const names = {8:'ノートオフ',9:'ノートオン',10:'ポリアフタータッチ',11:'コントロールチェンジ',12:'プログラムチェンジ',13:'チャンネルプレッシャー',14:'ピッチベンド'};
+                        _showExtDetected({ type:'midi', channel:ch, messageType:mtype, descJa:names[mtype]||('不明 '+mtype), data1, data2, raw:Array.from(msg.data) });
+                    };
+                    input.addEventListener('midimessage', fn);
+                    _extListeners.push({ target:input, type:'midimessage', fn });
+                });
+            }).catch(() => {});
+        }
+        // Gamepad
+        let prevStates = {};
+        const gpPoll = () => {
+            const gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
+            for (const gp of gamepads) {
+                if (!gp) continue;
+                if (!prevStates[gp.index]) prevStates[gp.index] = gp.buttons.map(b => b.pressed);
+                gp.buttons.forEach((btn, i) => {
+                    if (btn.pressed && !prevStates[gp.index][i])
+                        _showExtDetected({ type:'gamepad', gamepadId:gp.id, buttonIndex:i });
+                });
+                prevStates[gp.index] = gp.buttons.map(b => b.pressed);
+            }
+            _extGamepadPoll = requestAnimationFrame(gpPoll);
+        };
+        _extGamepadPoll = requestAnimationFrame(gpPoll);
+    }
+
+    function _stopExtListen() {
+        _extListeners.forEach(({target,type,fn}) => target.removeEventListener(type, fn, true));
+        _extListeners = [];
+        if (_extGamepadPoll) { cancelAnimationFrame(_extGamepadPoll); _extGamepadPoll = null; }
+    }
+
+    function _setupExtInputTrigger() {
+        // キーボードトリガー
+        document.addEventListener('keydown', (e) => {
+            if (!_extInputConfig || _extInputConfig.type !== 'keyboard') return;
+            const cfg = _extInputConfig;
+            if (e.code !== cfg.code) return;
+            if (!!cfg.ctrlKey !== e.ctrlKey || !!cfg.shiftKey !== e.shiftKey || !!cfg.altKey !== e.altKey) return;
+            if (document.querySelector('.modal-overlay.active')) return;
+            const tag = e.target.tagName;
+            if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+            e.preventDefault(); togglePlay(); playUiSound();
+        }, true);
+        // MIDIトリガー
+        if (navigator.requestMIDIAccess) {
+            navigator.requestMIDIAccess().then(access => {
+                Array.from(access.inputs.values()).forEach(input => {
+                    input.addEventListener('midimessage', (msg) => {
+                        if (!_extInputConfig || _extInputConfig.type !== 'midi') return;
+                        const cfg = _extInputConfig;
+                        const [status, data1] = msg.data;
+                        if (status !== (((cfg.messageType << 4) | (cfg.channel - 1)) & 0xff)) return;
+                        if (data1 !== cfg.data1) return;
+                        if (document.querySelector('.modal-overlay.active')) return;
+                        togglePlay(); playUiSound();
+                    });
+                });
+            }).catch(() => {});
+        }
+        // Gamepadトリガー
+        let _gpPrev = {};
+        const gpTriggerPoll = () => {
+            if (_extInputConfig && _extInputConfig.type === 'gamepad') {
+                const gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
+                for (const gp of gamepads) {
+                    if (!gp) continue;
+                    if (!_gpPrev[gp.index]) _gpPrev[gp.index] = gp.buttons.map(b => b.pressed);
+                    const btn = gp.buttons[_extInputConfig.buttonIndex];
+                    if (btn && btn.pressed && !_gpPrev[gp.index][_extInputConfig.buttonIndex]) {
+                        if (!document.querySelector('.modal-overlay.active')) { togglePlay(); playUiSound(); }
+                    }
+                    _gpPrev[gp.index] = gp.buttons.map(b => b.pressed);
+                }
+            }
+            requestAnimationFrame(gpTriggerPoll);
+        };
+        requestAnimationFrame(gpTriggerPoll);
+    }
+    // 外部機器設定の初期化（メインJSのinit()より後に実行されるため個別にDOMContentLoadedで呼ぶ）
+    document.addEventListener('DOMContentLoaded', function() {
+        loadExtInputConfig();
+        _setupExtInputTrigger();
+    });
+    // ===== 外部機器設定 ここまで =====
+</script>
 <script>if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');</script>
 
 <!-- スクロール余白インジケーター -->
@@ -7907,5 +8112,23 @@ window.addEventListener('DOMContentLoaded', () => {
     <div class="si-arrow si-down" id="siDn3"></div>
 </div>
 
+
+    <!-- 外部機器設定モーダル -->
+    <div id="extInputModal" class="modal-overlay" onclick="if(event.target===this)cancelExtInputModal()">
+        <div class="modal-content" style="max-width:360px;">
+            <h2 style="margin-top:0; font-size:1.05rem;">🎹 <span data-i18n="label_ext_input">外部機器の設定</span></h2>
+            <div id="extInputWaiting" style="text-align:center; padding:18px 0 10px;">
+                <div style="font-size:2rem; margin-bottom:8px; animation:extPulse 1.2s ease-in-out infinite;">👂</div>
+                <div style="font-size:0.9rem; opacity:0.8;" data-i18n="ext_input_waiting">入力待ち…<br>機器のボタンやキーを押してください</div>
+            </div>
+            <div id="extInputResult" style="display:none; background:var(--bg-color); border-radius:8px; padding:10px 12px; margin-bottom:12px; font-size:0.82rem; line-height:1.7; word-break:break-all;">
+            </div>
+            <div class="modal-buttons" style="display:flex; gap:8px; margin-top:4px;">
+                <button class="btn-cancel" onclick="cancelExtInputModal()" style="flex:1;" data-i18n="btn_cancel">キャンセル</button>
+                <button id="extInputRetryBtn" onclick="retryExtInput()" style="flex:1; padding:10px; border:none; border-radius:6px; background:var(--dot-weak); color:var(--text-color); font-weight:bold; cursor:pointer; display:none;" data-i18n="btn_ext_retry">再設定</button>
+                <button id="extInputSaveBtn" onclick="saveExtInput()" style="flex:1; padding:10px; border:none; border-radius:6px; background:var(--primary-color); color:#fff; font-weight:bold; cursor:pointer; display:none;" data-i18n="btn_save">保存</button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
