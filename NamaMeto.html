@@ -3356,7 +3356,7 @@ const savedRatio = localStorage.getItem('namameto_tempoRatio');
 
     // ===== 音声で再生/停止（Web Speech API） =====
     const VC_KEY = 'namameto_voice_ctrl';
-    const VC_RETRY_BASE = 400;
+    const VC_RETRY_BASE = 120;  // 通常終了→再起動の待ち（短いほど“つなぎめの聞き逃し”が減る）
     const VC_RETRY_MAX  = 8000;
     let voiceCtrl = { enabled:false, mode:'toggle', wordToggle:'', wordPlay:'', wordStop:'' };
     let voiceRecog = null;
