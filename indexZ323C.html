@@ -569,7 +569,7 @@
         <div style="text-align: center; margin-bottom: 10px;">
             <div class="header-row">
                 <button class="help-btn" onclick="toggleHelp()">?</button>
-                <h1><span data-i18n="appTitleText"></span><span style="font-size:0.62rem; font-weight:400; opacity:0.6; letter-spacing:0.5px; vertical-align:baseline; margin-left:6px; line-height:1;">Z322C</span></h1>
+                <h1><span data-i18n="appTitleText"></span><span style="font-size:0.62rem; font-weight:400; opacity:0.6; letter-spacing:0.5px; vertical-align:baseline; margin-left:6px; line-height:1;">Z323C</span></h1>
                 <button id="headerVolBtn" style="width:36px; background:none; border:none; padding:2px 0; display:flex; flex-direction:column; align-items:center; cursor:pointer; user-select:none; -webkit-user-select:none; touch-action:none; -webkit-tap-highlight-color:transparent; position:relative; outline:none;">
                     <span id="headerVolIcon" style="font-size:1.3rem; line-height:1; pointer-events:none;">🔊</span>
                     <span id="headerVolPct" style="font-size:0.62rem; color:var(--primary-color); font-weight:bold; margin-top:1px; line-height:1; pointer-events:none;">100%</span>
@@ -725,14 +725,6 @@
                     </span>
                 </label>
             </div>
-            <!-- 外部機器の設定 -->
-            <div id="extInputPanel" style="display:flex; align-items:center; justify-content:space-between; padding:10px 14px; margin-bottom:8px; background:var(--surface-color); border-radius:10px; border:1px solid var(--dot-weak);">
-                <div style="flex:1; min-width:0;">
-                    <div style="font-size:0.9rem; font-weight:bold;">🎹 <span data-i18n="label_ext_input">外部機器の設定</span></div>
-                    <div id="extInputStatus" style="font-size:0.72rem; opacity:0.65; margin-top:2px;" data-i18n="ext_input_none">未設定</div>
-                </div>
-                <button onclick="openExtInputModal()" style="flex-shrink:0; padding:6px 14px; border:none; border-radius:8px; background:var(--primary-color); color:#fff; font-size:0.82rem; font-weight:bold; cursor:pointer;" data-i18n="btn_ext_input_set">設定する</button>
-            </div>
             <div id="settingsPanelContainer">
             <!-- テーマカラー -->
             <div class="accordion-panel help-wrapper help-target" id="themeCtrl" data-help="help_theme" data-help-pos="上">
@@ -754,75 +746,6 @@
                         <button class="theme-btn" id="themeBtnNavy"    onclick="applyTheme('navy')"    style="background:#111b2e; color:#e2e8f0;"><span data-i18n="theme_navy_name">🌊 ネイビー</span></button>
                         <button class="theme-btn" id="themeBtnDark"    onclick="applyTheme('dark')"    style="background:#2d2d2d; color:#e0e0e0;"><span data-i18n="theme_dark_name">🌙 ダーク</span></button>
                     </div>
-                </div>
-            </div>
-
-            <!-- 音声で再生/停止 -->
-            <div class="accordion-panel help-wrapper help-target" id="panel_voice_ctrl" data-help="help_voice_ctrl" data-help-pos="上">
-                <div class="help-tip center-tip" style="top: -25px;" data-i18n="help_voice_ctrl">🎤 音声コマンドで再生/停止を操作できます</div>
-                <div class="accordion-header" onclick="toggleAccordion('voiceAcc_body','arrVoice')">
-                    <span class="settings-drag-handle" onclick="event.stopPropagation()">⠿</span>
-                    <span data-i18n="acc_voice_ctrl">🎤 音声で再生/停止</span><span id="arrVoice">▼</span>
-                </div>
-                <div class="accordion-body" id="voiceAcc_body">
-                    <!-- ON/OFF -->
-                    <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px;">
-                        <div style="flex:1; min-width:0;">
-                            <div style="font-size:0.9rem; font-weight:bold;" data-i18n="vc_enable_label">音声認識を有効化</div>
-                            <div id="vcStatus" style="font-size:0.72rem; opacity:0.65; margin-top:2px;" data-i18n="vc_status_off">オフ</div>
-                        </div>
-                        <label style="position:relative; display:inline-block; width:48px; height:26px; flex-shrink:0;">
-                            <input type="checkbox" id="vcEnabled" onchange="onVcEnabledChange(this)" style="opacity:0; width:0; height:0; position:absolute;">
-                            <span id="vcEnabledSlider" style="position:absolute; cursor:pointer; inset:0; background:var(--dot-weak); border-radius:26px; transition:0.2s;">
-                                <span id="vcEnabledThumb" style="position:absolute; height:20px; width:20px; left:3px; top:3px; background:#fff; border-radius:50%; transition:0.2s; display:block;"></span>
-                            </span>
-                        </label>
-                    </div>
-
-                    <!-- モード -->
-                    <div style="margin-bottom:10px; font-size:0.85rem;">
-                        <div style="font-weight:bold; margin-bottom:5px;" data-i18n="vc_mode_label">ワードのモード</div>
-                        <div style="display:flex; gap:14px; flex-wrap:wrap;">
-                            <label style="display:flex; align-items:center; gap:5px; cursor:pointer;">
-                                <input type="radio" name="vcMode" id="vcModeToggle" value="toggle" onchange="onVcModeChange()">
-                                <span data-i18n="vc_mode_toggle">統一（同じワードで切替）</span>
-                            </label>
-                            <label style="display:flex; align-items:center; gap:5px; cursor:pointer;">
-                                <input type="radio" name="vcMode" id="vcModeSplit" value="split" onchange="onVcModeChange()">
-                                <span data-i18n="vc_mode_split">個別（別ワード）</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <!-- 統一ワード -->
-                    <div id="vcRowToggle" style="margin-bottom:8px;">
-                        <label style="display:flex; align-items:center; gap:8px; font-size:0.85rem;">
-                            <span style="min-width:80px;" data-i18n="vc_word_toggle">トグルワード</span>
-                            <input type="text" id="vcWordToggle" data-vc-key="wordToggle" oninput="onVcWordChange(this)" style="flex:1; padding:6px 8px; font-size:0.95rem;">
-                        </label>
-                    </div>
-
-                    <!-- 個別ワード -->
-                    <div id="vcRowSplit" style="display:none; flex-direction:column; gap:6px; margin-bottom:8px;">
-                        <label style="display:flex; align-items:center; gap:8px; font-size:0.85rem;">
-                            <span style="min-width:80px;" data-i18n="vc_word_play">再生ワード</span>
-                            <input type="text" id="vcWordPlay" data-vc-key="wordPlay" oninput="onVcWordChange(this)" style="flex:1; padding:6px 8px; font-size:0.95rem;">
-                        </label>
-                        <label style="display:flex; align-items:center; gap:8px; font-size:0.85rem;">
-                            <span style="min-width:80px;" data-i18n="vc_word_stop">停止ワード</span>
-                            <input type="text" id="vcWordStop" data-vc-key="wordStop" oninput="onVcWordChange(this)" style="flex:1; padding:6px 8px; font-size:0.95rem;">
-                        </label>
-                    </div>
-
-                    <!-- 認識テスト -->
-                    <hr style="border:none; border-top:1px solid var(--dot-weak); margin:12px 0 8px;">
-                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px; flex-wrap:wrap;">
-                        <button id="vcTestBtn" onclick="onVcTestClick()" style="background:var(--primary-color); color:#fff; border:none; border-radius:6px; padding:6px 12px; font-size:0.85rem; font-weight:bold; cursor:pointer;" data-i18n="vc_test_btn">🎤 認識テスト開始</button>
-                        <span style="font-size:0.75rem; opacity:0.7;" data-i18n="vc_test_hint">話した内容をここに表示します</span>
-                    </div>
-                    <div id="vcTestOutput" style="min-height:36px; padding:8px; background:var(--surface-color); border:1px dashed var(--dot-weak); border-radius:6px; font-size:0.85rem; word-break:break-word; color:var(--text-color);"></div>
-
-                    <p style="font-size:0.72rem; opacity:0.7; margin:10px 0 0 0; line-height:1.4;" data-i18n="vc_note">※ ブラウザの音声認識機能（Web Speech API）を使用します。マイクの利用許可が必要で、Chrome系ブラウザで動作が安定しています。</p>
                 </div>
             </div>
 
@@ -904,6 +827,89 @@
                         <input type="text" id="jumpVal3" class="jump-custom-input" value="-10">
                         <input type="text" id="jumpVal4" class="jump-custom-input" value="-5">
                     </div>
+                </div>
+            </div>
+
+            <!-- 音声/外部機器で再生/停止 -->
+            <div class="accordion-panel help-wrapper help-target" id="panel_voice_ctrl" data-help="help_voice_ctrl" data-help-pos="上">
+                <div class="help-tip center-tip" style="top: -25px;" data-i18n="help_voice_ctrl">🎤 音声や外部機器で再生/停止を操作できます</div>
+                <div class="accordion-header" onclick="toggleAccordion('voiceAcc_body','arrVoice')">
+                    <span class="settings-drag-handle" onclick="event.stopPropagation()">⠿</span>
+                    <span data-i18n="acc_voice_ctrl">🎹 外部機器/音声で再生/停止</span><span id="arrVoice">▼</span>
+                </div>
+                <div class="accordion-body" id="voiceAcc_body">
+
+                    <!-- 外部機器の設定 -->
+                    <div style="font-size:0.78rem; font-weight:bold; opacity:0.7; margin-bottom:6px; letter-spacing:0.05em;" data-i18n="vc_section_ext">🎹 外部機器</div>
+                    <div id="extInputPanel" style="display:flex; align-items:center; justify-content:space-between; padding:10px 12px; margin-bottom:14px; background:var(--surface-color); border-radius:10px; border:1px solid var(--dot-weak);">
+                        <div style="flex:1; min-width:0;">
+                            <div style="font-size:0.88rem; font-weight:bold;">🎹 <span data-i18n="label_ext_input">外部機器の設定</span></div>
+                            <div id="extInputStatus" style="font-size:0.72rem; opacity:0.65; margin-top:2px;" data-i18n="ext_input_none">未設定</div>
+                        </div>
+                        <button onclick="openExtInputModal()" style="flex-shrink:0; padding:6px 14px; border:none; border-radius:8px; background:var(--primary-color); color:#fff; font-size:0.82rem; font-weight:bold; cursor:pointer;" data-i18n="btn_ext_input_set">設定する</button>
+                    </div>
+
+                    <!-- 音声認識 -->
+                    <div style="font-size:0.78rem; font-weight:bold; opacity:0.7; margin-bottom:6px; letter-spacing:0.05em;" data-i18n="vc_section_voice">🎤 音声認識</div>
+
+                    <!-- ON/OFF -->
+                    <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px;">
+                        <div style="flex:1; min-width:0;">
+                            <div style="font-size:0.9rem; font-weight:bold;" data-i18n="vc_enable_label">音声認識を有効化</div>
+                            <div id="vcStatus" style="font-size:0.72rem; opacity:0.65; margin-top:2px;" data-i18n="vc_status_off">オフ</div>
+                        </div>
+                        <label style="position:relative; display:inline-block; width:48px; height:26px; flex-shrink:0;">
+                            <input type="checkbox" id="vcEnabled" onchange="onVcEnabledChange(this)" style="opacity:0; width:0; height:0; position:absolute;">
+                            <span id="vcEnabledSlider" style="position:absolute; cursor:pointer; inset:0; background:var(--dot-weak); border-radius:26px; transition:0.2s;">
+                                <span id="vcEnabledThumb" style="position:absolute; height:20px; width:20px; left:3px; top:3px; background:#fff; border-radius:50%; transition:0.2s; display:block;"></span>
+                            </span>
+                        </label>
+                    </div>
+
+                    <!-- モード -->
+                    <div style="margin-bottom:10px; font-size:0.85rem;">
+                        <div style="font-weight:bold; margin-bottom:5px;" data-i18n="vc_mode_label">ワードのモード</div>
+                        <div style="display:flex; gap:14px; flex-wrap:wrap;">
+                            <label style="display:flex; align-items:center; gap:5px; cursor:pointer;">
+                                <input type="radio" name="vcMode" id="vcModeToggle" value="toggle" onchange="onVcModeChange()">
+                                <span data-i18n="vc_mode_toggle">統一（同じワードで切替）</span>
+                            </label>
+                            <label style="display:flex; align-items:center; gap:5px; cursor:pointer;">
+                                <input type="radio" name="vcMode" id="vcModeSplit" value="split" onchange="onVcModeChange()">
+                                <span data-i18n="vc_mode_split">個別（別ワード）</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- 統一ワード -->
+                    <div id="vcRowToggle" style="margin-bottom:8px;">
+                        <label style="display:flex; align-items:center; gap:8px; font-size:0.85rem;">
+                            <span style="min-width:80px;" data-i18n="vc_word_toggle">トグルワード</span>
+                            <input type="text" id="vcWordToggle" data-vc-key="wordToggle" oninput="onVcWordChange(this)" style="flex:1; padding:6px 8px; font-size:0.95rem;">
+                        </label>
+                    </div>
+
+                    <!-- 個別ワード -->
+                    <div id="vcRowSplit" style="display:none; flex-direction:column; gap:6px; margin-bottom:8px;">
+                        <label style="display:flex; align-items:center; gap:8px; font-size:0.85rem;">
+                            <span style="min-width:80px;" data-i18n="vc_word_play">再生ワード</span>
+                            <input type="text" id="vcWordPlay" data-vc-key="wordPlay" oninput="onVcWordChange(this)" style="flex:1; padding:6px 8px; font-size:0.95rem;">
+                        </label>
+                        <label style="display:flex; align-items:center; gap:8px; font-size:0.85rem;">
+                            <span style="min-width:80px;" data-i18n="vc_word_stop">停止ワード</span>
+                            <input type="text" id="vcWordStop" data-vc-key="wordStop" oninput="onVcWordChange(this)" style="flex:1; padding:6px 8px; font-size:0.95rem;">
+                        </label>
+                    </div>
+
+                    <!-- 認識テスト -->
+                    <hr style="border:none; border-top:1px solid var(--dot-weak); margin:12px 0 8px;">
+                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px; flex-wrap:wrap;">
+                        <button id="vcTestBtn" onclick="onVcTestClick()" style="background:var(--primary-color); color:#fff; border:none; border-radius:6px; padding:6px 12px; font-size:0.85rem; font-weight:bold; cursor:pointer;" data-i18n="vc_test_btn">🎤 認識テスト開始</button>
+                        <span style="font-size:0.75rem; opacity:0.7;" data-i18n="vc_test_hint">話した内容をここに表示します</span>
+                    </div>
+                    <div id="vcTestOutput" style="min-height:36px; padding:8px; background:var(--surface-color); border:1px dashed var(--dot-weak); border-radius:6px; font-size:0.85rem; word-break:break-word; color:var(--text-color);"></div>
+
+                    <p style="font-size:0.72rem; opacity:0.7; margin:10px 0 0 0; line-height:1.4;" data-i18n="vc_note">※ ブラウザの音声認識機能（Web Speech API）を使用します。マイクの利用許可が必要です。Chrome（PC / Android）では音声モデルを端末に取得してオフラインでも動作します。iPhoneなど非対応の端末ではオンライン時のみ動作します。</p>
                 </div>
             </div>
 
@@ -1393,6 +1399,8 @@
         <div class="intro-close"><button onclick="toggleChangelog()">✕ 閉じる</button></div>
         <div class="cl-body">
 
+            <p class="cl-ver">Z323C</p>
+            <p class="cl-desc">音声で再生/停止する機能を追加。設定タブの「🎹 外部機器/音声で再生/停止」から、音声認識のオン/オフ、反応するワード（同じワードで切替える「統一」と、再生・停止を別にする「個別」の2モード）、認識テストが行えます。対応端末（Chrome 139以降のPC / Android）では音声モデルを端末に取得してオフラインでも動作し、非対応端末（iPhone等）ではオンライン時のみ動作します。スリープからの復帰時にも自動で認識待ちへ復活します。あわせて従来の「外部機器の設定」を同じ枠内に統合しました。</p>
             <p class="cl-ver">Z322C</p>
             <p class="cl-desc">再生モード/作成編集モードの選択ボタンの見た目を改善：選択中のボタンに上辺のアクセントバーと浮き上がり表示を追加。</p>
             <p class="cl-ver">Z321C</p>
@@ -2311,8 +2319,10 @@
             acc_custom_bpm: "⚡ テンポ増減ボタンのカスタム",
             acc_tts: "💬 読み上げの調整",
             acc_volume: "🔉 音量調整",
-            acc_voice_ctrl: "🎤 音声で再生/停止",
-            help_voice_ctrl: "🎤 音声コマンドで再生/停止を操作できます",
+            acc_voice_ctrl: "🎹 外部機器/音声で再生/停止",
+            help_voice_ctrl: "🎹 外部機器や音声で再生/停止を操作できます",
+            vc_section_ext: "🎹 外部機器",
+            vc_section_voice: "🎤 音声認識",
             vc_enable_label: "音声認識を有効化",
             vc_status_off: "オフ",
             vc_status_listening: "🎤 認識中…",
@@ -2320,6 +2330,9 @@
             vc_status_denied: "❌ マイクの使用が許可されていません",
             vc_status_unsupported: "このブラウザは音声認識に非対応です",
             vc_status_lang_ns: "この言語は音声認識に未対応です",
+            vc_status_downloading: "⬇️ オフライン用モデルを準備中…",
+            vc_status_offline: "📴 オフラインのため認識できません（この端末はオンデバイス非対応）",
+            vc_status_listening_local: "🎤 認識中…（オフライン対応）",
             vc_mode_label: "ワードのモード",
             vc_mode_toggle: "統一（同じワードで切替）",
             vc_mode_split: "個別（再生/停止を別ワード）",
@@ -2472,8 +2485,10 @@
             acc_custom_bpm: "⚡ Custom Tempo Buttons",
             acc_tts: "💬 Speech Settings",
             acc_volume: "🔉 Volume",
-            acc_voice_ctrl: "🎤 Voice Control",
-            help_voice_ctrl: "🎤 Use voice commands to start/stop playback",
+            acc_voice_ctrl: "🎹 External Device / Voice",
+            help_voice_ctrl: "🎹 Use an external device or voice to start/stop playback",
+            vc_section_ext: "🎹 External Device",
+            vc_section_voice: "🎤 Voice Recognition",
             vc_enable_label: "Enable voice control",
             vc_status_off: "Off",
             vc_status_listening: "🎤 Listening…",
@@ -2481,6 +2496,9 @@
             vc_status_denied: "❌ Microphone access denied",
             vc_status_unsupported: "Speech recognition not supported in this browser",
             vc_status_lang_ns: "This language is not supported for recognition",
+            vc_status_downloading: "⬇️ Preparing offline model…",
+            vc_status_offline: "📴 Offline — recognition unavailable (on-device not supported here)",
+            vc_status_listening_local: "🎤 Listening… (offline-ready)",
             vc_mode_label: "Word Mode",
             vc_mode_toggle: "Single (same word toggles)",
             vc_mode_split: "Separate (different play/stop words)",
@@ -2490,7 +2508,7 @@
             vc_test_btn: "🎤 Start Recognition Test",
             vc_test_stop: "⏹ Stop Recognition Test",
             vc_test_hint: "What you say appears here",
-            vc_note: "※ Uses the browser's Web Speech API. Microphone permission is required. Works best on Chromium-based browsers.",
+            vc_note: "※ Uses the browser's Web Speech API. Microphone permission is required. On Chrome (PC / Android) it fetches an on-device model and works offline; on unsupported devices (e.g. iPhone) it works only while online.",
             theme_beige_name: "🌿 Beige",
             theme_dark_name: "🌙 Dark",
             theme_light_name: "☀️ Light",
@@ -2604,6 +2622,7 @@
         updateInsertBtnLabels();
         // 音声認識: 言語に合わせて再起動 & ボタン文言更新
         if (typeof updateVcUI === 'function') updateVcUI();
+        if (typeof vcProbeOnDevice === 'function') vcProbeOnDevice(false); // 言語変更に合わせオンデバイス可否を再確認（DLはON時）
         if (typeof vcDesired === 'function' && vcDesired()) {
             try { if (voiceRecog) { voiceRecog.onend = null; voiceRecog.abort(); voiceRecog = null; } } catch(e) {}
             clearTimeout(voiceRestartTimer);
@@ -3337,6 +3356,8 @@ const savedRatio = localStorage.getItem('namameto_tempoRatio');
 
     // ===== 音声で再生/停止（Web Speech API） =====
     const VC_KEY = 'namameto_voice_ctrl';
+    const VC_RETRY_BASE = 400;
+    const VC_RETRY_MAX  = 8000;
     let voiceCtrl = { enabled:false, mode:'toggle', wordToggle:'', wordPlay:'', wordStop:'' };
     let voiceRecog = null;
     let voiceRestartTimer = null;
@@ -3344,6 +3365,14 @@ const savedRatio = localStorage.getItem('namameto_tempoRatio');
     let voiceStarting = false;
     let vcTestActive = false;
     let vcUnsupported = false;
+    let vcRetryDelay = VC_RETRY_BASE;
+    // オンデバイス認識（Chrome 139+ / processLocally）関連
+    let voiceRecogLocal = false;   // 現在のセッションがオンデバイス処理か
+    let vcOnDeviceReady = false;   // 現在の言語でオンデバイス利用可能か
+    let vcOnDeviceProbing = false; // available() 実行中フラグ
+    let vcProbeDone = false;       // 現在の言語で判定済みか
+    let vcInstallTried = false;    // install() 多重起動防止
+    let vcProbedLang = null;       // 最後に判定した言語コード
 
     function vcDefaultsForLang(lang) {
         return lang === 'ja'
@@ -3377,6 +3406,54 @@ const savedRatio = localStorage.getItem('namameto_tempoRatio');
         else stopVoiceRecog();
     }
 
+    function vcLangCode() { return (currentLang === 'ja') ? 'ja-JP' : 'en-US'; }
+
+    // オンデバイス音声認識（Chrome 139+）の可否を確認し、必要なら言語パックを取得する。
+    // 非対応ブラウザ（iOS Safari等）では何もせず、従来のクラウド認識にフォールバックする。
+    // allowInstall=true のときだけ言語パックのDL（install）を行う（ユーザーがONにした時のみ）。
+    async function vcProbeOnDevice(allowInstall) {
+        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const lang = vcLangCode();
+        // 言語が変わったら状態をリセット
+        if (vcProbedLang !== lang) {
+            vcProbedLang = lang;
+            vcOnDeviceReady = false;
+            vcProbeDone = false;
+            vcInstallTried = false;
+        }
+        if (!SR || typeof SR.available !== 'function') { vcOnDeviceReady = false; vcProbeDone = true; return; }
+        if (vcOnDeviceProbing || vcProbeDone) return;
+        vcOnDeviceProbing = true;
+        const opts = { langs: [lang], processLocally: true };
+        try {
+            const state = await SR.available(opts);
+            const ready = (state === 'available' || state === true);
+            const installable = (state === 'downloadable' || state === 'downloading');
+            if (ready) {
+                vcOnDeviceReady = true; vcProbeDone = true;
+                // クラウドで動作中なら、オンデバイスへ即アップグレード
+                if (vcDesired() && voiceRecog && !voiceRecogLocal) vcHardRestart();
+            } else if (installable) {
+                vcOnDeviceReady = false;
+                // DLはユーザーがONにした時だけ。未許可なら未確定のまま（次回ON時に再確認）
+                if (allowInstall && typeof SR.install === 'function' && !vcInstallTried) {
+                    vcProbeDone = true; // インストール着手後は available() を繰り返さない
+                    vcInstallTried = true;
+                    if (vcDesired()) vcSetStatus('vc_status_downloading');
+                    SR.install(opts).then(ok => {
+                        if (ok) { vcOnDeviceReady = true; if (vcDesired()) vcHardRestart(); }
+                    }).catch(() => {});
+                }
+            } else {
+                vcOnDeviceReady = false; vcProbeDone = true; // 'unavailable' 等
+            }
+        } catch (e) {
+            vcOnDeviceReady = false; vcProbeDone = true;
+        } finally {
+            vcOnDeviceProbing = false;
+        }
+    }
+
     function startVoiceRecog() {
         if (vcUnsupported) return;
         const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -3391,15 +3468,20 @@ const savedRatio = localStorage.getItem('namameto_tempoRatio');
             try { voiceRecog.onend = null; voiceRecog.abort(); } catch(e) {}
             voiceRecog = null;
         }
+        vcProbeOnDevice(true); // オンデバイス可否を確認し、必要なら言語パックを取得（ユーザーON時）
         const r = new SR();
         r.continuous = true;
         r.interimResults = true;
-        r.lang = (currentLang === 'ja') ? 'ja-JP' : 'en-US';
+        r.lang = vcLangCode();
+        // 対応端末ではローカル処理を要求 → オフライン動作＆低遅延（非対応エンジンでは無害なプロパティ）
+        try { r.processLocally = !!vcOnDeviceReady; } catch(e) {}
+        voiceRecogLocal = !!vcOnDeviceReady;
         voiceStarting = true;
         vcSetStatus('vc_status_starting');
         r.onstart = () => {
             voiceStarting = false;
-            vcSetStatus('vc_status_listening');
+            vcRetryDelay = VC_RETRY_BASE; // 起動成功でバックオフをリセット
+            vcSetStatus(voiceRecogLocal ? 'vc_status_listening_local' : 'vc_status_listening');
         };
         r.onresult = (e) => {
             let text = '';
@@ -3413,26 +3495,27 @@ const savedRatio = localStorage.getItem('namameto_tempoRatio');
         r.onerror = (e) => {
             const err = e && e.error;
             if (err === 'not-allowed' || err === 'service-not-allowed') {
+                // スリープ復帰直後などで一時的に出ることがあるため、enabledは維持し、表示だけ更新
                 vcSetStatus('vc_status_denied');
-                voiceCtrl.enabled = false;
-                vcTestActive = false;
-                saveVoiceCtrl();
-                const cb = document.getElementById('vcEnabled');
-                if (cb) cb.checked = false;
-                updateVcSwitchVisual();
-                const btn = document.getElementById('vcTestBtn');
-                if (btn) btn.textContent = getText('vc_test_btn');
+                vcRetryDelay = Math.min(Math.max(vcRetryDelay * 2, 2000), VC_RETRY_MAX);
             } else if (err === 'language-not-supported') {
                 vcSetStatus('vc_status_lang_ns');
+                vcRetryDelay = Math.min(Math.max(vcRetryDelay * 2, 2000), VC_RETRY_MAX);
+            } else if (err === 'network') {
+                // クラウド方式でネット不通（オンデバイス非対応端末ではオフライン不可）
+                vcSetStatus('vc_status_offline');
+                vcRetryDelay = Math.min(Math.max(vcRetryDelay * 2, 2000), VC_RETRY_MAX);
+            } else {
+                // 'no-speech'/'audio-capture'/'aborted' などは onend で自動再起動
+                vcRetryDelay = VC_RETRY_BASE;
             }
-            // 'no-speech'/'audio-capture'/'aborted' などは onend で自動再起動
         };
         r.onend = () => {
             voiceStarting = false;
             voiceRecog = null;
             if (vcDesired()) {
                 clearTimeout(voiceRestartTimer);
-                voiceRestartTimer = setTimeout(startVoiceRecog, 400);
+                voiceRestartTimer = setTimeout(startVoiceRecog, vcRetryDelay);
             } else {
                 vcSetStatus('vc_status_off');
             }
@@ -3569,6 +3652,23 @@ const savedRatio = localStorage.getItem('namameto_tempoRatio');
         }
     }
 
+    // 画面復帰時など、強制的に認識エンジンを作り直して即リトライ
+    function vcHardRestart() {
+        if (vcUnsupported) return;
+        if (!vcDesired()) return;
+        if (document.hidden) return; // 非表示中はスキップ（戻った時に再度呼ばれる）
+        vcRetryDelay = VC_RETRY_BASE; // バックオフをリセットして即試行
+        clearTimeout(voiceRestartTimer);
+        voiceRestartTimer = null;
+        if (voiceRecog) {
+            try { voiceRecog.onend = null; voiceRecog.abort(); } catch (e) {}
+            voiceRecog = null;
+        }
+        voiceStarting = false;
+        // 少し遅延させてから起動（端末の起き上がりを待つ）
+        voiceRestartTimer = setTimeout(startVoiceRecog, 250);
+    }
+
     function initVoiceCtrl() {
         loadVoiceCtrl();
         updateVcUI();
@@ -3583,12 +3683,16 @@ const savedRatio = localStorage.getItem('namameto_tempoRatio');
             vcSetStatus('vc_status_unsupported');
             return;
         }
-        // タブが復帰したときに無音で死んでいたら再開
+        // スマホのスリープ復帰・タブ切替後などに認識を確実に復活させる
         document.addEventListener('visibilitychange', () => {
-            if (!document.hidden && vcDesired() && !voiceRecog && !voiceStarting) {
-                startVoiceRecog();
-            }
+            if (!document.hidden) vcHardRestart();
         });
+        window.addEventListener('pageshow', vcHardRestart);
+        window.addEventListener('focus', vcHardRestart);
+        // ネット復帰でクラウド認識を即再開／切断時はオフライン非対応端末に通知
+        window.addEventListener('online', vcHardRestart);
+        window.addEventListener('offline', () => { if (!vcOnDeviceReady && vcDesired()) vcSetStatus('vc_status_offline'); });
+        vcProbeOnDevice(false); // 起動時は可否の確認のみ（DLはユーザーがONにした時に実施）
         if (voiceCtrl.enabled) startVoiceRecog();
     }
     // ===== 音声で再生/停止 ここまで =====
