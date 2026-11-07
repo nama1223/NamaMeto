@@ -432,6 +432,12 @@
         .btn-save { background: var(--primary-color); color: #fff; }
         .btn-clear { background: #cf6679; color: #fff; }
         .btn-cancel { background: var(--dot-weak); color: #fff; }
+        /* 自前ダイアログ（ブラウザ標準のalert/confirm/promptの代替） */
+        #appDialogModal { z-index: 9600; }
+        #appDialogMsg { font-size: 0.95rem; line-height: 1.6; white-space: pre-wrap; word-break: break-word; }
+        #appDialogInput { display: none; width: 100%; box-sizing: border-box; margin-top: 14px; padding: 10px; font-size: 1rem; border: 2px solid var(--dot-weak); border-radius: 8px; background: var(--bg-color); color: var(--text-color); user-select: text; -webkit-user-select: text; }
+        #appDialogModal .modal-buttons { flex-direction: row; margin-top: 18px; }
+        #appDialogModal .modal-buttons button { flex: 1; padding: 12px; font-size: 1rem; }
         
         /* メニューウィンドウ：画面上部寄せでアプリ枠と重なるように */
         #songMenuModal { align-items: flex-start; justify-content: center; padding-top: 60px; }
@@ -571,7 +577,7 @@
         <div style="text-align: center; margin-bottom: 10px;">
             <div class="header-row">
                 <button class="help-btn" onclick="toggleHelp()">?</button>
-                <h1><span data-i18n="appTitleText"></span><span style="font-size:0.62rem; font-weight:400; opacity:0.6; letter-spacing:0.5px; vertical-align:baseline; margin-left:6px; line-height:1;">Z326C</span></h1>
+                <h1><span data-i18n="appTitleText"></span><span style="font-size:0.62rem; font-weight:400; opacity:0.6; letter-spacing:0.5px; vertical-align:baseline; margin-left:6px; line-height:1;">Z327C</span></h1>
                 <button id="headerVolBtn" style="width:36px; background:none; border:none; padding:2px 0; display:flex; flex-direction:column; align-items:center; cursor:pointer; user-select:none; -webkit-user-select:none; touch-action:none; -webkit-tap-highlight-color:transparent; position:relative; outline:none;">
                     <span id="headerVolIcon" style="font-size:1.3rem; line-height:1; pointer-events:none;">🔊</span>
                     <span id="headerVolPct" style="font-size:0.62rem; color:var(--primary-color); font-weight:bold; margin-top:1px; line-height:1; pointer-events:none;">100%</span>
@@ -1430,6 +1436,8 @@
         <div class="intro-close"><button onclick="toggleChangelog()">✕ 閉じる</button></div>
         <div class="cl-body">
 
+            <p class="cl-ver">Z327C</p>
+            <p class="cl-desc">ファイルの保存・読み込み・削除などで表示される確認メッセージや入力欄を、アプリ内の専用ウィンドウに変更。ブラウザの仕様でメッセージが表示されずに操作が止まってしまう問題への対策。</p>
             <p class="cl-ver">Z326C</p>
             <p class="cl-desc">ヘッダーの音量ポップアップにある「強・中・弱」のアイコンを、ビートパターンの表示に合わせたバー型の見た目に変更。</p>
             <p class="cl-ver">Z325C</p>
@@ -2062,6 +2070,16 @@
     </div>
 
     <!-- モーダル類 -->
+    <div id="appDialogModal" class="modal-overlay">
+        <div class="modal-content">
+            <div id="appDialogMsg"></div>
+            <input type="text" id="appDialogInput" autocomplete="off" spellcheck="false">
+            <div class="modal-buttons">
+                <button class="btn-cancel" id="appDialogCancel"></button>
+                <button class="btn-save" id="appDialogOk"></button>
+            </div>
+        </div>
+    </div>
     <div id="presetModal" class="modal-overlay" onclick="if(event.target===this)closeModal('presetModal')"><div class="modal-content"><h2 id="modalTitle">Slot 1</h2><div style="margin:10px 0;"><input type="text" id="presetNameInput" placeholder="名前（省略可）" data-i18n-ph="ph_preset_name" style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid var(--dot-weak);border-radius:8px;background:var(--surface-color);color:var(--text-color);font-size:1rem;text-align:center;"></div><div class="modal-buttons"><button class="btn-save" onclick="savePreset()" data-i18n="btn_save">保存</button><button class="btn-clear" onclick="clearPreset()" data-i18n="btn_delete">削除</button><button class="btn-cancel" onclick="closeModal('presetModal')" data-i18n="btn_cancel">キャンセル</button></div></div></div>
     
     <div id="songMenuModal" class="modal-overlay" onclick="if(event.target===this)closeModal('songMenuModal')">
@@ -2316,7 +2334,7 @@
             calc_target: "刻む音符:", note_dot_quarter_f: "付点4分音符", note_quarter_f: "4分音符", note_eighth_f: "8分音符", note_sixteenth_f: "16分音符", note_triplet_f: "3連符", calc_apply: "メトロノームに反映",
             help_dial: "🔄 なぞって回せる！", help_longpress: "⚡ 長押しで連続変化！",
             help_tap_tempo: "👆 タップした間隔で\nテンポを自動計測します", btn_tap_tempo: "タップテンポ",
-            help_beat_pattern: "👆 タップで音色（強・中・弱・無）を切り替え", label_pattern: "ビートパターン", label_tap_direction: "タップ方向",
+            help_beat_pattern: "👆 タップで音色（強・中・弱・無）を切り替え", label_pattern: "ビートパターン", label_tap_direction: "タップ方向", dlg_ok: "OK",
             help_preset: "💾 10枠まで設定を保存・呼出可能\n長押しで詳細表示", label_preset: "プリセット", btn_load_short: "ロード", btn_save_short: "セーブ", btn_save: "保存",
             help_theme: "🎨 アプリ全体の配色を変更します",
             help_custom_sound: "🎧 各拍の音を自由に設定・試聴できます", desc_custom_sound: "端末内の音声ファイルをカスタム音色として設定できます。<br>（推奨: 1MB以下の短くカットされた .mp3 / .wav）",
@@ -2483,7 +2501,7 @@
             calc_target: "Click Base:", note_dot_quarter_f: "Dot Quarter", note_quarter_f: "Quarter", note_eighth_f: "Eighth", note_sixteenth_f: "16th", note_triplet_f: "Triplet", calc_apply: "Apply to Metronome",
             help_dial: "🔄 Swipe to rotate!", help_longpress: "⚡ Long press to adjust fast!",
             help_tap_tempo: "👆 Tap to measure tempo\nfrom your tap intervals", btn_tap_tempo: "Tap Tempo",
-            help_beat_pattern: "👆 Tap to change accents (High/Mid/Low/Mute)", label_pattern: "Beat Pattern", label_tap_direction: "Tap Direction",
+            help_beat_pattern: "👆 Tap to change accents (High/Mid/Low/Mute)", label_pattern: "Beat Pattern", label_tap_direction: "Tap Direction", dlg_ok: "OK",
             help_preset: "💾 Save & load up to 10 slots\nLong-press to preview", label_preset: "Preset", btn_load_short: "Load", btn_save_short: "Save", btn_save: "Save",
             help_theme: "🎨 Change app color theme",
             help_custom_sound: "🎧 Set and preview custom sounds per beat", desc_custom_sound: "Load audio files from your device.<br>(Recommended: Short .mp3/.wav under 1MB)",
@@ -4764,7 +4782,7 @@ const savedRatio = localStorage.getItem('namameto_tempoRatio');
                     const el=document.getElementById(id); if(el) el.checked=([2,3,4][i]===bpmMultiplier);
                     const lb=document.getElementById(lblIds[i]); if(lb) lb.classList.toggle('active',[2,3,4][i]===bpmMultiplier);
                 });
-                updateDialVisual();renderSequencer();saveCurrentState();alert(`Slot ${activeSlot}` + getText('alert_loaded'));}catch(e){alert(getText('alert_load_fail'));} }else{alert(getText('alert_no_data'));}
+                updateDialVisual();renderSequencer();saveCurrentState();appAlert(`Slot ${activeSlot}` + getText('alert_loaded'));}catch(e){appAlert(getText('alert_load_fail'));} }else{appAlert(getText('alert_no_data'));}
     }
     function openModalForSave() {
         document.getElementById('modalTitle').textContent=`Slot ${activeSlot}`;
@@ -4779,6 +4797,47 @@ const savedRatio = localStorage.getItem('namameto_tempoRatio');
     }
     function closeModal(id) { document.getElementById(id).classList.remove('active'); }
     function openModal(id) { document.getElementById(id).classList.add('active'); }
+
+    // ===== 自前ダイアログ（alert / confirm / prompt の代替。Promiseで結果を返す） =====
+    let _dlgQueue = Promise.resolve();
+    function _showAppDialog(opts) {
+        const run = () => new Promise(resolve => {
+            const modal = document.getElementById('appDialogModal');
+            const inp = document.getElementById('appDialogInput');
+            const okBtn = document.getElementById('appDialogOk');
+            const cancelBtn = document.getElementById('appDialogCancel');
+            document.getElementById('appDialogMsg').textContent = opts.message || '';
+            inp.style.display = opts.input ? 'block' : 'none';
+            inp.value = opts.input ? (opts.defaultValue || '') : '';
+            cancelBtn.style.display = opts.showCancel ? '' : 'none';
+            okBtn.textContent = getText('dlg_ok');
+            cancelBtn.textContent = getText('btn_cancel');
+            let done = false;
+            const finish = (ok) => {
+                if (done) return; done = true;
+                modal.classList.remove('active');
+                okBtn.onclick = null; cancelBtn.onclick = null; modal.onclick = null;
+                document.removeEventListener('keydown', onKey, true);
+                resolve(opts.input ? (ok ? inp.value : null) : ok);
+            };
+            const onKey = (e) => {
+                if (e.key === 'Escape') { e.preventDefault(); e.stopImmediatePropagation(); finish(!opts.showCancel); }
+                else if (e.key === 'Enter' && !e.isComposing && e.keyCode !== 229 && e.target !== cancelBtn) { e.preventDefault(); e.stopImmediatePropagation(); finish(true); }
+            };
+            okBtn.onclick = () => finish(true);
+            cancelBtn.onclick = () => finish(false);
+            modal.onclick = (e) => { if (e.target === modal) finish(!opts.showCancel); };
+            document.addEventListener('keydown', onKey, true);
+            modal.classList.add('active');
+            setTimeout(() => { if (opts.input) { inp.focus(); inp.select(); } else { okBtn.focus(); } }, 50);
+        });
+        const p = _dlgQueue.then(run);
+        _dlgQueue = p.catch(() => {});
+        return p;
+    }
+    function appAlert(msg) { return _showAppDialog({ message: msg }); }
+    function appConfirm(msg) { return _showAppDialog({ message: msg, showCancel: true }); }
+    function appPrompt(msg, defaultValue) { return _showAppDialog({ message: msg, input: true, showCancel: true, defaultValue }); }
     function savePreset() {
         const nameEl = document.getElementById('presetNameInput');
         const name = nameEl ? nameEl.value.trim() : '';
@@ -4886,7 +4945,7 @@ const savedRatio = localStorage.getItem('namameto_tempoRatio');
     function getCustomVol(id, l) {
         return (customVolumes[id]?.[l] ?? 10) / 10;
     }
-    function loadCustomAudio(evt,id,l) { const f=evt.target.files[0]; if(!f)return; ensureAudioContext(); document.getElementById(`fn_${id}_${l}`).textContent=f.name; localStorage.setItem(`nama_fn_${id}_${l}`,f.name); const r=new FileReader(); r.readAsDataURL(f); r.onload=async(e)=>{const d=e.target.result;try{const ab=await fetch(d).then(res=>res.arrayBuffer());customAudioBuffers[id][l]=await audioCtx.decodeAudioData(ab);localStorage.setItem(`nama_dat_${id}_${l}`,d);updateCustomStatus(id);}catch(err){alert("デコード失敗/Failed");}}; }
+    function loadCustomAudio(evt,id,l) { const f=evt.target.files[0]; if(!f)return; ensureAudioContext(); document.getElementById(`fn_${id}_${l}`).textContent=f.name; localStorage.setItem(`nama_fn_${id}_${l}`,f.name); const r=new FileReader(); r.readAsDataURL(f); r.onload=async(e)=>{const d=e.target.result;try{const ab=await fetch(d).then(res=>res.arrayBuffer());customAudioBuffers[id][l]=await audioCtx.decodeAudioData(ab);localStorage.setItem(`nama_dat_${id}_${l}`,d);updateCustomStatus(id);}catch(err){appAlert("デコード失敗/Failed");}}; }
     async function restoreCustomAudioFromStorage() { CUSTOM_IDS.forEach(async(id)=>{ for(let l=1;l<=3;l++){const fn=localStorage.getItem(`nama_fn_${id}_${l}`); if(fn){const el=document.getElementById(`fn_${id}_${l}`);if(el)el.textContent=fn;} const off=localStorage.getItem(`nama_off_${id}_${l}`); if(off){const sl=document.getElementById(`sl_${id}_${l}`); if(sl){sl.value=off;document.getElementById(`num_${id}_${l}`).value=off;}} const volSaved=localStorage.getItem(`nama_vol_${id}_${l}`); if(volSaved!==null){const v=parseInt(volSaved);if(!customVolumes[id])customVolumes[id]={};customVolumes[id][l]=v;const volEl=document.getElementById(`vol_${id}_${l}`);const volNumEl=document.getElementById(`volnum_${id}_${l}`);if(volEl)volEl.value=v;if(volNumEl)volNumEl.textContent=v;} const d=localStorage.getItem(`nama_dat_${id}_${l}`); if(d){try{ensureAudioContext();const ab=await fetch(d).then(res=>res.arrayBuffer());customAudioBuffers[id][l]=await audioCtx.decodeAudioData(ab);}catch(e){}} } updateCustomStatus(id); }); }
     function updateCustomStatus(id) { const idx = CUSTOM_IDS.indexOf(id); const k = `c${idx+1}`; const b=document.getElementById(`${k}_s`); if(!b) return; let c=0; [1,2,3].forEach(l=>{if(customAudioBuffers[id][l])c++;}); b.textContent=`${c}/3`; if(c>0)b.classList.add('loaded');else b.classList.remove('loaded'); }
     function previewCustomSound(id,l) { const bid=`prevBtn_${id}_${l}`, btn=document.getElementById(bid); if(currentPreviewNode&&currentPreviewBtnId===bid){try{currentPreviewNode.stop();}catch(e){}return;} if(currentPreviewNode){try{currentPreviewNode.stop();}catch(e){}} ensureAudioContext(); const buf=customAudioBuffers[id][l]; if(buf){const src=audioCtx.createBufferSource();src.buffer=buf;const g=audioCtx.createGain();src.connect(g);g.connect(audioCtx.destination);g.gain.value=getCustomVol(id,l);btn.textContent="■";btn.classList.add("playing");currentPreviewNode=src;currentPreviewBtnId=bid;src.onended=()=>{btn.textContent="▶";btn.classList.remove("playing");if(currentPreviewBtnId===bid){currentPreviewNode=null;currentPreviewBtnId=null;}};src.start(0);} }
@@ -6152,9 +6211,9 @@ const savedRatio = localStorage.getItem('namameto_tempoRatio');
         }
         updateFabActiveStates();
     }
-    function confirmClearAll() {
+    async function confirmClearAll() {
         closeModal('songMenuModal');
-        if (confirm(getText('alert_clear_all'))) { songData = []; selectedSetId = null; multiSelectedIds = []; isMultiSelectMode = false; isCopyMode = false; document.getElementById('multiSelectOverlay').classList.remove('active'); document.getElementById('copyOverlay').classList.remove('active'); saveCurrentSongToDraft(); compileSong(); renderSongScore(); clearForm(); document.getElementById('scoreFabGroup').style.display = 'none'; currentSongFileId = null; document.getElementById('songFileName').value = ''; updateSongTitleDisplay(); }
+        if (await appConfirm(getText('alert_clear_all'))) { songData = []; selectedSetId = null; multiSelectedIds = []; isMultiSelectMode = false; isCopyMode = false; document.getElementById('multiSelectOverlay').classList.remove('active'); document.getElementById('copyOverlay').classList.remove('active'); saveCurrentSongToDraft(); compileSong(); renderSongScore(); clearForm(); document.getElementById('scoreFabGroup').style.display = 'none'; currentSongFileId = null; document.getElementById('songFileName').value = ''; updateSongTitleDisplay(); }
     }
     
     let sortType = 'date'; let sortAsc = false;
@@ -6171,12 +6230,12 @@ const savedRatio = localStorage.getItem('namameto_tempoRatio');
         localStorage.setItem(id, JSON.stringify({ title, data: songData, offset: songBarOffset }));
         let list = JSON.parse(localStorage.getItem('namameto_songlist') || '[]');
         if (!list.find(x => x.id === id)) { list.push({ id, title, timestamp: Date.now() }); } else { const it = list.find(x => x.id === id); it.title = title; it.timestamp = Date.now(); }
-        localStorage.setItem('namameto_songlist', JSON.stringify(list)); alert(getText('alert_saved')); closeModal('songMenuModal'); updateSongTitleDisplay();
+        localStorage.setItem('namameto_songlist', JSON.stringify(list)); appAlert(getText('alert_saved')); closeModal('songMenuModal'); updateSongTitleDisplay();
     }
     function openSongLoadModal() {
         openFileManagerModal();
     }
-    function loadSongFile(id, title) {
+    async function loadSongFile(id, title) {
         const str = localStorage.getItem(id); if(str) { try { const d = JSON.parse(str);
             // 現在のデータと異なる場合は確認
             const currentStr = JSON.stringify(songData);
@@ -6185,17 +6244,17 @@ const savedRatio = localStorage.getItem('namameto_tempoRatio');
                 const msg = getText('confirm_overwrite_load') || (currentLang === 'en'
                     ? 'This will overwrite the song you are currently editing. Continue?'
                     : '編集中の楽曲に上書きされます。よろしいですか？');
-                if (!confirm(msg)) return;
+                if (!(await appConfirm(msg))) return;
             }
             songData = d.data; currentSongFileId = id; document.getElementById('songFileName').value = title; songBarOffset = d.offset !== undefined ? d.offset : 1; saveCurrentSongToDraft(); compileSong(); renderSongScore(); clearForm(); updateSongTitleDisplay(); closeModal('songLoadModal'); closeModal('fileManagerModal');
         } catch(e){} }
     }
-    function deleteSongFile(id) {
-        if(confirm(getText('alert_del_file'))) { localStorage.removeItem(id); let list = JSON.parse(localStorage.getItem('namameto_songlist') || '[]'); list = list.filter(x => x.id !== id); localStorage.setItem('namameto_songlist', JSON.stringify(list)); openSongLoadModal(); }
+    async function deleteSongFile(id) {
+        if(await appConfirm(getText('alert_del_file'))) { localStorage.removeItem(id); let list = JSON.parse(localStorage.getItem('namameto_songlist') || '[]'); list = list.filter(x => x.id !== id); localStorage.setItem('namameto_songlist', JSON.stringify(list)); openSongLoadModal(); }
     }
 
-    function downloadJSON(dataObj, defaultName) {
-        const fname = prompt(getText('prompt_filename'), defaultName);
+    async function downloadJSON(dataObj, defaultName) {
+        const fname = await appPrompt(getText('prompt_filename'), defaultName);
         if (fname === null) return;
         const finalName = fname.trim() === '' ? defaultName : fname;
         const blob = new Blob([JSON.stringify(dataObj)], {type: "application/octet-stream"});
@@ -6284,8 +6343,8 @@ const savedRatio = localStorage.getItem('namameto_tempoRatio');
                         : 'データがありません';
                     openModal('importNmfModal'); 
                 } 
-                else { alert("Unsupported format"); }
-            } catch(err) { alert("File read error"); }
+                else { appAlert("Unsupported format"); }
+            } catch(err) { appAlert("File read error"); }
             event.target.value = ''; 
         };
         reader.readAsText(f);
@@ -6293,7 +6352,7 @@ const savedRatio = localStorage.getItem('namameto_tempoRatio');
     function importNM1(data) {
         const newId = 'song_' + Date.now(); localStorage.setItem(newId, data.data);
         let list = JSON.parse(localStorage.getItem('namameto_songlist') || '[]'); list.push({ id: newId, title: data.title, timestamp: Date.now() });
-        localStorage.setItem('namameto_songlist', JSON.stringify(list)); alert(getText('alert_imported'));
+        localStorage.setItem('namameto_songlist', JSON.stringify(list)); appAlert(getText('alert_imported'));
     }
     function execImportNms(targetSlot) {
         if(!pendingImportData) return;
@@ -6309,7 +6368,7 @@ const savedRatio = localStorage.getItem('namameto_tempoRatio');
         });
         restoreCustomAudioFromStorage(); renderCustomSoundUI(); restoreCustomAudioFromStorage();
         updateCustomSoundOptionLabels(); updateExportSoundButtonLabels();
-        alert(getText('alert_imported')); closeModal('importNmsModal'); pendingImportData = null;
+        appAlert(getText('alert_imported')); closeModal('importNmsModal'); pendingImportData = null;
     }
     function execImportNmf() {
         if(!pendingImportData) return;
@@ -6349,7 +6408,7 @@ const savedRatio = localStorage.getItem('namameto_tempoRatio');
             });
             localStorage.setItem('namameto_songlist', JSON.stringify(list));
         }
-        alert(getText('alert_imported')); closeModal('importNmfModal'); pendingImportData = null;
+        appAlert(getText('alert_imported')); closeModal('importNmfModal'); pendingImportData = null;
     }
 
     function checkScrollArrows(targetIdx = -1) {
@@ -7943,7 +8002,7 @@ function mp3SelectSong(id, title) {
         document.getElementById('mp3SongListWrap').style.display = 'none';
         document.getElementById('mp3ExportMsg').textContent = '📄 ' + title;
         document.getElementById('mp3StartBtn').style.display = 'inline-block';
-    } catch(e) { alert('読み込みエラー: ' + e.message); }
+    } catch(e) { appAlert('読み込みエラー: ' + e.message); }
 }
 
 function mp3SelectCurrentSong() {
@@ -7971,8 +8030,8 @@ function fmLoad(id, title) {
     closeModal('fileManagerModal');
 }
 
-function fmDelete(id) {
-    if (!confirm(getText('alert_del_file') || '削除しますか？')) return;
+async function fmDelete(id) {
+    if (!(await appConfirm(getText('alert_del_file') || '削除しますか？'))) return;
     localStorage.removeItem(id);
     let list = JSON.parse(localStorage.getItem('namameto_songlist') || '[]');
     list = list.filter(x => x.id !== id);
@@ -8039,7 +8098,7 @@ function setMp3Progress(pct) {
 async function startMp3Export() {
     if (mp3Exporting) return;
     if (typeof lamejs === 'undefined') {
-        alert('MP3エンコーダーの読み込みに失敗しました。ネットワーク接続を確認してください。'); return;
+        appAlert('MP3エンコーダーの読み込みに失敗しました。ネットワーク接続を確認してください。'); return;
     }
     mp3Exporting = true;
     document.getElementById('mp3StartBtn').style.display = 'none';
