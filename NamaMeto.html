@@ -30,8 +30,16 @@
       appleIconLink.href = iconFile;
       document.head.appendChild(appleIconLink);
         // ===== NamaSound+ 親フレーム連携 =====
+        // ダブルドメイン対応: nama1223.com / nama1223.github.io のどちらから
+        // 開かれていても親からのメッセージを受け取れるよう許可リスト化する。
+        // ※同じ連携ブロックが2箇所あるため、再宣言でエラーにならないよう var で宣言する。
+        var ALLOWED_PARENT_ORIGINS = [
+            'https://nama1223.com',
+            'https://nama1223.github.io',
+            'http://nama1223.github.io',
+        ];
         window.addEventListener('message', (event) => {
-            if (event.origin !== 'https://nama1223.github.io') return;
+            if (!ALLOWED_PARENT_ORIGINS.includes(event.origin)) return;
             const msg = event.data;
             if (!msg || typeof msg !== 'object') return;
             switch (msg.type) {
@@ -532,8 +540,16 @@
 <script>
         (function(){try{var d=JSON.parse(localStorage.getItem("namameto_current_state")||"{");var t=d.currentTheme||"beige";document.documentElement.setAttribute("data-theme",t);document.addEventListener("DOMContentLoaded",function(){document.body.setAttribute("data-theme",t);document.documentElement.removeAttribute("data-theme");});}catch(e){}})()
         // ===== NamaSound+ 親フレーム連携 =====
+        // ダブルドメイン対応: nama1223.com / nama1223.github.io のどちらから
+        // 開かれていても親からのメッセージを受け取れるよう許可リスト化する。
+        // ※同じ連携ブロックが2箇所あるため、再宣言でエラーにならないよう var で宣言する。
+        var ALLOWED_PARENT_ORIGINS = [
+            'https://nama1223.com',
+            'https://nama1223.github.io',
+            'http://nama1223.github.io',
+        ];
         window.addEventListener('message', (event) => {
-            if (event.origin !== 'https://nama1223.github.io') return;
+            if (!ALLOWED_PARENT_ORIGINS.includes(event.origin)) return;
             const msg = event.data;
             if (!msg || typeof msg !== 'object') return;
             switch (msg.type) {
@@ -577,7 +593,7 @@
         <div style="text-align: center; margin-bottom: 10px;">
             <div class="header-row">
                 <button class="help-btn" onclick="toggleHelp()">?</button>
-                <h1><span data-i18n="appTitleText"></span><span style="font-size:0.62rem; font-weight:400; opacity:0.6; letter-spacing:0.5px; vertical-align:baseline; margin-left:6px; line-height:1;">Z327C</span></h1>
+                <h1><span data-i18n="appTitleText"></span><span style="font-size:0.62rem; font-weight:400; opacity:0.6; letter-spacing:0.5px; vertical-align:baseline; margin-left:6px; line-height:1;">Z328M</span></h1>
                 <button id="headerVolBtn" style="width:36px; background:none; border:none; padding:2px 0; display:flex; flex-direction:column; align-items:center; cursor:pointer; user-select:none; -webkit-user-select:none; touch-action:none; -webkit-tap-highlight-color:transparent; position:relative; outline:none;">
                     <span id="headerVolIcon" style="font-size:1.3rem; line-height:1; pointer-events:none;">🔊</span>
                     <span id="headerVolPct" style="font-size:0.62rem; color:var(--primary-color); font-weight:bold; margin-top:1px; line-height:1; pointer-events:none;">100%</span>
@@ -1436,6 +1452,8 @@
         <div class="intro-close"><button onclick="toggleChangelog()">✕ 閉じる</button></div>
         <div class="cl-body">
 
+            <p class="cl-ver">Z328M</p>
+            <p class="cl-desc">カウントイン（予備拍）のテンポが本編と食い違うことがある不具合を修正。rit.の途中の小節から再生した場合と、テンポ倍率の「以下の時は100%」設定を使った場合に発生していた。</p>
             <p class="cl-ver">Z327C</p>
             <p class="cl-desc">ファイルの保存・読み込み・削除などで表示される確認メッセージや入力欄を、アプリ内の専用ウィンドウに変更。ブラウザの仕様でメッセージが表示されずに操作が止まってしまう問題への対策。</p>
             <p class="cl-ver">Z326C</p>
@@ -6758,16 +6776,12 @@ const savedRatio = localStorage.getItem('namameto_tempoRatio');
 		    const bpmNote = s.bpmNote || 1;
 		    const rawBpm = s.bpm || 120;
 
-		    // --- 再生倍率の除外判定を追加 ---
+		    // --- 再生倍率の除外判定（本編compileSongと同一の変数tempoRatioFloorを参照する） ---
+		    // ※モーダルのDOM（tempoRatioFloorChk/Input）を直接読んではいけない。
+		    // 　モーダルで変更してキャンセルするとDOMだけが変わり、本編と食い違うため。
 		    let currentRatio = (tempoRatio || 100) / 100;
-		    const ignoreCheck = document.getElementById('tempoRatioFloorChk');
-		    const thresholdInput = document.getElementById('tempoRatioFloorInput');
-
-		    if (ignoreCheck && ignoreCheck.checked) {
-		        const threshold = parseInt(thresholdInput.value) || 100;
-		        if (rawBpm <= threshold) {
-		            currentRatio = 1.0; // 閾値以下の場合は倍率を1.0（100%）に固定
-		        }
+		    if (tempoRatioFloor > 0 && rawBpm <= tempoRatioFloor) {
+		        currentRatio = 1.0; // 閾値以下の場合は倍率を1.0（100%）に固定
 		    }
 
 		    const bpmVal = rawBpm * currentRatio;
@@ -6786,6 +6800,30 @@ const savedRatio = localStorage.getItem('namameto_tempoRatio');
 		        bDur = (60/(bpmVal*bpmNote)) * (4/tsDen) * num;
 		    }
 		    if (bDur <= 0) bDur = 1;
+		    // --- カウントインのテンポを「開始位置の本編・最初の1拍」に合わせる ---
+		    // ritブロックの途中小節から開始する場合、本編のテンポはブロック先頭BPMから
+		    // 補間された値になるため、上の計算（先頭BPM基準）ではカウントインとズレる。
+		    // compileSong済みの compiledSongNotes から開始ブロック・開始小節・開始passの
+		    // 最初のノートを探し、その duration からカウントインの小節長を逆算する。
+		    // （小節の平均ではなく「最初の1拍」に合わせる：繋ぎ目で段差が出ないように）
+		    // 見つからない場合は上の計算値をそのまま使う（従来動作）。
+		    try {
+		        const _pass = parseInt(songStartingPass, 10) || 1;
+		        const _bar = songStartingBarIndex || 0;
+		        // togglePlay() の開始位置解決と同一手順で「実際に鳴る最初のノート」を特定する
+		        const _entry = window.passScheduleTable && window.passScheduleTable.get(startSetIndex);
+		        let _idx = (_entry && _entry.starts.has(_pass)) ? _entry.starts.get(_pass) : -1;
+		        if (_idx >= 0 && _bar > 0) {
+		            const _bi = compiledSongNotes.findIndex((n, ni) => ni >= _idx && n.setIndex === startSetIndex && n.barIndex === _bar && (n.pass || 1) === _pass);
+		            if (_bi >= 0) _idx = _bi;
+		        }
+		        if (_idx < 0) _idx = compiledSongNotes.findIndex(n => n.setIndex === startSetIndex);
+		        const _first = _idx >= 0 ? compiledSongNotes[_idx] : null;
+		        if (_first && _first.duration > 0) {
+		            const _stepMul = (!s.isComplex && s.click) ? 2 : 1; // click時はノートが半拍分
+		            bDur = _first.duration * _stepMul * num;
+		        }
+		    } catch (e) { /* フォールバック: 従来計算のbDurを使う */ }
 		    let pB = 0;
 		    if (pM === 'manual') pB = parseInt(document.getElementById('precountBars').value) || 1;
 		    else if (pM === 'auto') pB = Math.ceil((parseFloat(document.getElementById('precountSec').value) || 2.5) / bDur) || 1;
