@@ -593,7 +593,7 @@
         <div style="text-align: center; margin-bottom: 10px;">
             <div class="header-row">
                 <button class="help-btn" onclick="toggleHelp()">?</button>
-                <h1><span data-i18n="appTitleText"></span><span style="font-size:0.62rem; font-weight:400; opacity:0.6; letter-spacing:0.5px; vertical-align:baseline; margin-left:6px; line-height:1;">Z328M</span></h1>
+                <h1><span data-i18n="appTitleText"></span><span style="font-size:0.62rem; font-weight:400; opacity:0.6; letter-spacing:0.5px; vertical-align:baseline; margin-left:6px; line-height:1;">Z329M</span></h1>
                 <button id="headerVolBtn" style="width:36px; background:none; border:none; padding:2px 0; display:flex; flex-direction:column; align-items:center; cursor:pointer; user-select:none; -webkit-user-select:none; touch-action:none; -webkit-tap-highlight-color:transparent; position:relative; outline:none;">
                     <span id="headerVolIcon" style="font-size:1.3rem; line-height:1; pointer-events:none;">🔊</span>
                     <span id="headerVolPct" style="font-size:0.62rem; color:var(--primary-color); font-weight:bold; margin-top:1px; line-height:1; pointer-events:none;">100%</span>
@@ -1456,6 +1456,8 @@
         <div class="intro-close"><button onclick="toggleChangelog()">✕ 閉じる</button></div>
         <div class="cl-body">
 
+            <p class="cl-ver">Z329M</p>
+            <p class="cl-desc">音色「3. Metronome」「4. Cowbell」「5. Drums」の再生で、強・中・弱の個別音量が反映されない不具合を修正。</p>
             <p class="cl-ver">Z328M</p>
             <p class="cl-desc">カウントイン（予備拍）のテンポが本編と食い違うことがある不具合を修正。rit.の途中の小節から再生した場合と、テンポ倍率の「以下の時は100%」設定を使った場合に発生していた。</p>
             <p class="cl-ver">Z327C</p>
@@ -7518,7 +7520,7 @@ const savedRatio = localStorage.getItem('namameto_tempoRatio');
         let sSet = soundSet; if(isCountIn) sSet = (soundSet === 'beep' ? 'clave' : 'beep');
 
         if (sSet.startsWith('custom')) { const b=customAudioBuffers[sSet][level], off=parseInt(document.getElementById(`num_${sSet}_${level}`)?.value)||0; if(b){const s=audioCtx.createBufferSource(),g=audioCtx.createGain();s.buffer=b;s.connect(g);g.connect(audioCtx.destination);g.gain.setValueAtTime(getCustomVol(sSet,level)*metroVol*getMetroSubVol(level),time);let pt=time+(off/1000);if(pt<audioCtx.currentTime)pt=audioCtx.currentTime;activeAudioNodes.push(s);s.onended=()=>{activeAudioNodes=activeAudioNodes.filter(n=>n!==s);};s.start(pt);return;} }
-        if (['metronome','cowbell','drums'].includes(sSet) && builtinCustomBuffers[sSet][level]) { const s=audioCtx.createBufferSource(),g=audioCtx.createGain();s.buffer=builtinCustomBuffers[sSet][level];s.connect(g);g.connect(audioCtx.destination);g.gain.setValueAtTime(metroVol,time);activeAudioNodes.push(s);s.onended=()=>{activeAudioNodes=activeAudioNodes.filter(n=>n!==s);};s.start(time);return; }
+        if (['metronome','cowbell','drums'].includes(sSet) && builtinCustomBuffers[sSet][level]) { const s=audioCtx.createBufferSource(),g=audioCtx.createGain();s.buffer=builtinCustomBuffers[sSet][level];s.connect(g);g.connect(audioCtx.destination);g.gain.setValueAtTime(metroVol*getMetroSubVol(level),time);activeAudioNodes.push(s);s.onended=()=>{activeAudioNodes=activeAudioNodes.filter(n=>n!==s);};s.start(time);return; }
         const osc=audioCtx.createOscillator(), g=audioCtx.createGain(); osc.connect(g); g.connect(audioCtx.destination); let f,v,t='sine',d=0.1;
         switch(sSet){
             case 'clave': t='triangle';f=level===3?2500:level===2?1800:1200;v=level===3?1.5:level===2?0.8:0.4;d=0.03;osc.frequency.setValueAtTime(f,time);break;
