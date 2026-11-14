@@ -20,7 +20,7 @@
   var rec = loadRec();
   if (!rec.chapters) rec.chapters = {};
 
-  var ASSET_V = '18'; // 素材・キットの版。更新のたびに上げると端末側の古いキャッシュを確実に回避できる
+  var ASSET_V = '19'; // 素材・キットの版。更新のたびに上げると端末側の古いキャッシュを確実に回避できる
   function poseSrc(pose) { return IMG + 'N_' + pose + '.webp?v=' + ASSET_V; }
   function chapterById(id) { for (var i = 0; i < cfg.chapters.length; i++) if (cfg.chapters[i].id === id) return cfg.chapters[i]; return null; }
   function isDone(ch) { var r = rec.chapters[ch.id]; return !!(r && r.done && r.version >= (ch.since || 1)); }
@@ -268,6 +268,8 @@
   }
   function restoreSnapshot() {
     if (!snapshot) return;
+    // keepChanges の章（設定章など）は、案内中に利用者が変えた内容をそのまま残す
+    if (player.ch && player.ch.keepChanges) { snapshot = null; return; }
     Object.keys(snapshot).forEach(function (k) {
       if (snapshot[k] === null) localStorage.removeItem(k);
       else localStorage.setItem(k, snapshot[k]);
@@ -368,6 +370,8 @@
     detachTap();
 
     var go = function () {
+      // ステップ表示前のアプリ側の事前処理（任意）: config の prepare に橋渡し側の関数名を書く
+      if (step.prepare && bridge()[step.prepare]) { try { bridge()[step.prepare](); } catch (e) {} }
       resolveTargets(step, function (targets) {
         if (!player.active || rid !== player.runId) return;
         if (step.target && !targets.length) {

@@ -2125,6 +2125,7 @@
                     <button class="btn-insert" style="flex:2; padding:8px; border:none; border-radius:6px; font-weight:bold; cursor:pointer;" onclick="openFileManagerModal()" data-i18n="btn_load_and_manage">読み込み＆ファイル管理</button>
                     <button class="btn-update" style="flex:1; padding:8px; border:none; border-radius:6px; font-weight:bold; cursor:pointer;" onclick="saveSongFile(true)" data-i18n="btn_save_over">上書き保存</button>
                 </div>
+                <button class="btn-update" style="width:100%; margin-top:8px; padding:8px; border:none; border-radius:6px; font-weight:bold; cursor:pointer;" onclick="exportCurrentSongNm1()" data-i18n="btn_export_song">単曲エクスポート (.nm1)</button>
             </div>
             
             <div style="background:var(--bg-color); padding:10px; border-radius:8px; display:flex; flex-direction:column; gap:8px;">
@@ -4995,8 +4996,22 @@ const savedRatio = localStorage.getItem('namameto_tempoRatio');
         document.getElementById('complexSigPanel').style.display = isC ? 'flex' : 'none';
         if (isC) { 
             document.getElementById('editClick').checked = false; 
+            inheritStandardSigToComplex();
             updateComplexPattern(); 
         } 
+    }
+    // 複雑な拍子をONにした時、チェック直前の通常拍子をそのまま初期表示として引き継ぐ
+    // （サンプル拍子が毎回出てきて直す手間をなくす）。保存済みの複雑な拍子を持つ
+    // 小節群を開いた場合は、読み込み側がこの後に保存値を流し込むため引き継がない
+    function inheritStandardSigToComplex() {
+        const s = selectedSetId ? songData.find(x => x.id === selectedSetId) : null;
+        if (s && s.isComplex && s.complexSigs && s.complexSigs.length) return;
+        const num = parseInt(document.getElementById('editTimeSigNum').value);
+        const den = parseInt(document.getElementById('editTimeSigDen').value);
+        if (num > 0) document.getElementById('cSig1Num').value = num;
+        if ([2, 4, 8, 16].includes(den)) document.getElementById('cSig1Den').value = String(den);
+        document.getElementById('cSig2Num').value = "";
+        document.getElementById('cSig3Num').value = "";
     }
     function syncClickToggle() { 
         if(document.getElementById('editClick').checked) { 
@@ -6318,6 +6333,15 @@ const savedRatio = localStorage.getItem('namameto_tempoRatio');
         openModal('exportSongModal');
     }
     function exportSongFile(id, title) { const sData = localStorage.getItem(id); if (!sData) return; const data = { type: 'NM1', version: '1.0', id: id, title: title, data: sData }; downloadJSON(data, title + ".nm1"); closeModal('exportSongModal'); }
+    // 楽曲メニューから、現在編集中の曲をそのまま .nm1 に書き出す（保存済みでなくても書き出せる）
+    function exportCurrentSongNm1() {
+        const title = document.getElementById('songFileName').value || getText('str_untitled');
+        const id = currentSongFileId || ('song_' + Date.now());
+        const sData = JSON.stringify({ title, data: songData, offset: songBarOffset });
+        const data = { type: 'NM1', version: '1.0', id: id, title: title, data: sData };
+        downloadJSON(data, title + ".nm1");
+        closeModal('songMenuModal');
+    }
     function openExportSoundModal() { openModal('exportSoundModal'); }
     function exportSoundFile(slotId) {
         const data = { type: 'NMS', version: '1.0', customName: customSoundNames[slotId], soundData: {} };
@@ -7925,6 +7949,21 @@ const savedRatio = localStorage.getItem('namameto_tempoRatio');
       },
       snapshotKeys: function(){
         return Object.keys(localStorage).filter(function(k){ return k.indexOf('namameto_') === 0; });
+      },
+      // チュートリアル「小節群の編集」章の rit. 詳細ステップ用:
+      // 「次のテンポへ向かう」が入っていると到着BPM欄がロックされ説明と食い違うため、そのステップでは解除した状態にする
+      prepareRitPanel: function(){
+        var cb = document.getElementById('editAutoNextBpm');
+        if (cb && cb.checked) {
+          cb.checked = false;
+          if (typeof toggleAutoNextBpm === 'function') toggleAutoNextBpm();
+        }
+        var inp = document.getElementById('editTargetBpm');
+        if (inp && inp.disabled) {
+          inp.disabled = false;
+          inp.style.background = 'var(--surface-color)';
+          inp.style.opacity = '1';
+        }
       }
     };
     document.addEventListener('DOMContentLoaded', function(){
@@ -8868,8 +8907,8 @@ window.addEventListener('DOMContentLoaded', () => {
             </div>
         </div>
     </div>
-<link rel="stylesheet" href="tutorial/nama-tutorial.css?v=18">
-<script src="tutorial/config.js?v=18"></script>
-<script src="tutorial/nama-tutorial.js?v=18"></script>
+<link rel="stylesheet" href="tutorial/nama-tutorial.css?v=19">
+<script src="tutorial/config.js?v=19"></script>
+<script src="tutorial/nama-tutorial.js?v=19"></script>
 </body>
 </html>
