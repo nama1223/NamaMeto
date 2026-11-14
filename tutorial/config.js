@@ -47,7 +47,7 @@ window.NAMA_TUTORIAL_CONFIG = {
       ]
     },
     {
-      id: 'edit', page: 'song-edit', title: '小節群の編集', desc: '小節群の中身を作る・変える', icon: 'thinking', since: 5,
+      id: 'edit', page: 'song-edit', title: '小節群の編集', desc: '小節群の中身を作る・変える', icon: 'thinking', since: 6,
       steps: [
         { page: 'song-edit', pose: 'wave', text: '小節群の編集の章ナマ。「作成編集モード」の画面で、小節群の中身を1つずつ決めていきナマ。この章で変えた内容は、終わったら元に戻りナマ。' },
         { page: 'song-edit', target: '#scoreTrack .score-block', mode: 'tap', pose: 'point', text: 'これが小節群ナマ。押して選ぶと、下の欄にその中身が出て、直せるようになりナマ。長押しで中身の確認、選んだ小節群の両脇の◀▶で並べ替えもできナマ。' },
@@ -56,13 +56,14 @@ window.NAMA_TUTORIAL_CONFIG = {
         { page: 'song-edit', target: ['#editBars', '#editTimeSigNum', '#editTimeSigDen'], mode: 'free', pose: 'point', text: '小節数と拍子ナマ。小節数の分だけ再生したら、次の小節群へ進みナマ。拍子は分数の形で入れナマ。' },
         { page: 'song-edit', target: '#editClick', mode: 'tap', pose: 'point', text: '「細かく刻む」ナマ。入れると、拍の合間に細かいガイド音が追加されて、リズムが取りやすくなりナマ。実際にチェックを入れてみるナマ。' },
         { page: 'song-edit', target: '#editComplexToggle', mode: 'tap', pose: 'point', text: '「複雑な拍子」ナマ。入れると下に専用の欄が開きナマ。まずチェックを入れてみるナマ。' },
-        { page: 'song-edit', target: '#complexSigPanel', mode: 'free', pose: 'point', text: '複雑な拍子の欄ナマ。3/4＋2/4のように、複数の拍子をつないだ変拍子を作れナマ。下のマスでは拍ごとの強・中・弱・無も決められるので、自分専用のビートパターンを組みたい時にも使いナマ。試しに数字を変えたり、マスを押したりしてみるナマ。' },
+        { page: 'song-edit', target: '#complexSigPanel', mode: 'free', pose: 'point', text: '複雑な拍子の欄ナマ。3/4＋2/4のように、複数の拍子をつないだ変拍子を作れナマ。\n下のマスでは拍ごとの強・中・弱・無も決められるので、自分専用のビートパターンを組みたい時にも使いナマ。\n試しに数字を変えたり、マスを押したりしてみるナマ。' },
         { page: 'song-edit', target: '#editCountEnabled', mode: 'tap', pose: 'point', text: '「カウント」ナマ。入れた小節群では、再生中に声で拍を数えナマ。チェックを入れてみるナマ。' },
         { page: 'song-edit', target: '#editRitToggle', mode: 'tap', pose: 'point', text: '「rit. / accel.」ナマ。小節群の中で、だんだん遅くしたり速くしたりする設定ナマ。チェックを入れてみるナマ。' },
-        { page: 'song-edit', target: '#editRitPanel', mode: 'free', pose: 'point', prepare: 'prepareRitPanel', text: '開いた欄では、着地点のテンポを決められナマ。「次のテンポ」を自動にすると、次の小節群のテンポへ滑らかにつながりナマ。変わり方のカーブも選べナマ。試しに、到着BPMの数字やカーブを変えてみるナマ。' },
+        { page: 'song-edit', target: '#editRitPanel', mode: 'free', pose: 'point', prepare: 'prepareRitPanel', text: '開いた欄では、着地点のテンポを決められナマ。\n「次のテンポ」を自動にすると、次の小節群のテンポへ滑らかにつながりナマ。変わり方のカーブも選べナマ。\n試しに、到着BPMの数字やカーブを変えてみるナマ。' },
         { page: 'song-edit', target: ['#multiSelBtn', '#repeatBtn', '#copyBtn', '#trashBtn'], pose: 'point', text: '小節群の並びの右にある4つのボタンも大事ナマ。☑は複数選択、𝄆はリピート設定、📄はコピー（貼り付けは上の挿入ボタンから）、🗑️は削除ナマ。' },
         { page: 'song-edit', target: ['#btnInsertBefore', '#btnInsertAdd'], pose: 'point', text: '新しい小節群の挿入はこの2つナマ。「前」は選んでいる小節群の前へ、「末尾」は末尾へ足しナマ。' },
-        { page: 'song-edit', pose: 'sparkle', prepare: 'copyAppUrlForAi', text: '最後に応用編ナマ。小節群を1つずつ手で作る代わりに、AIに作ってもらう手もありナマ。楽譜の写真や、曲の構成メモ（どこから何小節で、何拍子で、テンポはいくつか、という全体像が分かるもの）を、Meta社のAI「Muse」に見せると、小節群のデータを自動で作ってもらえナマ。その時に、このアプリのURLも一緒に渡すのがコツナマ。このアプリは1つのファイルでできていて、URLを開けば中身が全部読めるので、Museがデータの形式を読み取って、取り込める形のファイル（.nm1）にして返してくれナマ。URLは、この案内を開いた時に自動でコピーしてあるので、そのまま貼り付けられナマ（コピーできていない時は、ここに書いたURLを長押しなどでコピーするナマ）。https://nama1223.com/NamaMeto/NamaMeto.html 返ってきたファイルを端末に保存したら、設定タブの「データの入出力」にある「インポート」から取り込めナマ。あとは、この章で覚えた直し方で仕上げるナマ。' }
+        { page: 'song-edit', pose: 'sparkle', prepare: 'copyAppUrlForAi', text: '最後に応用編ナマ。小節群を1つずつ手で作る代わりに、AIに作ってもらう手もありナマ。\n楽譜の写真や、曲の構成メモ（どこから何小節で、何拍子で、テンポはいくつか、という全体像が分かるもの）を、Meta社のAI「Muse」に見せると、小節群のデータを自動で作ってもらえナマ。\nその時に、このアプリのURLも一緒に渡すのがコツナマ。このアプリは1つのファイルでできていて、URLを開けば中身が全部読めるので、Museがデータの形式を読み取れナマ。\nURLは、この案内を開いた時に自動でコピーしてあるので、そのまま貼り付けられナマ（コピーできていない時は、下のURLを長押しなどでコピーするナマ）。\nhttps://nama1223.com/NamaMeto/NamaMeto.html' },
+        { page: 'song-edit', pose: 'thumbs_up', text: 'Museからは、取り込める形のファイル（.nm1）になって返ってきナマ。\n返ってきたファイルを端末に保存したら、設定タブの「データの入出力」にある「インポート」から取り込めナマ。\nあとは、この章で覚えた直し方で仕上げるナマ。' }
       ]
     },
     {
