@@ -778,6 +778,10 @@
                 </div>
                 <button onclick="openExtInputModal()" style="flex-shrink:0; padding:6px 14px; border:none; border-radius:8px; background:var(--primary-color); color:#fff; font-size:0.82rem; font-weight:bold; cursor:pointer;" data-i18n="btn_ext_input_set">設定する</button>
             </div>
+            <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 14px; margin-bottom:8px; background:var(--surface-color); border-radius:10px; border:1px solid var(--dot-weak);">
+                <label for="namaTutorialToggle" style="font-size:0.9rem; font-weight:bold; cursor:pointer;">チュートリアル: 案内ボタンを表示する</label>
+                <input type="checkbox" id="namaTutorialToggle" onchange="NamaTutorial.setButtonVisible(this.checked)" style="width:20px; height:20px;">
+            </div>
             <div id="settingsPanelContainer">
             <!-- テーマカラー -->
             <div class="accordion-panel help-wrapper help-target" id="themeCtrl" data-help="help_theme" data-help-pos="上">
@@ -1391,7 +1395,7 @@
             <button id="playBtn" data-i18n="btn_start"></button>
             <div class="fab-menu-wrapper help-target" id="fabMenuWrapper" style="display:none;" data-help="help_menu_fab" data-help-pos="上">
                 <div class="help-tip center-tip" style="top: -35px;" data-i18n="help_menu_fab"></div>
-                <button class="fab-menu" onclick="openModal('songMenuModal')">≡</button>
+                <button class="fab-menu" id="songMenuOpenBtn" onclick="openModal('songMenuModal')">≡</button>
             </div>
         </div>
     </div>
@@ -7903,6 +7907,30 @@ const savedRatio = localStorage.getItem('namameto_tempoRatio');
     ['touchstart','mousedown','keydown'].forEach(ev =>
         document.addEventListener(ev, hideToast, {passive:true, capture:true})
     );
+    window.NamaMetoTutorialBridge = {
+      navigate: function(id){
+        if (id === 'metro') { switchTab('metro'); }
+        else if (id === 'file') { switchTab('file'); }
+        else if (id === 'song') { switchTab('song'); switchSongTab('play'); }
+        else if (id === 'song-edit') { switchTab('song'); switchSongTab('edit'); }
+      },
+      currentPage: function(){
+        var sb = document.getElementById('tabBtn-song');
+        if (sb && sb.classList.contains('active')) {
+          return (typeof currentSongTab !== 'undefined' && currentSongTab === 'edit') ? 'song-edit' : 'song';
+        }
+        var fb = document.getElementById('tabBtn-file');
+        if (fb && fb.classList.contains('active')) return 'file';
+        return 'metro';
+      },
+      snapshotKeys: function(){
+        return Object.keys(localStorage).filter(function(k){ return k.indexOf('namameto_') === 0; });
+      }
+    };
+    document.addEventListener('DOMContentLoaded', function(){
+        var tutorialToggle = document.getElementById('namaTutorialToggle');
+        if (tutorialToggle) tutorialToggle.checked = !!(window.NamaTutorial && NamaTutorial.isButtonVisible());
+    });
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
 <script>
@@ -8840,5 +8868,8 @@ window.addEventListener('DOMContentLoaded', () => {
             </div>
         </div>
     </div>
+<link rel="stylesheet" href="tutorial/nama-tutorial.css?v=18">
+<script src="tutorial/config.js?v=18"></script>
+<script src="tutorial/nama-tutorial.js?v=18"></script>
 </body>
 </html>
