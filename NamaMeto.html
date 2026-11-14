@@ -7964,6 +7964,40 @@ const savedRatio = localStorage.getItem('namameto_tempoRatio');
           inp.style.background = 'var(--surface-color)';
           inp.style.opacity = '1';
         }
+      },
+      // チュートリアル「小節群の編集」章の最終ステップ用:
+      // Muse に解析させる際に渡すアプリ本体URLを、ステップ表示時にクリップボードへ入れておく。
+      // 失敗しても案内の進行に影響しないよう、例外はすべてここで握りつぶす
+      copyAppUrlForAi: function(){
+        var url = 'https://nama1223.com/NamaMeto/NamaMeto.html';
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            var p = navigator.clipboard.writeText(url);
+            if (p && p.catch) {
+              p.catch(function(){
+                try {
+                  var ta = document.createElement('textarea');
+                  ta.value = url;
+                  ta.style.position = 'fixed';
+                  ta.style.opacity = '0';
+                  document.body.appendChild(ta);
+                  ta.select();
+                  document.execCommand('copy');
+                  document.body.removeChild(ta);
+                } catch (e) {}
+              });
+            }
+          } else {
+            var ta = document.createElement('textarea');
+            ta.value = url;
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+          }
+        } catch (e) {}
       }
     };
     document.addEventListener('DOMContentLoaded', function(){
@@ -8907,8 +8941,8 @@ window.addEventListener('DOMContentLoaded', () => {
             </div>
         </div>
     </div>
-<link rel="stylesheet" href="tutorial/nama-tutorial.css?v=20">
-<script src="tutorial/config.js?v=20"></script>
-<script src="tutorial/nama-tutorial.js?v=20"></script>
+<link rel="stylesheet" href="tutorial/nama-tutorial.css?v=21">
+<script src="tutorial/config.js?v=21"></script>
+<script src="tutorial/nama-tutorial.js?v=21"></script>
 </body>
 </html>

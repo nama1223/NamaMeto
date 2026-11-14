@@ -47,7 +47,7 @@ window.NAMA_TUTORIAL_CONFIG = {
       ]
     },
     {
-      id: 'edit', page: 'song-edit', title: '小節群の編集', desc: '小節群の中身を作る・変える', icon: 'thinking', since: 4,
+      id: 'edit', page: 'song-edit', title: '小節群の編集', desc: '小節群の中身を作る・変える', icon: 'thinking', since: 5,
       steps: [
         { page: 'song-edit', pose: 'wave', text: '小節群の編集の章ナマ。「作成編集モード」の画面で、小節群の中身を1つずつ決めていきナマ。この章で変えた内容は、終わったら元に戻りナマ。' },
         { page: 'song-edit', target: '#scoreTrack .score-block', mode: 'tap', pose: 'point', text: 'これが小節群ナマ。押して選ぶと、下の欄にその中身が出て、直せるようになりナマ。長押しで中身の確認、選んだ小節群の両脇の◀▶で並べ替えもできナマ。' },
@@ -61,7 +61,8 @@ window.NAMA_TUTORIAL_CONFIG = {
         { page: 'song-edit', target: '#editRitToggle', mode: 'tap', pose: 'point', text: '「rit. / accel.」ナマ。小節群の中で、だんだん遅くしたり速くしたりする設定ナマ。チェックを入れてみるナマ。' },
         { page: 'song-edit', target: '#editRitPanel', mode: 'free', pose: 'point', prepare: 'prepareRitPanel', text: '開いた欄では、着地点のテンポを決められナマ。「次のテンポ」を自動にすると、次の小節群のテンポへ滑らかにつながりナマ。変わり方のカーブも選べナマ。試しに、到着BPMの数字やカーブを変えてみるナマ。' },
         { page: 'song-edit', target: ['#multiSelBtn', '#repeatBtn', '#copyBtn', '#trashBtn'], pose: 'point', text: '小節群の並びの右にある4つのボタンも大事ナマ。☑は複数選択、𝄆はリピート設定、📄はコピー（貼り付けは上の挿入ボタンから）、🗑️は削除ナマ。' },
-        { page: 'song-edit', target: ['#btnInsertBefore', '#btnInsertAdd'], pose: 'point', text: '新しい小節群の挿入はこの2つナマ。「前」は選んでいる小節群の前へ、「末尾」は末尾へ足しナマ。' }
+        { page: 'song-edit', target: ['#btnInsertBefore', '#btnInsertAdd'], pose: 'point', text: '新しい小節群の挿入はこの2つナマ。「前」は選んでいる小節群の前へ、「末尾」は末尾へ足しナマ。' },
+        { page: 'song-edit', pose: 'sparkle', prepare: 'copyAppUrlForAi', text: '最後に応用編ナマ。小節群を1つずつ手で作る代わりに、AIに作ってもらう手もありナマ。楽譜の写真や、曲の構成メモ（どこから何小節で、何拍子で、テンポはいくつか、という全体像が分かるもの）を、Meta社のAI「Muse」に見せると、小節群のデータを自動で作ってもらえナマ。その時に、このアプリのURLも一緒に渡すのがコツナマ。このアプリは1つのファイルでできていて、URLを開けば中身が全部読めるので、Museがデータの形式を読み取って、取り込める形のファイル（.nm1）にして返してくれナマ。URLは、この案内を開いた時に自動でコピーしてあるので、そのまま貼り付けられナマ（コピーできていない時は、ここに書いたURLを長押しなどでコピーするナマ）。https://nama1223.com/NamaMeto/NamaMeto.html 返ってきたファイルを端末に保存したら、設定タブの「データの入出力」にある「インポート」から取り込めナマ。あとは、この章で覚えた直し方で仕上げるナマ。' }
       ]
     },
     {
@@ -74,13 +75,13 @@ window.NAMA_TUTORIAL_CONFIG = {
       ]
     },
     {
-      id: 'settings', page: 'file', title: '設定', desc: 'アプリ全体の細かい調整', icon: 'yay', since: 2, keepChanges: true,
+      id: 'settings', page: 'file', title: '設定', desc: 'アプリ全体の細かい調整', icon: 'yay', since: 3, keepChanges: true,
       steps: [
         { page: 'file', pose: 'wave', text: '設定の章ナマ。設定タブには細かい調整が並んでいて、項目はドラッグで並べ替えもできナマ。代表的なものを順に案内しナマ。' },
         { page: 'file', target: '#themeCtrl', mode: 'free', pose: 'point', text: '「テーマカラー」ナマ。アプリ全体の配色を変えられナマ。' },
         { page: 'file', target: '#panel_volume', mode: 'free', pose: 'point', text: '「音量調整」ナマ。クリック音や読み上げの声など、音の種類ごとに大きさを決められナマ。' },
         { page: 'file', target: '#panel_flash_vibe', mode: 'free', pose: 'point', text: '「フラッシュ / バイブ」ナマ。拍に合わせて画面を光らせたり、本体を振動させたりできナマ。音が出せない場所の練習に便利ナマ。' },
-        { page: 'file', target: '#panel_custom_sound', mode: 'free', pose: 'point', text: '「オリジナル音色の登録」ナマ。自分の音源ファイルを、クリック音のCustom音色として登録できナマ。' },
+        { page: 'file', target: '#panel_custom_sound', mode: 'free', pose: 'point', text: '「オリジナル音色の登録」ナマ。自分の音源ファイルを、クリック音のCustom音色として登録できナマ。この欄にある「音色セット例のダウンロード (Google Drive)」というリンクの先には、カスタム枠に読み込むための音色セットが置かれてナマ。自分で音源を用意しなくても、そこから落として読み込めば、そのまま使えナマ。' },
         { page: 'file', target: '#panel_tts_settings', mode: 'free', pose: 'point', text: '「読み上げの調整」ナマ。小節群の名前やカウントを読み上げる声の速さや高さなどを決められナマ。' },
         { page: 'file', target: '#panel_voice_ctrl', mode: 'free', pose: 'point', text: '「外部機器/音声で再生/停止」ナマ。外部機器からの合図や声の合図で、再生と停止を操作する設定ナマ。' },
         { page: 'file', target: '#jumpCustomCtrl', mode: 'free', pose: 'point', text: '「テンポ増減ボタンのカスタム」ナマ。メトロノームの±ボタンで、1回にどれだけテンポを変えるかを決められナマ。' },
