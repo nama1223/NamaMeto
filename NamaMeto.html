@@ -858,7 +858,7 @@
                         <button onclick="openModal('dataHelpModal')" style="position:absolute; left:-32px; top:10px; background:none; border:2.5px solid var(--text-color); color:var(--text-color); border-radius:50%; width:22px; height:22px; font-size:0.72rem; font-weight:bold; cursor:pointer; line-height:1; padding:0; opacity:0.85;" title="各ボタンの説明">?</button>
                     <div class="export-section">
                         <button class="btn-save" onclick="exportFullData()" style="padding:10px; font-size:1rem;" data-i18n="btn_export_full">フルエクスポート (.nmf)</button>
-                        <button class="btn-update" onclick="openExportSongModal()" style="padding:10px; font-size:1rem;" data-i18n="btn_export_song">単曲エクスポート (.nm1)</button>
+                        <button class="btn-update" onclick="openExportSongModal()" style="padding:10px; font-size:1rem;" data-i18n="btn_export_song">[外部出力]単曲エクスポート(.nm1)</button>
                         <button class="btn-insert" onclick="openExportSoundModal()" style="padding:10px; font-size:1rem;" data-i18n="btn_export_sound">音色エクスポート (.nms)</button>
                         <hr style="border-top:1px solid var(--dot-weak); width:100%; margin:5px 0;">
                         <button class="btn-add" onclick="document.getElementById('importFileInput').click()" style="padding:10px; font-size:1rem;" data-i18n="btn_import">インポート (.nmf / .nm1 / .nms)</button>
@@ -1434,7 +1434,7 @@
                     <p style="margin:0; opacity:0.9;" data-i18n="datahelp_full_desc">アプリに関する全ての設定を端末にファイル出力します。端末変更などの環境移行・バックアップに使えます。</p>
                 </div>
                 <div>
-                    <p style="font-weight:bold; color:var(--primary-color); margin:0 0 3px;" data-i18n="datahelp_song_title">🎵 単曲エクスポート (.nm1)</p>
+                    <p style="font-weight:bold; color:var(--primary-color); margin:0 0 3px;" data-i18n="datahelp_song_title">🎵 [外部出力]単曲エクスポート(.nm1)</p>
                     <p style="margin:0; opacity:0.9;" data-i18n="datahelp_song_desc">作成済みの楽曲データを1件だけファイル出力します。曲データを他の人に送るのに使えます。</p>
                 </div>
                 <div>
@@ -2125,7 +2125,10 @@
                     <button class="btn-insert" style="flex:2; padding:8px; border:none; border-radius:6px; font-weight:bold; cursor:pointer;" onclick="openFileManagerModal()" data-i18n="btn_load_and_manage">読み込み＆ファイル管理</button>
                     <button class="btn-update" style="flex:1; padding:8px; border:none; border-radius:6px; font-weight:bold; cursor:pointer;" onclick="saveSongFile(true)" data-i18n="btn_save_over">上書き保存</button>
                 </div>
-                <button class="btn-update" style="width:100%; margin-top:8px; padding:8px; border:none; border-radius:6px; font-weight:bold; cursor:pointer;" onclick="exportCurrentSongNm1()" data-i18n="btn_export_song">単曲エクスポート (.nm1)</button>
+                <hr style="border-top:1px solid var(--dot-weak); width:100%; margin:5px 0;">
+                <button class="btn-add" style="width:100%; margin-top:8px; padding:8px; border:none; border-radius:6px; font-weight:bold; cursor:pointer;" onclick="document.getElementById('importSongNm1Input').click()" data-i18n="btn_import_song_nm1">[外部入力]単曲インポート(.nm1)</button>
+                <input type="file" id="importSongNm1Input" style="display:none;" accept=".nm1" onchange="handleSongNm1Import(event)">
+                <button class="btn-update" style="width:100%; margin-top:8px; padding:8px; border:none; border-radius:6px; font-weight:bold; cursor:pointer;" onclick="exportCurrentSongNm1()" data-i18n="btn_export_song">[外部出力]単曲エクスポート(.nm1)</button>
             </div>
             
             <div style="background:var(--bg-color); padding:10px; border-radius:8px; display:flex; flex-direction:column; gap:8px;">
@@ -2149,7 +2152,7 @@
 
     <div id="exportSongModal" class="modal-overlay">
         <div class="modal-content">
-            <h2 data-i18n="btn_export_song">単曲エクスポート (.nm1)</h2>
+            <h2 data-i18n="btn_export_song">[外部出力]単曲エクスポート(.nm1)</h2>
             <div class="flex-row" style="margin-bottom:10px;">
                 <button onclick="sortSongListSub('export','name')" style="flex:1; padding:5px; border-radius:4px; border:none; background:var(--dot-weak); color:#fff; cursor:pointer;"><span data-i18n="sort_name">名前でソート</span> <span id="sortArrowExportName"></span></button>
                 <button onclick="sortSongListSub('export','date')" style="flex:1; padding:5px; border-radius:4px; border:none; background:var(--dot-weak); color:#fff; cursor:pointer;"><span data-i18n="sort_date">日時でソート</span> <span id="sortArrowExportDate">▼</span></button>
@@ -2386,7 +2389,7 @@
             title_load_song: "楽曲の読み込み", sort_name: "名前でソート", sort_date: "日時でソート",
             alert_loaded: " を読込ました。", alert_load_fail: "読込失敗", alert_no_data: "データがありません", alert_multi_del: " 個の小節群を削除しますか？", alert_single_del: "選択中の小節群を削除しますか？", alert_clear_all: "表示中の楽譜がすべてクリアされます。よろしいですか？", alert_saved: "保存しました！", alert_del_file: "この楽曲データを削除しますか？", msg_no_song: "保存された楽曲はありません。", str_now: "(現在: ", str_bar: "小節)", str_untitled: "無題の楽曲",
             btn_start: "スタート", btn_stop: "ストップ",
-            btn_export_full: "フルエクスポート (.nmf)", btn_export_song: "単曲エクスポート (.nm1)", btn_export_sound: "音色エクスポート (.nms)", btn_import: "インポート (.nmf / .nm1 / .nms)", prompt_filename: "ファイル名を入力", alert_imported: "インポート完了しました", title_import_nmf: "フルインポート設定", title_import_nms: "音色インポート", chk_metro: "メトロノーム設定・プリセット", chk_sound: "オリジナル音色", chk_song: "楽曲データ (追加)", btn_exec_import: "実行", help_export: "💾 データをファイルにバックアップ・復元します", help_custom_bpm: "⚡ メトロノームタブの固定増減ボタンの値を変更できます", help_tts_settings: "🔊 楽曲モードの読み上げ音声を調整します\n詳細設定では「何を読み上げるか」を選べます", label_tts_rate: "速さ:", label_tts_pitch: "高さ:", btn_tts_preview: "試聴",
+            btn_export_full: "フルエクスポート (.nmf)", btn_export_song: "[外部出力]単曲エクスポート(.nm1)", btn_export_sound: "音色エクスポート (.nms)", btn_import: "インポート (.nmf / .nm1 / .nms)", btn_import_song_nm1: "[外部入力]単曲インポート(.nm1)", prompt_filename: "ファイル名を入力", alert_imported: "インポート完了しました", title_import_nmf: "フルインポート設定", title_import_nms: "音色インポート", chk_metro: "メトロノーム設定・プリセット", chk_sound: "オリジナル音色", chk_song: "楽曲データ (追加)", btn_exec_import: "実行", help_export: "💾 データをファイルにバックアップ・復元します", help_custom_bpm: "⚡ メトロノームタブの固定増減ボタンの値を変更できます", help_tts_settings: "🔊 楽曲モードの読み上げ音声を調整します\n詳細設定では「何を読み上げるか」を選べます", label_tts_rate: "速さ:", label_tts_pitch: "高さ:", btn_tts_preview: "試聴",
             unit_bars_short: "小節",
             label_next_tempo: "次のテンポへ向かう",
             help_ratio_btn: "練習用に再生速度を変更できます。縦スワイプ対応",
@@ -2477,7 +2480,7 @@
             datahelp_title: "💾 データの入出力について",
             datahelp_full_title: "📤 フルエクスポート (.nmf)",
             datahelp_full_desc: "アプリに関する全ての設定を端末にファイル出力します。端末変更などの環境移行・バックアップに使えます。",
-            datahelp_song_title: "🎵 単曲エクスポート (.nm1)",
+            datahelp_song_title: "🎵 [外部出力]単曲エクスポート(.nm1)",
             datahelp_song_desc: "作成済みの楽曲データを1件だけファイル出力します。曲データを他の人に送るのに使えます。",
             datahelp_sound_title: "🎨 音色エクスポート (.nms)",
             datahelp_sound_desc: "カスタム音色データをファイル出力します。お気に入りの音色を共有するのに使えます。",
@@ -2553,7 +2556,7 @@
             title_load_song: "Load Song", sort_name: "Sort by Name", sort_date: "Sort by Date",
             alert_loaded: " loaded.", alert_load_fail: "Load failed.", alert_no_data: "No data available.", alert_multi_del: " groups selected. Delete?", alert_single_del: "Delete selected group?", alert_clear_all: "Clear all sheet data. Are you sure?", alert_saved: "Saved successfully!", alert_del_file: "Delete this song data?", msg_no_song: "No saved songs.", str_now: "(Now: ", str_bar: " bars)", str_untitled: "Untitled Song",
             btn_start: "START", btn_stop: "STOP",
-            btn_export_full: "Full Export (.nmf)", btn_export_song: "Export Song (.nm1)", btn_export_sound: "Export Sound (.nms)", btn_import: "Import (.nmf/.nm1/.nms)", prompt_filename: "Enter file name", alert_imported: "Import completed", title_import_nmf: "Full Import Settings", title_import_nms: "Import Sound", chk_metro: "Metronome & Presets", chk_sound: "Custom Sounds", chk_song: "Song Data (Append)", btn_exec_import: "Execute", help_export: "💾 Backup and restore your data", help_custom_bpm: "⚡ Customize the fixed BPM increment buttons in the Metronome tab", help_tts_settings: "🔊 Adjust the text-to-speech voice for Song Mode\nIn Advanced settings, you can choose what gets read aloud", label_tts_rate: "Rate:", label_tts_pitch: "Pitch:", btn_tts_preview: "Preview",
+            btn_export_full: "Full Export (.nmf)", btn_export_song: "[External Output] Export Song (.nm1)", btn_export_sound: "Export Sound (.nms)", btn_import: "Import (.nmf/.nm1/.nms)", btn_import_song_nm1: "[External Input] Import Song (.nm1)", prompt_filename: "Enter file name", alert_imported: "Import completed", title_import_nmf: "Full Import Settings", title_import_nms: "Import Sound", chk_metro: "Metronome & Presets", chk_sound: "Custom Sounds", chk_song: "Song Data (Append)", btn_exec_import: "Execute", help_export: "💾 Backup and restore your data", help_custom_bpm: "⚡ Customize the fixed BPM increment buttons in the Metronome tab", help_tts_settings: "🔊 Adjust the text-to-speech voice for Song Mode\nIn Advanced settings, you can choose what gets read aloud", label_tts_rate: "Rate:", label_tts_pitch: "Pitch:", btn_tts_preview: "Preview",
             unit_bars_short: "bars",
             label_next_tempo: "Move to next tempo",
             label_ratio_btn: "Rate",
@@ -2643,7 +2646,7 @@
             datahelp_title: "💾 About Data Import/Export",
             datahelp_full_title: "📤 Full Export (.nmf)",
             datahelp_full_desc: "Exports all app settings to a file on your device. Useful for backups or migrating to a new device.",
-            datahelp_song_title: "🎵 Export Song (.nm1)",
+            datahelp_song_title: "🎵 [External Output] Export Song (.nm1)",
             datahelp_song_desc: "Exports a single song to a file. Use this to share song data with others.",
             datahelp_sound_title: "🎨 Export Sound (.nms)",
             datahelp_sound_desc: "Exports your custom sound data to a file. Use this to share your favorite sounds.",
@@ -6401,6 +6404,21 @@ const savedRatio = localStorage.getItem('namameto_tempoRatio');
         };
         reader.readAsText(f);
     }
+    // 曲メニューからの .nm1 専用インポート（.nm1 以外は受け付けない）
+    function handleSongNm1Import(event) {
+        const f = event.target.files[0]; if (!f) return;
+        if (!/\.nm1$/i.test(f.name)) { appAlert("Unsupported format"); event.target.value = ''; return; }
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const data = JSON.parse(e.target.result);
+                if (data.type !== 'NM1') { appAlert("Unsupported format"); }
+                else { importNM1(data); }
+            } catch (err) { appAlert("File read error"); }
+            event.target.value = '';
+        };
+        reader.readAsText(f);
+    }
     function importNM1(data) {
         const newId = 'song_' + Date.now(); localStorage.setItem(newId, data.data);
         let list = JSON.parse(localStorage.getItem('namameto_songlist') || '[]'); list.push({ id: newId, title: data.title, timestamp: Date.now() });
@@ -8941,8 +8959,8 @@ window.addEventListener('DOMContentLoaded', () => {
             </div>
         </div>
     </div>
-<link rel="stylesheet" href="tutorial/nama-tutorial.css?v=22">
-<script src="tutorial/config.js?v=22"></script>
-<script src="tutorial/nama-tutorial.js?v=22"></script>
+<link rel="stylesheet" href="tutorial/nama-tutorial.css?v=23">
+<script src="tutorial/config.js?v=23"></script>
+<script src="tutorial/nama-tutorial.js?v=23"></script>
 </body>
 </html>
