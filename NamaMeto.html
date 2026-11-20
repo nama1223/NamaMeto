@@ -593,7 +593,7 @@
         <div style="text-align: center; margin-bottom: 10px;">
             <div class="header-row">
                 <button class="help-btn" onclick="toggleHelp()">?</button>
-                <h1><span data-i18n="appTitleText"></span><span style="font-size:0.62rem; font-weight:400; opacity:0.6; letter-spacing:0.5px; vertical-align:baseline; margin-left:6px; line-height:1;">Z329M</span></h1>
+                <h1><span data-i18n="appTitleText"></span><span style="font-size:0.62rem; font-weight:400; opacity:0.6; letter-spacing:0.5px; vertical-align:baseline; margin-left:6px; line-height:1;">Z330M</span></h1>
                 <button id="headerVolBtn" style="width:36px; background:none; border:none; padding:2px 0; display:flex; flex-direction:column; align-items:center; cursor:pointer; user-select:none; -webkit-user-select:none; touch-action:none; -webkit-tap-highlight-color:transparent; position:relative; outline:none;">
                     <span id="headerVolIcon" style="font-size:1.3rem; line-height:1; pointer-events:none;">🔊</span>
                     <span id="headerVolPct" style="font-size:0.62rem; color:var(--primary-color); font-weight:bold; margin-top:1px; line-height:1; pointer-events:none;">100%</span>
@@ -857,12 +857,21 @@
                     <div style="position:relative;">
                         <button onclick="openModal('dataHelpModal')" style="position:absolute; left:-32px; top:10px; background:none; border:2.5px solid var(--text-color); color:var(--text-color); border-radius:50%; width:22px; height:22px; font-size:0.72rem; font-weight:bold; cursor:pointer; line-height:1; padding:0; opacity:0.85;" title="各ボタンの説明">?</button>
                     <div class="export-section">
-                        <button class="btn-save" onclick="exportFullData()" style="padding:10px; font-size:1rem;" data-i18n="btn_export_full">フルエクスポート (.nmf)</button>
-                        <button class="btn-update" onclick="openExportSongModal()" style="padding:10px; font-size:1rem;" data-i18n="btn_export_song">[外部出力]単曲エクスポート(.nm1)</button>
-                        <button class="btn-insert" onclick="openExportSoundModal()" style="padding:10px; font-size:1rem;" data-i18n="btn_export_sound">音色エクスポート (.nms)</button>
-                        <hr style="border-top:1px solid var(--dot-weak); width:100%; margin:5px 0;">
                         <button class="btn-add" onclick="document.getElementById('importFileInput').click()" style="padding:10px; font-size:1rem;" data-i18n="btn_import">インポート (.nmf / .nm1 / .nms)</button>
                         <input type="file" id="importFileInput" style="display:none;" accept=".nmf,.nm1,.nms" onchange="handleImportFile(event)">
+                        <hr style="border-top:1px solid var(--dot-weak); width:100%; margin:5px 0;">
+                        <div style="display:flex; gap:8px;">
+                            <button class="btn-save" onclick="exportFullData('download')" style="flex:1; padding:10px; font-size:1rem;" data-i18n="btn_export_full">フルエクスポート (.nmf)</button>
+                            <button class="btn-save" data-share-btn onclick="exportFullData('share')" style="width:52px; padding:10px; font-size:1rem; display:flex; align-items:center; justify-content:center;" title="共有"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button>
+                        </div>
+                        <div style="display:flex; gap:8px;">
+                            <button class="btn-update" onclick="openExportSongModal('download')" style="flex:1; padding:10px; font-size:1rem;" data-i18n="btn_export_song_settings">単曲エクスポート (.nm1)</button>
+                            <button class="btn-update" data-share-btn onclick="openExportSongModal('share')" style="width:52px; padding:10px; font-size:1rem; display:flex; align-items:center; justify-content:center;" title="共有"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button>
+                        </div>
+                        <div style="display:flex; gap:8px;">
+                            <button class="btn-insert" onclick="openExportSoundModal('download')" style="flex:1; padding:10px; font-size:1rem;" data-i18n="btn_export_sound">音色エクスポート (.nms)</button>
+                            <button class="btn-insert" data-share-btn onclick="openExportSoundModal('share')" style="width:52px; padding:10px; font-size:1rem; display:flex; align-items:center; justify-content:center;" title="共有"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button>
+                        </div>
                         <hr style="border-top:1px solid var(--dot-weak); width:100%; margin:5px 0;">
                         <button class="btn-cancel" onclick="openMp3ExportModal()" style="padding:10px; font-size:1rem; background:#fff; color:#333; border:1px solid #ccc;" data-i18n="btn_export_mp3">楽曲の音声保存 (.mp3)</button>
                     </div>
@@ -1434,7 +1443,7 @@
                     <p style="margin:0; opacity:0.9;" data-i18n="datahelp_full_desc">アプリに関する全ての設定を端末にファイル出力します。端末変更などの環境移行・バックアップに使えます。</p>
                 </div>
                 <div>
-                    <p style="font-weight:bold; color:var(--primary-color); margin:0 0 3px;" data-i18n="datahelp_song_title">🎵 [外部出力]単曲エクスポート(.nm1)</p>
+                    <p style="font-weight:bold; color:var(--primary-color); margin:0 0 3px;" data-i18n="datahelp_song_title">🎵 単曲エクスポート (.nm1)</p>
                     <p style="margin:0; opacity:0.9;" data-i18n="datahelp_song_desc">作成済みの楽曲データを1件だけファイル出力します。曲データを他の人に送るのに使えます。</p>
                 </div>
                 <div>
@@ -1460,6 +1469,8 @@
         <div class="intro-close"><button onclick="toggleChangelog()">✕ 閉じる</button></div>
         <div class="cl-body">
 
+            <p class="cl-ver">Z330M</p>
+            <p class="cl-desc">データの入出力に「共有」を追加しました。設定タブではインポートを先頭に並べ替え、各エクスポートの横に共有ボタンを追加（共有先に Google ドライブなども選べます）。楽曲メニューの単曲エクスポートは、押してから「ダウンロード／共有」を選ぶ形に変更。あわせて設定タブ側の単曲エクスポートの表示を「単曲エクスポート (.nm1)」に統一しました。</p>
             <p class="cl-ver">Z329M</p>
             <p class="cl-desc">音色「3. Metronome」「4. Cowbell」「5. Drums」の再生で、強・中・弱の個別音量が反映されない不具合を修正。</p>
             <p class="cl-ver">Z328M</p>
@@ -2128,7 +2139,7 @@
                 <hr style="border-top:1px solid var(--dot-weak); width:100%; margin:5px 0;">
                 <button class="btn-add" style="width:100%; margin-top:8px; padding:8px; border:none; border-radius:6px; font-weight:bold; cursor:pointer;" onclick="document.getElementById('importSongNm1Input').click()" data-i18n="btn_import_song_nm1">[外部入力]単曲インポート(.nm1)</button>
                 <input type="file" id="importSongNm1Input" style="display:none;" accept=".nm1" onchange="handleSongNm1Import(event)">
-                <button class="btn-update" style="width:100%; margin-top:8px; padding:8px; border:none; border-radius:6px; font-weight:bold; cursor:pointer;" onclick="exportCurrentSongNm1()" data-i18n="btn_export_song">[外部出力]単曲エクスポート(.nm1)</button>
+                <button class="btn-update" style="width:100%; margin-top:8px; padding:8px; border:none; border-radius:6px; font-weight:bold; cursor:pointer;" onclick="openExportChoiceModal()" data-i18n="btn_export_song">[外部出力]単曲エクスポート(.nm1)</button>
             </div>
             
             <div style="background:var(--bg-color); padding:10px; border-radius:8px; display:flex; flex-direction:column; gap:8px;">
@@ -2152,7 +2163,7 @@
 
     <div id="exportSongModal" class="modal-overlay">
         <div class="modal-content">
-            <h2 data-i18n="btn_export_song">[外部出力]単曲エクスポート(.nm1)</h2>
+            <h2 data-i18n="btn_export_song_settings">単曲エクスポート (.nm1)</h2>
             <div class="flex-row" style="margin-bottom:10px;">
                 <button onclick="sortSongListSub('export','name')" style="flex:1; padding:5px; border-radius:4px; border:none; background:var(--dot-weak); color:#fff; cursor:pointer;"><span data-i18n="sort_name">名前でソート</span> <span id="sortArrowExportName"></span></button>
                 <button onclick="sortSongListSub('export','date')" style="flex:1; padding:5px; border-radius:4px; border:none; background:var(--dot-weak); color:#fff; cursor:pointer;"><span data-i18n="sort_date">日時でソート</span> <span id="sortArrowExportDate">▼</span></button>
@@ -2162,6 +2173,17 @@
         </div>
     </div>
     
+    <div id="exportChoiceModal" class="modal-overlay" onclick="if(event.target===this)closeModal('exportChoiceModal')">
+        <div class="modal-content" style="max-width:300px;">
+            <h2 data-i18n="btn_export_song">[外部出力]単曲エクスポート(.nm1)</h2>
+            <div style="display:flex; flex-direction:column; gap:8px;">
+                <button class="btn-update" style="width:100%; padding:10px; border:none; border-radius:6px; font-weight:bold; cursor:pointer;" onclick="exportCurrentSongNm1('download')" data-i18n="btn_download">ダウンロード</button>
+                <button class="btn-update" data-share-btn style="width:100%; padding:10px; border:none; border-radius:6px; font-weight:bold; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;" onclick="exportCurrentSongNm1('share')"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg><span data-i18n="btn_share">共有</span></button>
+                <button class="btn-cancel" style="width:100%; padding:10px; border:none; border-radius:6px; font-weight:bold; cursor:pointer;" onclick="closeModal('exportChoiceModal')" data-i18n="btn_close">閉じる</button>
+            </div>
+        </div>
+    </div>
+
     <div id="exportSoundModal" class="modal-overlay">
         <div class="modal-content">
             <h2 data-i18n="btn_export_sound">音色エクスポート (.nms)</h2>
@@ -2389,7 +2411,7 @@
             title_load_song: "楽曲の読み込み", sort_name: "名前でソート", sort_date: "日時でソート",
             alert_loaded: " を読込ました。", alert_load_fail: "読込失敗", alert_no_data: "データがありません", alert_multi_del: " 個の小節群を削除しますか？", alert_single_del: "選択中の小節群を削除しますか？", alert_clear_all: "表示中の楽譜がすべてクリアされます。よろしいですか？", alert_saved: "保存しました！", alert_del_file: "この楽曲データを削除しますか？", msg_no_song: "保存された楽曲はありません。", str_now: "(現在: ", str_bar: "小節)", str_untitled: "無題の楽曲",
             btn_start: "スタート", btn_stop: "ストップ",
-            btn_export_full: "フルエクスポート (.nmf)", btn_export_song: "[外部出力]単曲エクスポート(.nm1)", btn_export_sound: "音色エクスポート (.nms)", btn_import: "インポート (.nmf / .nm1 / .nms)", btn_import_song_nm1: "[外部入力]単曲インポート(.nm1)", prompt_filename: "ファイル名を入力", alert_imported: "インポート完了しました", title_import_nmf: "フルインポート設定", title_import_nms: "音色インポート", chk_metro: "メトロノーム設定・プリセット", chk_sound: "オリジナル音色", chk_song: "楽曲データ (追加)", btn_exec_import: "実行", help_export: "💾 データをファイルにバックアップ・復元します", help_custom_bpm: "⚡ メトロノームタブの固定増減ボタンの値を変更できます", help_tts_settings: "🔊 楽曲モードの読み上げ音声を調整します\n詳細設定では「何を読み上げるか」を選べます", label_tts_rate: "速さ:", label_tts_pitch: "高さ:", btn_tts_preview: "試聴",
+            btn_export_full: "フルエクスポート (.nmf)", btn_export_song: "[外部出力]単曲エクスポート(.nm1)", btn_export_sound: "音色エクスポート (.nms)", btn_import: "インポート (.nmf / .nm1 / .nms)", btn_import_song_nm1: "[外部入力]単曲インポート(.nm1)", btn_export_song_settings: "単曲エクスポート (.nm1)", btn_download: "ダウンロード", btn_share: "共有", prompt_filename: "ファイル名を入力", alert_imported: "インポート完了しました", title_import_nmf: "フルインポート設定", title_import_nms: "音色インポート", chk_metro: "メトロノーム設定・プリセット", chk_sound: "オリジナル音色", chk_song: "楽曲データ (追加)", btn_exec_import: "実行", help_export: "💾 データをファイルにバックアップ・復元します", help_custom_bpm: "⚡ メトロノームタブの固定増減ボタンの値を変更できます", help_tts_settings: "🔊 楽曲モードの読み上げ音声を調整します\n詳細設定では「何を読み上げるか」を選べます", label_tts_rate: "速さ:", label_tts_pitch: "高さ:", btn_tts_preview: "試聴",
             unit_bars_short: "小節",
             label_next_tempo: "次のテンポへ向かう",
             help_ratio_btn: "練習用に再生速度を変更できます。縦スワイプ対応",
@@ -2480,7 +2502,7 @@
             datahelp_title: "💾 データの入出力について",
             datahelp_full_title: "📤 フルエクスポート (.nmf)",
             datahelp_full_desc: "アプリに関する全ての設定を端末にファイル出力します。端末変更などの環境移行・バックアップに使えます。",
-            datahelp_song_title: "🎵 [外部出力]単曲エクスポート(.nm1)",
+            datahelp_song_title: "🎵 単曲エクスポート (.nm1)",
             datahelp_song_desc: "作成済みの楽曲データを1件だけファイル出力します。曲データを他の人に送るのに使えます。",
             datahelp_sound_title: "🎨 音色エクスポート (.nms)",
             datahelp_sound_desc: "カスタム音色データをファイル出力します。お気に入りの音色を共有するのに使えます。",
@@ -2556,7 +2578,7 @@
             title_load_song: "Load Song", sort_name: "Sort by Name", sort_date: "Sort by Date",
             alert_loaded: " loaded.", alert_load_fail: "Load failed.", alert_no_data: "No data available.", alert_multi_del: " groups selected. Delete?", alert_single_del: "Delete selected group?", alert_clear_all: "Clear all sheet data. Are you sure?", alert_saved: "Saved successfully!", alert_del_file: "Delete this song data?", msg_no_song: "No saved songs.", str_now: "(Now: ", str_bar: " bars)", str_untitled: "Untitled Song",
             btn_start: "START", btn_stop: "STOP",
-            btn_export_full: "Full Export (.nmf)", btn_export_song: "[External Output] Export Song (.nm1)", btn_export_sound: "Export Sound (.nms)", btn_import: "Import (.nmf/.nm1/.nms)", btn_import_song_nm1: "[External Input] Import Song (.nm1)", prompt_filename: "Enter file name", alert_imported: "Import completed", title_import_nmf: "Full Import Settings", title_import_nms: "Import Sound", chk_metro: "Metronome & Presets", chk_sound: "Custom Sounds", chk_song: "Song Data (Append)", btn_exec_import: "Execute", help_export: "💾 Backup and restore your data", help_custom_bpm: "⚡ Customize the fixed BPM increment buttons in the Metronome tab", help_tts_settings: "🔊 Adjust the text-to-speech voice for Song Mode\nIn Advanced settings, you can choose what gets read aloud", label_tts_rate: "Rate:", label_tts_pitch: "Pitch:", btn_tts_preview: "Preview",
+            btn_export_full: "Full Export (.nmf)", btn_export_song: "[External Output] Export Song (.nm1)", btn_export_sound: "Export Sound (.nms)", btn_import: "Import (.nmf/.nm1/.nms)", btn_import_song_nm1: "[External Input] Import Song (.nm1)", btn_export_song_settings: "Export Song (.nm1)", btn_download: "Download", btn_share: "Share", prompt_filename: "Enter file name", alert_imported: "Import completed", title_import_nmf: "Full Import Settings", title_import_nms: "Import Sound", chk_metro: "Metronome & Presets", chk_sound: "Custom Sounds", chk_song: "Song Data (Append)", btn_exec_import: "Execute", help_export: "💾 Backup and restore your data", help_custom_bpm: "⚡ Customize the fixed BPM increment buttons in the Metronome tab", help_tts_settings: "🔊 Adjust the text-to-speech voice for Song Mode\nIn Advanced settings, you can choose what gets read aloud", label_tts_rate: "Rate:", label_tts_pitch: "Pitch:", btn_tts_preview: "Preview",
             unit_bars_short: "bars",
             label_next_tempo: "Move to next tempo",
             label_ratio_btn: "Rate",
@@ -2646,7 +2668,7 @@
             datahelp_title: "💾 About Data Import/Export",
             datahelp_full_title: "📤 Full Export (.nmf)",
             datahelp_full_desc: "Exports all app settings to a file on your device. Useful for backups or migrating to a new device.",
-            datahelp_song_title: "🎵 [External Output] Export Song (.nm1)",
+            datahelp_song_title: "🎵 Export Song (.nm1)",
             datahelp_song_desc: "Exports a single song to a file. Use this to share song data with others.",
             datahelp_sound_title: "🎨 Export Sound (.nms)",
             datahelp_sound_desc: "Exports your custom sound data to a file. Use this to share your favorite sounds.",
@@ -6306,7 +6328,42 @@ const savedRatio = localStorage.getItem('namameto_tempoRatio');
         const blob = new Blob([JSON.stringify(dataObj)], {type: "application/octet-stream"});
         const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = finalName; a.click();
     }
-    function exportFullData() {
+    // ファイル共有（Web Share API）が使える環境かどうか
+    function canShareFiles() {
+        try {
+            return !!(navigator.share && navigator.canShare && navigator.canShare({ files: [new File([''], 'check.txt', { type: 'application/octet-stream' })] }));
+        } catch (e) { return false; }
+    }
+    async function shareJSON(dataObj, defaultName) {
+        const fname = await appPrompt(getText('prompt_filename'), defaultName);
+        if (fname === null) return;
+        const finalName = fname.trim() === '' ? defaultName : fname;
+        const blob = new Blob([JSON.stringify(dataObj)], {type: "application/octet-stream"});
+        if (canShareFiles()) {
+            try {
+                await navigator.share({ files: [new File([blob], finalName, { type: 'application/octet-stream' })] });
+                return;
+            } catch (e) {
+                if (e && e.name === 'AbortError') return; // 共有シートでキャンセルされた場合は何もしない
+            }
+        }
+        // 共有できない環境ではダウンロードにフォールバック
+        const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = finalName; a.click();
+    }
+    async function exportJSON(dataObj, defaultName, mode) {
+        if (mode === 'share') { await shareJSON(dataObj, defaultName); }
+        else { await downloadJSON(dataObj, defaultName); }
+    }
+    // 共有が使えない環境では共有ボタンを隠す
+    document.addEventListener('DOMContentLoaded', function() {
+        if (!canShareFiles()) {
+            document.querySelectorAll('[data-share-btn]').forEach(function(b) { b.style.display = 'none'; });
+        }
+    });
+    function openExportChoiceModal() { openModal('exportChoiceModal'); }
+    let exportSongMode = 'download';
+    let exportSoundMode = 'download';
+    function exportFullData(mode) {
         const customSoundsInit = {};
         CUSTOM_IDS.forEach(id => { customSoundsInit[id] = {}; });
         const data = { type: 'NMF', version: '1.0',
@@ -6328,28 +6385,30 @@ const savedRatio = localStorage.getItem('namameto_tempoRatio');
             [1,2,3].forEach(l => { data.customSounds[id][l] = { name: localStorage.getItem(`nama_fn_${id}_${l}`), offset: localStorage.getItem(`nama_off_${id}_${l}`), data: localStorage.getItem(`nama_dat_${id}_${l}`) }; });
         });
         const d = new Date();
-        downloadJSON(data, `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}-${String(d.getHours()).padStart(2,'0')}${String(d.getMinutes()).padStart(2,'0')}.nmf`);
+        exportJSON(data, `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}-${String(d.getHours()).padStart(2,'0')}${String(d.getMinutes()).padStart(2,'0')}.nmf`, mode);
     }
-    function openExportSongModal() {
+    function openExportSongModal(mode) {
+        exportSongMode = mode || 'download';
         subSortType.export = 'date'; subSortAsc.export = false;
         renderSongListSub('export');
         openModal('exportSongModal');
     }
-    function exportSongFile(id, title) { const sData = localStorage.getItem(id); if (!sData) return; const data = { type: 'NM1', version: '1.0', id: id, title: title, data: sData }; downloadJSON(data, title + ".nm1"); closeModal('exportSongModal'); }
+    function exportSongFile(id, title) { const sData = localStorage.getItem(id); if (!sData) return; const data = { type: 'NM1', version: '1.0', id: id, title: title, data: sData }; exportJSON(data, title + ".nm1", exportSongMode); closeModal('exportSongModal'); }
     // 楽曲メニューから、現在編集中の曲をそのまま .nm1 に書き出す（保存済みでなくても書き出せる）
-    function exportCurrentSongNm1() {
+    function exportCurrentSongNm1(mode) {
         const title = document.getElementById('songFileName').value || getText('str_untitled');
         const id = currentSongFileId || ('song_' + Date.now());
         const sData = JSON.stringify({ title, data: songData, offset: songBarOffset });
         const data = { type: 'NM1', version: '1.0', id: id, title: title, data: sData };
-        downloadJSON(data, title + ".nm1");
+        exportJSON(data, title + ".nm1", mode);
+        closeModal('exportChoiceModal');
         closeModal('songMenuModal');
     }
-    function openExportSoundModal() { openModal('exportSoundModal'); }
+    function openExportSoundModal(mode) { exportSoundMode = mode || 'download'; openModal('exportSoundModal'); }
     function exportSoundFile(slotId) {
         const data = { type: 'NMS', version: '1.0', customName: customSoundNames[slotId], soundData: {} };
         [1,2,3].forEach(l => { data.soundData[l] = { name: localStorage.getItem(`nama_fn_${slotId}_${l}`), offset: localStorage.getItem(`nama_off_${slotId}_${l}`), data: localStorage.getItem(`nama_dat_${slotId}_${l}`) }; });
-        downloadJSON(data, (customSoundNames[slotId] || slotId) + ".nms"); closeModal('exportSoundModal');
+        exportJSON(data, (customSoundNames[slotId] || slotId) + ".nms", exportSoundMode); closeModal('exportSoundModal');
     }
 
     let pendingImportData = null;
@@ -8129,7 +8188,7 @@ function renderSongListSub(target) {
                     <span style="font-weight:bold; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${item.title}</span>
                     <span style="font-size:0.7rem; color:#888;">${dStr}</span>
                 </div>
-                <button class="btn-update" style="padding:5px 10px;" onclick="exportSongFile('${item.id}','${item.title}')">DL</button>
+                <button class="btn-update" style="padding:5px 10px;" onclick="exportSongFile('${item.id}','${item.title}')">${exportSongMode === 'share' ? getText('btn_share') : 'DL'}</button>
             </div>`;
         } else if (target === 'mp3') {
             return `<div class="flex-row" style="background:var(--surface-color); padding:5px; margin-bottom:5px; border-radius:4px; border:1px solid var(--dot-weak);">
