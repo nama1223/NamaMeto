@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>共有テスト（実験用）</title>
+<style>
+  body { font-family: sans-serif; margin: 16px; background: #111; color: #eee; }
+  h1 { font-size: 22px; }
+  #env { background: #222; border: 1px solid #555; border-radius: 8px; padding: 10px; font-size: 14px; word-break: break-all; white-space: pre-wrap; }
+  .case { margin: 18px 0; }
+  .case p { font-size: 16px; margin: 6px 0; }
+  button { display: block; width: 100%; padding: 16px; font-size: 20px; font-weight: bold; border: none; border-radius: 8px; background: #01875f; color: #fff; cursor: pointer; }
+  input[type="text"] { display: block; width: 100%; box-sizing: border-box; padding: 14px; font-size: 18px; margin-bottom: 8px; border-radius: 8px; border: 1px solid #777; }
+  #results { margin-top: 24px; }
+  .result { background: #1d2b1d; border: 1px solid #4a7; border-radius: 8px; padding: 12px; margin-bottom: 12px; font-size: 18px; word-break: break-all; white-space: pre-wrap; }
+  .result.fail { background: #2b1d1d; border-color: #a44; }
+  .result .head { font-weight: bold; font-size: 20px; }
+</style>
+</head>
+<body>
+<h1>共有テスト（実験用）</h1>
+<div id="env">環境情報を読み込み中…</div>
+
+<div class="case">
+  <p>A: テキストだけ共有（ファイルなし）</p>
+  <button id="btnA">A を共有</button>
+</div>
+
+<div class="case">
+  <p>B: ファイル共有（test.json / application/json）</p>
+  <button id="btnB">B を共有</button>
+</div>
+
+<div class="case">
+  <p>C: ファイル共有（test.nmf / application/json）</p>
+  <button id="btnC">C を共有</button>
+</div>
+
+<div class="case">
+  <p>D: ファイル共有（test.nmf / application/octet-stream）</p>
+  <button id="btnD">D を共有</button>
+</div>
+
+<div class="case">
+  <p>E: 入力欄にフォーカス（キーボードを開く）→ そのまま共有（ファイルは B と同じ）</p>
+  <input type="text" id="focusInput" placeholder="ここをタップして文字を入れる">
+  <button id="btnE">E を共有</button>
+</div>
+
+<h2>結果（新しいものが上）</h2>
+<div id="results"></div>
+
+<script>
+(function () {
+  var env = document.getElementById('env');
+  var standalone = false;
+  try { standalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true; } catch (e) {}
+  env.textContent =
+    'userAgent: ' + navigator.userAgent + '\n' +
+    '表示モード: ' + (standalone ? 'standalone（アプリとして起動）' : 'ブラウザ表示') + '\n' +
+    'navigator.share: ' + (typeof navigator.share === 'function' ? 'あり' : 'なし') + '\n' +
+    'navigator.canShare: ' + (typeof navigator.canShare === 'function' ? 'あり' : 'なし');
+
+  var results = document.getElementById('results');
+  function log(label, lines, isFail) {
+    var div = document.createElement('div');
+    div.className = 'result' + (isFail ? ' fail' : '');
+    var head = document.createElement('div');
+    head.className = 'head';
+    head.textContent = label;
+    div.appendChild(head);
+    var body = document.createElement('div');
+    body.textContent = lines.join('\n');
+    div.appendChild(body);
+    if (results.firstChild) results.insertBefore(div, results.firstChild);
+    else results.appendChild(div);
+  }
+
+  function canShareOf(data) {
+    if (typeof navigator.canShare !== 'function') return 'canShare: 関数なし';
+    try { return 'canShare: ' + navigator.canShare(data); }
+    catch (e) { return 'canShare: 例外 ' + e.name + ': ' + e.message; }
+  }
+
+  // 共有はクリックの中で同期的に呼ぶ（await を挟まない）
+  function runShare(label, data) {
+    var lines = [canShareOf(data)];
+    if (typeof navigator.share !== 'function') {
+      lines.push('結果: navigator.share が無い');
+      log(label, lines, true);
+      return;
+    }
+    var p;
+    try { p = navigator.share(data); }
+    catch (e) {
+      lines.push('結果: 失敗（同期例外）');
+      lines.push('エラー名: ' + e.name);
+      lines.push('メッセージ: ' + e.message);
+      log(label, lines, true);
+      return;
+    }
+    Promise.resolve(p).then(function () {
+      lines.push('結果: 成功（共有シートが完了した）');
+      log(label, lines, false);
+    }).catch(function (e) {
+      if (e && e.name === 'AbortError') {
+        lines.push('結果: キャンセル（AbortError）');
+        lines.push('メッセージ: ' + e.message);
+        log(label, lines, false);
+      } else {
+        lines.push('結果: 失敗');
+        lines.push('エラー名: ' + (e && e.name));
+        lines.push('メッセージ: ' + (e && e.message));
+        log(label, lines, true);
+      }
+    });
+  }
+
+  var JSON_BODY = JSON.stringify({ test: 'NamaMeto share test', value: 123 });
+
+  document.getElementById('btnA').addEventListener('click', function () {
+    runShare('A: テキストだけ共有', { title: '共有テスト', text: 'NamaMeto share test A' });
+  });
+  document.getElementById('btnB').addEventListener('click', function () {
+    var file = new File([JSON_BODY], 'test.json', { type: 'application/json' });
+    runShare('B: test.json / application/json', { files: [file] });
+  });
+  document.getElementById('btnC').addEventListener('click', function () {
+    var file = new File([JSON_BODY], 'test.nmf', { type: 'application/json' });
+    runShare('C: test.nmf / application/json', { files: [file] });
+  });
+  document.getElementById('btnD').addEventListener('click', function () {
+    var file = new File([JSON_BODY], 'test.nmf', { type: 'application/octet-stream' });
+    runShare('D: test.nmf / application/octet-stream', { files: [file] });
+  });
+  document.getElementById('btnE').addEventListener('click', function () {
+    var file = new File([JSON_BODY], 'test.json', { type: 'application/json' });
+    runShare('E: 入力欄フォーカス状態から test.json / application/json', { files: [file] });
+  });
+})();
+</script>
+</body>
+</html>
