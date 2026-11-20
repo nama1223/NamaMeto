@@ -593,7 +593,7 @@
         <div style="text-align: center; margin-bottom: 10px;">
             <div class="header-row">
                 <button class="help-btn" onclick="toggleHelp()">?</button>
-                <h1><span data-i18n="appTitleText"></span><span style="font-size:0.62rem; font-weight:400; opacity:0.6; letter-spacing:0.5px; vertical-align:baseline; margin-left:6px; line-height:1;">Z331M</span></h1>
+                <h1><span data-i18n="appTitleText"></span><span style="font-size:0.62rem; font-weight:400; opacity:0.6; letter-spacing:0.5px; vertical-align:baseline; margin-left:6px; line-height:1;">Z332M</span></h1>
                 <button id="headerVolBtn" style="width:36px; background:none; border:none; padding:2px 0; display:flex; flex-direction:column; align-items:center; cursor:pointer; user-select:none; -webkit-user-select:none; touch-action:none; -webkit-tap-highlight-color:transparent; position:relative; outline:none;">
                     <span id="headerVolIcon" style="font-size:1.3rem; line-height:1; pointer-events:none;">🔊</span>
                     <span id="headerVolPct" style="font-size:0.62rem; color:var(--primary-color); font-weight:bold; margin-top:1px; line-height:1; pointer-events:none;">100%</span>
@@ -1460,6 +1460,8 @@
         <div class="intro-close"><button onclick="toggleChangelog()">✕ 閉じる</button></div>
         <div class="cl-body">
 
+            <p class="cl-ver">Z332M</p>
+            <p class="cl-desc">Android でエクスポートの「共有」が失敗してしまう問題に対策しました。書き出すファイルの形式を見直しています。まだ失敗する場合は、お知らせの文面に括弧で理由が付くようになりましたので、その内容をお知らせください。</p>
             <p class="cl-ver">Z331M</p>
             <p class="cl-desc">エクスポートの流れを見直しました。ボタンを押すとファイル名の入力画面が開き、その画面の中で「ダウンロード」と「共有」を選べます。あわせて、Android で共有ボタンを押してもダウンロードになってしまう問題に対策しました（共有できないときは、その旨をお知らせします）。</p>
             <p class="cl-ver">Z330M</p>
@@ -6323,7 +6325,7 @@ const savedRatio = localStorage.getItem('namameto_tempoRatio');
         try { return !!(navigator.share && navigator.canShare && navigator.canShare({ files: [file] })); }
         catch (e) { return false; }
     }
-    function buildExportFile(name) { return new File([pendingExport.json], name, { type: 'application/octet-stream' }); }
+    function buildExportFile(name) { return new File([pendingExport.json], name, { type: 'application/json' }); }
     function currentExportName() {
         const v = document.getElementById('exportFileNameInput').value.trim();
         return v === '' ? pendingExport.defaultName : v;
@@ -6339,22 +6341,27 @@ const savedRatio = localStorage.getItem('namameto_tempoRatio');
     }
     function doExportDownload() {
         if (!pendingExport) return;
-        const blob = new Blob([pendingExport.json], { type: 'application/octet-stream' });
+        const blob = new Blob([pendingExport.json], { type: 'application/json' });
         const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = currentExportName(); a.click();
         closeModal('exportFileModal');
+    }
+    // 共有失敗の切り分け用に、理由を括弧書きで添えて知らせる（成功時・キャンセル時の挙動は変えない）
+    function shareFailToast(reason) {
+        console.error('[NamaMeto] share failed:', reason);
+        showToast(getText('err_share_failed') + '（' + reason + '）');
     }
     function doExportShare() {
         if (!pendingExport) return;
         // クリック処理の中で同期的にファイルを組み立て、await を挟まずにそのまま共有を呼ぶ
         const file = buildExportFile(currentExportName());
-        if (!canShareFile(file)) { showToast(getText('err_share_failed')); return; }
+        if (!canShareFile(file)) { shareFailToast('canShare'); return; }
         let p;
         try { p = navigator.share({ files: [file] }); }
-        catch (e) { showToast(getText('err_share_failed')); return; }
+        catch (e) { shareFailToast((e && e.name) || 'Error'); return; }
         Promise.resolve(p).then(() => { closeModal('exportFileModal'); })
         .catch(e => {
             if (e && e.name === 'AbortError') { closeModal('exportFileModal'); return; } // 共有シートでキャンセルされた場合は静かに閉じる
-            showToast(getText('err_share_failed')); // 失敗を黙ってダウンロードに化けさせない
+            shareFailToast((e && e.name) || 'Error'); // 失敗を黙ってダウンロードに化けさせない
         });
     }
     function exportFullData() {
