@@ -593,7 +593,7 @@
         <div style="text-align: center; margin-bottom: 10px;">
             <div class="header-row">
                 <button class="help-btn" onclick="toggleHelp()">?</button>
-                <h1><span data-i18n="appTitleText"></span><span style="font-size:0.62rem; font-weight:400; opacity:0.6; letter-spacing:0.5px; vertical-align:baseline; margin-left:6px; line-height:1;">Z332M</span></h1>
+                <h1><span data-i18n="appTitleText"></span><span style="font-size:0.62rem; font-weight:400; opacity:0.6; letter-spacing:0.5px; vertical-align:baseline; margin-left:6px; line-height:1;">Z333M</span></h1>
                 <button id="headerVolBtn" style="width:36px; background:none; border:none; padding:2px 0; display:flex; flex-direction:column; align-items:center; cursor:pointer; user-select:none; -webkit-user-select:none; touch-action:none; -webkit-tap-highlight-color:transparent; position:relative; outline:none;">
                     <span id="headerVolIcon" style="font-size:1.3rem; line-height:1; pointer-events:none;">🔊</span>
                     <span id="headerVolPct" style="font-size:0.62rem; color:var(--primary-color); font-weight:bold; margin-top:1px; line-height:1; pointer-events:none;">100%</span>
@@ -1460,6 +1460,8 @@
         <div class="intro-close"><button onclick="toggleChangelog()">✕ 閉じる</button></div>
         <div class="cl-body">
 
+            <p class="cl-ver">Z333M</p>
+            <p class="cl-desc">エクスポートの「共有」ボタンを取り除きました。書き出しは、ファイル名を決めてダウンロードする形になります。</p>
             <p class="cl-ver">Z332M</p>
             <p class="cl-desc">Android でエクスポートの「共有」が失敗してしまう問題に対策しました。書き出すファイルの形式を見直しています。まだ失敗する場合は、お知らせの文面に括弧で理由が付くようになりましたので、その内容をお知らせください。</p>
             <p class="cl-ver">Z331M</p>
@@ -2182,14 +2184,13 @@
         </div>
     </div>
 
-    <!-- ファイル書き出しモーダル（名前入力＋ダウンロード／共有） -->
+    <!-- ファイル書き出しモーダル（名前入力＋ダウンロード） -->
     <div id="exportFileModal" class="modal-overlay" onclick="if(event.target===this)closeModal('exportFileModal')">
         <div class="modal-content" style="max-width:320px;">
             <h2 data-i18n="prompt_filename">ファイル名を入力</h2>
             <input type="text" id="exportFileNameInput" autocomplete="off" spellcheck="false" onkeydown="if(event.key==='Enter'&&!event.isComposing){event.preventDefault();doExportDownload();}" style="width:100%; box-sizing:border-box; padding:10px; font-size:1rem; border:2px solid var(--dot-weak); border-radius:8px; background:var(--bg-color); color:var(--text-color); user-select:text; -webkit-user-select:text;">
             <div style="display:flex; flex-direction:column; gap:8px; margin-top:14px;">
                 <button class="btn-update" style="width:100%; padding:10px; border:none; border-radius:6px; font-weight:bold; cursor:pointer;" onclick="doExportDownload()" data-i18n="btn_download">ダウンロード</button>
-                <button class="btn-update" id="exportShareBtn" style="width:100%; padding:10px; border:none; border-radius:6px; font-weight:bold; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;" onclick="doExportShare()"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg><span data-i18n="btn_share">共有</span></button>
                 <button class="btn-cancel" style="width:100%; padding:10px; border:none; border-radius:6px; font-weight:bold; cursor:pointer;" onclick="closeModal('exportFileModal')" data-i18n="btn_close">閉じる</button>
             </div>
         </div>
@@ -2408,7 +2409,7 @@
             title_load_song: "楽曲の読み込み", sort_name: "名前でソート", sort_date: "日時でソート",
             alert_loaded: " を読込ました。", alert_load_fail: "読込失敗", alert_no_data: "データがありません", alert_multi_del: " 個の小節群を削除しますか？", alert_single_del: "選択中の小節群を削除しますか？", alert_clear_all: "表示中の楽譜がすべてクリアされます。よろしいですか？", alert_saved: "保存しました！", alert_del_file: "この楽曲データを削除しますか？", msg_no_song: "保存された楽曲はありません。", str_now: "(現在: ", str_bar: "小節)", str_untitled: "無題の楽曲",
             btn_start: "スタート", btn_stop: "ストップ",
-            btn_export_full: "フルエクスポート (.nmf)", btn_export_song: "[外部出力]単曲エクスポート(.nm1)", btn_export_sound: "音色エクスポート (.nms)", btn_import: "インポート (.nmf / .nm1 / .nms)", btn_import_song_nm1: "[外部入力]単曲インポート(.nm1)", btn_export_song_settings: "単曲エクスポート (.nm1)", btn_download: "ダウンロード", btn_share: "共有", btn_export_file: "書き出し", err_share_failed: "共有できませんでした", prompt_filename: "ファイル名を入力", alert_imported: "インポート完了しました", title_import_nmf: "フルインポート設定", title_import_nms: "音色インポート", chk_metro: "メトロノーム設定・プリセット", chk_sound: "オリジナル音色", chk_song: "楽曲データ (追加)", btn_exec_import: "実行", help_export: "💾 データをファイルにバックアップ・復元します", help_custom_bpm: "⚡ メトロノームタブの固定増減ボタンの値を変更できます", help_tts_settings: "🔊 楽曲モードの読み上げ音声を調整します\n詳細設定では「何を読み上げるか」を選べます", label_tts_rate: "速さ:", label_tts_pitch: "高さ:", btn_tts_preview: "試聴",
+            btn_export_full: "フルエクスポート (.nmf)", btn_export_song: "[外部出力]単曲エクスポート(.nm1)", btn_export_sound: "音色エクスポート (.nms)", btn_import: "インポート (.nmf / .nm1 / .nms)", btn_import_song_nm1: "[外部入力]単曲インポート(.nm1)", btn_export_song_settings: "単曲エクスポート (.nm1)", btn_download: "ダウンロード", btn_export_file: "書き出し", prompt_filename: "ファイル名を入力", alert_imported: "インポート完了しました", title_import_nmf: "フルインポート設定", title_import_nms: "音色インポート", chk_metro: "メトロノーム設定・プリセット", chk_sound: "オリジナル音色", chk_song: "楽曲データ (追加)", btn_exec_import: "実行", help_export: "💾 データをファイルにバックアップ・復元します", help_custom_bpm: "⚡ メトロノームタブの固定増減ボタンの値を変更できます", help_tts_settings: "🔊 楽曲モードの読み上げ音声を調整します\n詳細設定では「何を読み上げるか」を選べます", label_tts_rate: "速さ:", label_tts_pitch: "高さ:", btn_tts_preview: "試聴",
             unit_bars_short: "小節",
             label_next_tempo: "次のテンポへ向かう",
             help_ratio_btn: "練習用に再生速度を変更できます。縦スワイプ対応",
@@ -2575,7 +2576,7 @@
             title_load_song: "Load Song", sort_name: "Sort by Name", sort_date: "Sort by Date",
             alert_loaded: " loaded.", alert_load_fail: "Load failed.", alert_no_data: "No data available.", alert_multi_del: " groups selected. Delete?", alert_single_del: "Delete selected group?", alert_clear_all: "Clear all sheet data. Are you sure?", alert_saved: "Saved successfully!", alert_del_file: "Delete this song data?", msg_no_song: "No saved songs.", str_now: "(Now: ", str_bar: " bars)", str_untitled: "Untitled Song",
             btn_start: "START", btn_stop: "STOP",
-            btn_export_full: "Full Export (.nmf)", btn_export_song: "[External Output] Export Song (.nm1)", btn_export_sound: "Export Sound (.nms)", btn_import: "Import (.nmf/.nm1/.nms)", btn_import_song_nm1: "[External Input] Import Song (.nm1)", btn_export_song_settings: "Export Song (.nm1)", btn_download: "Download", btn_share: "Share", btn_export_file: "Export", err_share_failed: "Could not share the file", prompt_filename: "Enter file name", alert_imported: "Import completed", title_import_nmf: "Full Import Settings", title_import_nms: "Import Sound", chk_metro: "Metronome & Presets", chk_sound: "Custom Sounds", chk_song: "Song Data (Append)", btn_exec_import: "Execute", help_export: "💾 Backup and restore your data", help_custom_bpm: "⚡ Customize the fixed BPM increment buttons in the Metronome tab", help_tts_settings: "🔊 Adjust the text-to-speech voice for Song Mode\nIn Advanced settings, you can choose what gets read aloud", label_tts_rate: "Rate:", label_tts_pitch: "Pitch:", btn_tts_preview: "Preview",
+            btn_export_full: "Full Export (.nmf)", btn_export_song: "[External Output] Export Song (.nm1)", btn_export_sound: "Export Sound (.nms)", btn_import: "Import (.nmf/.nm1/.nms)", btn_import_song_nm1: "[External Input] Import Song (.nm1)", btn_export_song_settings: "Export Song (.nm1)", btn_download: "Download", btn_export_file: "Export", prompt_filename: "Enter file name", alert_imported: "Import completed", title_import_nmf: "Full Import Settings", title_import_nms: "Import Sound", chk_metro: "Metronome & Presets", chk_sound: "Custom Sounds", chk_song: "Song Data (Append)", btn_exec_import: "Execute", help_export: "💾 Backup and restore your data", help_custom_bpm: "⚡ Customize the fixed BPM increment buttons in the Metronome tab", help_tts_settings: "🔊 Adjust the text-to-speech voice for Song Mode\nIn Advanced settings, you can choose what gets read aloud", label_tts_rate: "Rate:", label_tts_pitch: "Pitch:", btn_tts_preview: "Preview",
             unit_bars_short: "bars",
             label_next_tempo: "Move to next tempo",
             label_ratio_btn: "Rate",
@@ -6318,14 +6319,8 @@ const savedRatio = localStorage.getItem('namameto_tempoRatio');
         if(await appConfirm(getText('alert_del_file'))) { localStorage.removeItem(id); let list = JSON.parse(localStorage.getItem('namameto_songlist') || '[]'); list = list.filter(x => x.id !== id); localStorage.setItem('namameto_songlist', JSON.stringify(list)); openSongLoadModal(); }
     }
 
-    // ===== ファイル書き出し（名前入力モーダルの中でダウンロード／共有を選ぶ） =====
+    // ===== ファイル書き出し（名前入力モーダルで名前を決めてダウンロード） =====
     let pendingExport = null; // { json: 文字列化済みデータ, defaultName: 既定のファイル名 }
-    // 実際に書き出すファイルそのもので、ファイル共有が使えるかを判定する
-    function canShareFile(file) {
-        try { return !!(navigator.share && navigator.canShare && navigator.canShare({ files: [file] })); }
-        catch (e) { return false; }
-    }
-    function buildExportFile(name) { return new File([pendingExport.json], name, { type: 'application/json' }); }
     function currentExportName() {
         const v = document.getElementById('exportFileNameInput').value.trim();
         return v === '' ? pendingExport.defaultName : v;
@@ -6334,8 +6329,6 @@ const savedRatio = localStorage.getItem('namameto_tempoRatio');
         pendingExport = { json: JSON.stringify(dataObj), defaultName: defaultName };
         const input = document.getElementById('exportFileNameInput');
         input.value = defaultName;
-        // 共有ボタンは、実際に書き出すファイルで共有できる場合だけ出す
-        document.getElementById('exportShareBtn').style.display = canShareFile(buildExportFile(defaultName)) ? 'flex' : 'none';
         openModal('exportFileModal');
         setTimeout(() => { input.focus(); input.select(); }, 50);
     }
@@ -6344,25 +6337,6 @@ const savedRatio = localStorage.getItem('namameto_tempoRatio');
         const blob = new Blob([pendingExport.json], { type: 'application/json' });
         const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = currentExportName(); a.click();
         closeModal('exportFileModal');
-    }
-    // 共有失敗の切り分け用に、理由を括弧書きで添えて知らせる（成功時・キャンセル時の挙動は変えない）
-    function shareFailToast(reason) {
-        console.error('[NamaMeto] share failed:', reason);
-        showToast(getText('err_share_failed') + '（' + reason + '）');
-    }
-    function doExportShare() {
-        if (!pendingExport) return;
-        // クリック処理の中で同期的にファイルを組み立て、await を挟まずにそのまま共有を呼ぶ
-        const file = buildExportFile(currentExportName());
-        if (!canShareFile(file)) { shareFailToast('canShare'); return; }
-        let p;
-        try { p = navigator.share({ files: [file] }); }
-        catch (e) { shareFailToast((e && e.name) || 'Error'); return; }
-        Promise.resolve(p).then(() => { closeModal('exportFileModal'); })
-        .catch(e => {
-            if (e && e.name === 'AbortError') { closeModal('exportFileModal'); return; } // 共有シートでキャンセルされた場合は静かに閉じる
-            shareFailToast((e && e.name) || 'Error'); // 失敗を黙ってダウンロードに化けさせない
-        });
     }
     function exportFullData() {
         const customSoundsInit = {};
