@@ -7982,6 +7982,7 @@ const savedRatio = localStorage.getItem('namameto_tempoRatio');
         document.addEventListener(ev, hideToast, {passive:true, capture:true})
     );
     window.NamaMetoTutorialBridge = {
+      language: function(){ return (typeof currentLang !== 'undefined') ? currentLang : 'ja'; },
       navigate: function(id){
         if (id === 'metro') { switchTab('metro'); }
         else if (id === 'file') { switchTab('file'); }
@@ -8991,8 +8992,8 @@ window.addEventListener('DOMContentLoaded', () => {
             </div>
         </div>
     </div>
-<link rel="stylesheet" href="tutorial/nama-tutorial.css?v=23">
-<script src="tutorial/config.js?v=23"></script>
-<script src="tutorial/nama-tutorial.js?v=23"></script>
+<link rel="stylesheet" href="tutorial/nama-tutorial.css?v=24">
+<script src="tutorial/config.js?v=24"></script>
+<script src="tutorial/nama-tutorial.js?v=24"></script>
 </body>
 </html>

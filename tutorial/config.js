@@ -90,5 +90,95 @@ window.NAMA_TUTORIAL_CONFIG = {
         { page: 'file', target: '#namaTutorialToggle', mode: 'free', pose: 'point', text: '最後に、この案内ボタン自体の表示もここで切り替えられナマ。案内が要らなくなったら、ここで消せナマ。' }
       ]
     }
-  ]
+  ],
+  en: {
+    introTitle: 'How to use NamaMetro',
+    introText: 'I will show you how the metronome and Song Mode work, on the real screen, nama.',
+    chapters: [
+      {
+        id: 'intro', page: 'metro', title: 'Getting started', desc: 'The screen layout, and how this guide works', icon: 'wave', since: 2,
+        steps: [
+          { pose: 'wave', text: 'Well met! I am Nama, the creature [Namamono], nama. I will be your guide for NamaMetro, nama. You can quit this guide anytime with the ✕ button, and open it again from the button at the {{btnPos}}, nama.' },
+          { target: '.app-tabs', pose: 'point', text: 'The screen has three tabs, nama: Metronome, Song Mode, and Settings. Tap a tab at the top to switch, nama.' },
+          { target: '#tabBtn-song', pose: 'point', text: 'In Song Mode, you line up "measure groups" and play through a whole song, nama. A measure group is a stretch where the same tempo and time signature continue — one chunk, like a verse or a chorus, nama.' },
+          { target: '#nt-btn', pose: 'thumbs_up', text: 'You can reopen this guide anytime from this button at the {{btnPos}}, nama. When new chapters are added, it gets a red badge, nama.' }
+        ]
+      },
+      {
+        id: 'metro', page: 'metro', title: 'Metronome', desc: 'Tempo, sounds, beat patterns, and presets', icon: 'yay', since: 3,
+        steps: [
+          { page: 'metro', pose: 'wave', text: 'The Metronome chapter, nama. There are many ways to set the tempo, so we will try them one by one, nama. Anything you change in this chapter goes back to how it was at the end, nama.' },
+          { page: 'metro', target: '#bpmSlider', mode: 'free', pose: 'point', text: 'First, the slider at the right edge, nama. Move it up or down and the tempo changes, nama. Try sliding it, nama.' },
+          { page: 'metro', target: '#bpmDial', mode: 'free', pose: 'point', text: 'The round knob changes the tempo too, nama. Trace a circle with your finger, and the tempo follows how far you turned, nama.' },
+          { page: 'metro', target: '#bpmInput', mode: 'free', pose: 'point', text: 'You can also type the number directly, nama. Tap the box and enter a tempo, nama. The − and + on both sides change it one by one, nama.' },
+          { page: 'metro', target: '#bpmCtrl', mode: 'free', pose: 'point', text: 'Around the tempo display, scrolling and swiping work too, nama. Try stroking up and down near the display, nama.' },
+          { page: 'metro', target: '#tapTempoBtn', mode: 'tap', pose: 'point', text: 'Tap tempo, nama. Tap a few times at the beat interval, and that speed becomes the tempo, nama. Try tapping, nama.' },
+          { page: 'metro', target: '#headerVolBtn', mode: 'free', pose: 'point', bubblePos: 'bottom', text: 'The speaker button at the top right, nama. Tap it and a volume slider appears; swipe up or down on the button and the volume changes on the spot, nama. Try it, nama.' },
+          { page: 'metro', target: '#soundSelect', mode: 'free', pose: 'point', text: 'Change the sound here, nama. Pick the kind of click, nama. Sounds you registered yourself appear under Custom, nama.' },
+          { page: 'metro', target: '#beatsCtrl', mode: 'free', pose: 'point', text: 'The time signature is here, nama. The − and + change the number of beats, and scrolling or swiping works too, nama.' },
+          { page: 'metro', target: '#sequencer', mode: 'free', pose: 'point', text: 'The beat pattern, nama. Each tap on a cell cycles strong, medium, weak, and off, nama. You decide how each beat in the bar sounds, nama.' },
+          { page: 'metro', target: ['#lbpmMult2', '#lbpmMult3', '#lbpmMult4'], mode: 'free', pose: 'point', text: 'Check "Click" and extra notes fill in between the beats, nama. ×2 splits a beat into 2, ×3 into 3, ×4 into 4, nama.' },
+          { page: 'metro', target: '#presetSlotGrid', pose: 'point', text: 'Presets, nama. You can save the current settings in up to 10 slots, and call them back or store them with the Load and Save buttons, nama. Long-press a slot to check what is inside, nama.' },
+          { page: 'metro', target: '#playBtn', mode: 'tap', pose: 'point', text: 'Play and stop are on the big button at the bottom, nama. Try pressing it, nama.' }
+        ]
+      },
+      {
+        id: 'song', page: 'song', title: 'Song Mode', desc: 'Play through a song in Play Mode', icon: 'yay', since: 2,
+        steps: [
+          { page: 'song', pose: 'wave', text: 'This is the "Play Mode" chapter of Song Mode, nama — the screen for playing through a song you made, nama. Loading songs happens on the Create/Edit side, and I will guide you through it in the Files and saving chapter, nama.' },
+          { page: 'song', target: '#scoreTrack .score-block', mode: 'tap', pose: 'point', text: 'Tap a measure group at the top, and that becomes the playback start position, nama. When you want to start in the middle, tap that measure group, nama. Long-press to check what is inside, nama.' },
+          { page: 'song', target: '#songPicker', mode: 'free', pose: 'point', text: 'The start position can also be set with this drum roll, nama. Roll the columns up and down to pick a measure group and a measure, and playback starts there, nama.' },
+          { page: 'song', target: '#songTimeBar', pose: 'point', text: 'The numbers under the frame show your progress, nama. Once playback starts, you can see where you are and the total length, nama.' },
+          { page: 'song', target: '#playBtn', mode: 'tap', pose: 'point', text: 'Playback is on the big button at the bottom, nama. It plays the measure groups in order from the start position you picked, nama. Try pressing it, nama.' },
+          { page: 'song', target: '#tempoRatioBtn', mode: 'free', pose: 'point', text: 'The button beside it is "Rate", the tempo multiplier, nama. Without rewriting the measure groups\' tempos, it changes only the playback speed, in percent, nama. Stroke up or down on the button to change it in 5% steps; tap it to open a screen for fine numbers, nama.' },
+          { page: 'song', target: ['#ttsToggle', '#precountMode'], pose: 'point', text: 'Turn on voice announcements, and the names of measure groups are read aloud, nama. Below that is the count-in setting — it plays preparatory beats before playback starts, nama.' },
+          { page: 'song', target: '#btnEditTab', pose: 'point', text: 'To make or change the contents of measure groups, switch to "Create/Edit Mode", nama. The next chapter guides you, nama.' }
+        ]
+      },
+      {
+        id: 'edit', page: 'song-edit', title: 'Editing measure groups', desc: 'Make and change what is inside a measure group', icon: 'thinking', since: 6,
+        steps: [
+          { page: 'song-edit', pose: 'wave', text: 'The measure group editing chapter, nama. On the Create/Edit Mode screen, you decide what is inside each measure group, one by one, nama. Anything you change in this chapter goes back to how it was at the end, nama.' },
+          { page: 'song-edit', target: '#scoreTrack .score-block', mode: 'tap', pose: 'point', text: 'This is a measure group, nama. Tap to select it, and its contents appear in the panel below, ready to edit, nama. Long-press to check the contents, and the ◀▶ on both sides of a selected group reorder it, nama.' },
+          { page: 'song-edit', target: '#editName', mode: 'free', pose: 'point', text: 'The measure group\'s name, nama. A verse, a chorus, or a rehearsal mark makes groups easy to tell apart, nama. Leave it empty and the measure number goes in automatically, nama.' },
+          { page: 'song-edit', target: '#editBpm', mode: 'free', pose: 'point', text: 'The tempo of the selected measure group is here, nama. Try changing it, nama.' },
+          { page: 'song-edit', target: ['#editBars', '#editTimeSigNum', '#editTimeSigDen'], mode: 'free', pose: 'point', text: 'The number of measures and the time signature, nama. After playing that many measures, it moves on to the next measure group, nama. Enter the time signature as a fraction, nama.' },
+          { page: 'song-edit', target: '#editClick', mode: 'tap', pose: 'point', text: '"Guide Clicks", nama. Turn it on and fine guide notes are added between the beats, making the rhythm easier to follow, nama. Try checking it, nama.' },
+          { page: 'song-edit', target: '#editComplexToggle', mode: 'tap', pose: 'point', text: '"Complex Sig.", nama. Turn it on and a special panel opens below, nama. First, try checking it, nama.' },
+          { page: 'song-edit', target: '#complexSigPanel', mode: 'free', pose: 'point', text: 'The complex signature panel, nama. You can build odd meters by joining signatures, like 3/4 + 2/4, nama.\nIn the cells below, you can also set strong, medium, weak, or off for each beat, so use it when you want your own beat pattern, nama.\nTry changing the numbers, or tapping the cells, nama.' },
+          { page: 'song-edit', target: '#editCountEnabled', mode: 'tap', pose: 'point', text: 'The 🔊 count (the checkbox labeled カウント）, nama. In a group with this on, the beats are counted aloud during playback, nama. Try checking it, nama.' },
+          { page: 'song-edit', target: '#editRitToggle', mode: 'tap', pose: 'point', text: '"rit. / accel.", nama. Settings to gradually slow down or speed up inside the measure group, nama. Try checking it, nama.' },
+          { page: 'song-edit', target: '#editRitPanel', mode: 'free', pose: 'point', prepare: 'prepareRitPanel', text: 'In the panel that opened, you set the Target BPM, nama.\nWith "Move to next tempo" set to Auto, it connects smoothly to the next measure group\'s tempo, nama. You can also pick the Curve, nama.\nTry changing the Target BPM or the Curve, nama.' },
+          { page: 'song-edit', target: ['#multiSelBtn', '#repeatBtn', '#copyBtn', '#trashBtn'], pose: 'point', text: 'The four buttons to the right of the measure group row matter too, nama. ☑ is multi-select, 𝄆 is "Repeat Settings", 📄 is copy (paste from the insert buttons above), and 🗑️ is delete, nama.' },
+          { page: 'song-edit', target: ['#btnInsertBefore', '#btnInsertAdd'], pose: 'point', text: 'Inserting a new measure group is these two, nama. "New Insert (Before)" adds one before the selected group, and "New Insert (End)" adds one at the end, nama.' },
+          { page: 'song-edit', pose: 'sparkle', prepare: 'copyAppUrlForAi', text: 'Last, an advanced trick, nama. Instead of building measure groups by hand, you can have an AI make them, nama.\nShow a photo of the score, or a memo of the song\'s structure (something that shows the whole picture — where sections start, how many measures, what time signature, what tempo) to Meta\'s AI "Muse", and it can build the measure group data for you, nama.\nThe trick is to pass this app\'s URL along with it, nama. This app is made of a single file, so opening the URL lets Muse read everything inside and work out the data format, nama.\nThe URL was copied automatically when you opened this guide, so you can paste it as is, nama (if the copy did not happen, long-press the URL below to copy it, nama).\nhttps://nama1223.com/NamaMeto/NamaMeto.html' },
+          { page: 'song-edit', pose: 'thumbs_up', text: 'From Muse, you get back a file (.nm1) in the format this app can import, nama.\nSave the returned file to your device, then import it from "Import" in "Data Import/Export" on the Settings tab, nama.\nAfter that, finish it with the editing you learned in this chapter, nama.' }
+        ]
+      },
+      {
+        id: 'files', page: 'song-edit', title: 'Files and saving', desc: 'Saving, loading, and exporting songs', icon: 'thumbs_up', since: 4,
+        steps: [
+          { page: 'song-edit', pose: 'wave', text: 'The Files and saving chapter, nama. While you edit, a song stays on your device as a draft, nama. I will guide you through saving it properly and putting it into files, nama.' },
+          { page: 'song-edit', target: '#songMenuOpenBtn', mode: 'tap', pose: 'point', text: 'Saving and loading songs is from the "≡" at the bottom right, nama. Try pressing it to open the menu, nama. When you have seen what is inside, come back with "Close" and go next, nama.' },
+          { page: 'song-edit', pose: 'thinking', text: 'Inside the opened menu is this, nama. "Overwrite Save" and "Save As" keep your song, and from "Load & File Manager" you can call back saved songs or rename them, nama. Further down are the file gates, nama. "[External Input] Import Song (.nm1)" brings a song in from a file, and "[External Output] Export Song (.nm1)" writes the current song out to a file as is, nama. An exported file can be loaded on other devices too, nama.' },
+          { page: 'song-edit', target: '#tabBtn-file', pose: 'point', text: 'All the app-wide settings are gathered in the "Settings" tab at the top, nama. The next chapter guides you through them, nama.' }
+        ]
+      },
+      {
+        id: 'settings', page: 'file', title: 'Settings', desc: 'Fine adjustments for the whole app', icon: 'yay', since: 3, keepChanges: true,
+        steps: [
+          { page: 'file', pose: 'wave', text: 'The Settings chapter, nama. The Settings tab lines up fine adjustments, and items can be reordered by dragging, nama. I will guide you through the main ones in order, nama.' },
+          { page: 'file', target: '#themeCtrl', mode: 'free', pose: 'point', text: '"Theme Color", nama. You can change the color scheme of the whole app, nama.' },
+          { page: 'file', target: '#panel_volume', mode: 'free', pose: 'point', text: '"Volume", nama. You can set the size of each kind of sound — clicks, the speech voice, and so on, nama.' },
+          { page: 'file', target: '#panel_flash_vibe', mode: 'free', pose: 'point', text: '"Flash / Vibrate", nama. Flash the screen or vibrate the device along with the beat, nama. Handy for practicing where you cannot make sound, nama.' },
+          { page: 'file', target: '#panel_custom_sound', mode: 'free', pose: 'point', text: '"Custom Sound Setup", nama. You can register your own sound files as Custom click sounds, nama. The "Download Sound Set Examples (Google Drive)" link in this panel leads to sound sets you can load into the Custom slots, nama. Even without preparing your own files, you can download from there, load them, and use them as is, nama.' },
+          { page: 'file', target: '#panel_tts_settings', mode: 'free', pose: 'point', text: '"Speech Settings", nama. Set the speed and pitch of the voice that reads out measure group names and counts, nama.' },
+          { page: 'file', target: '#panel_voice_ctrl', mode: 'free', pose: 'point', text: '"External Device / Voice", nama. Settings to control play and stop by signals from external devices or by voice cues, nama.' },
+          { page: 'file', target: '#jumpCustomCtrl', mode: 'free', pose: 'point', text: '"Custom Tempo Buttons", nama. Set how much one press of the metronome\'s ± buttons changes the tempo, nama.' },
+          { page: 'file', target: '#panel_export', mode: 'free', pose: 'point', text: '"Data Import/Export", nama. Write settings and song data out to files to keep copies, or load them back, nama.' },
+          { page: 'file', target: '#namaTutorialToggle', mode: 'free', pose: 'point', text: 'Last, this guide button itself can be shown or hidden here, nama. When you no longer need the guide, turn it off here, nama.' }
+        ]
+      }
+    ]
+  }
 };
