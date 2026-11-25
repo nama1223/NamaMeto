@@ -433,6 +433,8 @@
         .picker-item.dummy { visibility: hidden; } 
         
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 2000; }
+        #fmFolderBar { scrollbar-width: none; }
+        #fmFolderBar::-webkit-scrollbar { display: none; }
         .modal-overlay.active { display: flex; }
         .modal-content { background: var(--surface-color); padding: 25px; border-radius: 16px; width: 85%; max-width: 350px; text-align: center; max-height: 80vh; overflow-y: auto;}
         .modal-buttons { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
@@ -593,7 +595,7 @@
         <div style="text-align: center; margin-bottom: 10px;">
             <div class="header-row">
                 <button class="help-btn" onclick="toggleHelp()">?</button>
-                <h1><span data-i18n="appTitleText"></span><span style="font-size:0.62rem; font-weight:400; opacity:0.6; letter-spacing:0.5px; vertical-align:baseline; margin-left:6px; line-height:1;">Z335M</span></h1>
+                <h1><span data-i18n="appTitleText"></span><span style="font-size:0.62rem; font-weight:400; opacity:0.6; letter-spacing:0.5px; vertical-align:baseline; margin-left:6px; line-height:1;">Z336M</span></h1>
                 <button id="headerVolBtn" style="width:36px; background:none; border:none; padding:2px 0; display:flex; flex-direction:column; align-items:center; cursor:pointer; user-select:none; -webkit-user-select:none; touch-action:none; -webkit-tap-highlight-color:transparent; position:relative; outline:none;">
                     <span id="headerVolIcon" style="font-size:1.3rem; line-height:1; pointer-events:none;">🔊</span>
                     <span id="headerVolPct" style="font-size:0.62rem; color:var(--primary-color); font-weight:bold; margin-top:1px; line-height:1; pointer-events:none;">100%</span>
@@ -1460,6 +1462,8 @@
         <div class="intro-close"><button onclick="toggleChangelog()">✕ 閉じる</button></div>
         <div class="cl-body">
 
+            <p class="cl-ver">Z336M</p>
+            <p class="cl-desc">楽曲のファイル管理で、最後に選んでいたフォルダを覚えて、次に開いた時もそのフォルダから表示するようにしました。また、フォルダの帯の下に細いバーを追加しました。横にスクロールできる時は、つまみの位置と長さで今どの辺りを見ているかが分かります。</p>
             <p class="cl-ver">Z335M</p>
             <p class="cl-desc">楽曲のファイル管理で、フォルダを新しい順に表示するようにし、選んだフォルダを ◀ ▶ で並び替えられるようにしました。また、フォルダの帯をソートボタンの上へ移し、管理画面は画面の上の方に固定して開くようにしました。フォルダを切り替えても上の操作部分が上下にずれず、曲が多い時はリストが下へ伸びます。</p>
             <p class="cl-ver">Z334M</p>
@@ -1994,7 +1998,8 @@
                 <h2 style="margin:0; font-size:1.1rem;" data-i18n="btn_load_and_manage">読み込み＆ファイル管理</h2>
                 <button onclick="openModal('fmHelpModal')" style="background:var(--bubble-color,var(--primary-color)); color:#fff; border:none; border-radius:50%; width:28px; height:28px; font-size:0.9rem; font-weight:bold; cursor:pointer; flex-shrink:0;">?</button>
             </div>
-            <div id="fmFolderBar" style="display:flex; gap:6px; overflow-x:auto; padding-bottom:6px; margin-bottom:4px; text-align:left;"></div>
+            <div id="fmFolderBar" style="display:flex; gap:6px; overflow-x:auto; padding-bottom:6px; margin-bottom:2px; text-align:left;"></div>
+            <div style="height:4px; background:rgba(128,128,128,0.18); border-radius:2px; margin-bottom:6px; position:relative; overflow:hidden;"><div id="fmFolderThumb" style="position:absolute; top:0; left:0; height:100%; width:100%; background:var(--dot-weak); border-radius:2px; opacity:0.25;"></div></div>
             <div id="fmFolderOps" style="margin-bottom:4px; text-align:left; min-height:30px;"></div>
             <div class="flex-row" style="margin-bottom:8px;">
                 <button onclick="sortSongListSub('fm','name')" style="flex:1; padding:4px; border-radius:4px; border:none; background:var(--dot-weak); color:#fff; cursor:pointer; font-size:0.85rem;"><span data-i18n="sort_name">名前でソート</span> <span id="sortArrowFmName"></span></button>
@@ -8266,6 +8271,19 @@ function renderFmFolderBar() {
         const curIdx = folders.findIndex(x => x.id === fmFolderFilter);
         ops.innerHTML = cur ? `<div style="display:flex; gap:6px; align-items:center;"><span style="font-size:0.8rem; color:#888;">📁 ${cur.name}</span>${curIdx > 0 ? '<button class="btn-insert" style="padding:3px 8px; font-size:0.8rem;" onclick="fmMoveFolder(-1)">◀</button>' : ''}${curIdx < folders.length - 1 ? '<button class="btn-insert" style="padding:3px 8px; font-size:0.8rem;" onclick="fmMoveFolder(1)">▶</button>' : ''}<button class="btn-insert" style="padding:3px 10px; font-size:0.8rem;" onclick="fmRenameFolder()">${getText('fm_folder_rename')}</button><button class="btn-clear" style="padding:3px 10px; font-size:0.8rem;" onclick="fmDeleteFolder()">${getText('fm_folder_delete')}</button></div>` : '';
     }
+    try { localStorage.setItem('namameto_fm_filter', fmFolderFilter); } catch(e) {}
+    updateFmFolderScroll();
+}
+
+function updateFmFolderScroll() {
+    const bar = document.getElementById('fmFolderBar'); const thumb = document.getElementById('fmFolderThumb');
+    if (!bar || !thumb) return;
+    if (!bar._fmScrollHooked) { bar._fmScrollHooked = true; bar.addEventListener('scroll', updateFmFolderScroll, { passive: true }); }
+    const sw = bar.scrollWidth, cw = bar.clientWidth;
+    if (!sw || sw <= cw + 1) { thumb.style.width = '100%'; thumb.style.left = '0%'; thumb.style.opacity = '0.25'; return; }
+    const wPct = Math.max(12, cw / sw * 100);
+    const max = sw - cw; const lPct = (max > 0 ? bar.scrollLeft / max : 0) * (100 - wPct);
+    thumb.style.width = wPct + '%'; thumb.style.left = lPct + '%'; thumb.style.opacity = '1';
 }
 
 function fmSetFilter(key) { fmFolderFilter = key; renderFmFolderBar(); renderSongListSub('fm'); }
@@ -8335,7 +8353,8 @@ let _fmRenameId = null;
 
 function openFileManagerModal() {
     subSortType.fm = 'date'; subSortAsc.fm = false;
-    fmFolderFilter = 'all';
+    const savedFilter = localStorage.getItem('namameto_fm_filter');
+    fmFolderFilter = (savedFilter === 'all' || savedFilter === 'none' || getFolders().some(f => f.id === savedFilter)) ? savedFilter : 'all';
     _fmRenameId = null;
     document.getElementById('fmRenameWrap').style.display = 'none';
     renderFmFolderBar();
