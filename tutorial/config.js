@@ -71,7 +71,7 @@ window.NAMA_TUTORIAL_CONFIG = {
       steps: [
         { page: 'song-edit', pose: 'wave', text: 'ファイルと保存の章ナマ。作った曲は、編集中は端末の中に下書きとして残りナマ。きちんと保存したり、ファイルに出したりする手順を案内しナマ。' },
         { page: 'song-edit', target: '#songMenuOpenBtn', mode: 'tap', pose: 'point', text: '曲の保存や読み込みは、右下の「≡」からナマ。実際に押してメニューを開いてみるナマ。中身を見たら「閉じる」で戻って、つぎへ進むナマ。' },
-        { page: 'song-edit', pose: 'thinking', text: '開いたメニューの中身はこうナマ。「上書き保存」と「別名保存」で曲を残せて、「読み込み＆ファイル管理」からは保存した曲を呼び戻したり、名前を変えたりできナマ。下のほうには、ファイルの出入り口が並んでナマ。「[外部入力]単曲インポート(.nm1)」でファイルから曲を取り込めて、「[外部出力]単曲エクスポート(.nm1)」では今の曲をそのままファイルに書き出せナマ。書き出したファイルは、他の端末でも読み込めナマ。' },
+        { page: 'song-edit', pose: 'thinking', text: '開いたメニューの中身はこうナマ。「上書き保存」と「別名保存」で曲を残せて、「読み込み＆ファイル管理」からは保存した曲を呼び戻したり、名前を変えたりできナマ。その管理画面では、曲をフォルダに分けて整理もできナマ。上の帯でフォルダごとに絞り込んで、各曲の📁ボタンから移動させナマ。下のほうには、ファイルの出入り口が並んでナマ。「[外部入力]単曲インポート(.nm1)」でファイルから曲を取り込めて、「[外部出力]単曲エクスポート(.nm1)」では今の曲をそのままファイルに書き出せナマ。書き出したファイルは、他の端末でも読み込めナマ。' },
         { page: 'song-edit', target: '#tabBtn-file', pose: 'point', text: 'アプリ全体の設定は、上の「設定」タブにまとまってナマ。次の章で中身を案内しナマ。' }
       ]
     },
@@ -160,7 +160,7 @@ window.NAMA_TUTORIAL_CONFIG = {
         steps: [
           { page: 'song-edit', pose: 'wave', text: 'The Files and saving chapter, nama. While you edit, a song stays on your device as a draft, nama. I will guide you through saving it properly and putting it into files, nama.' },
           { page: 'song-edit', target: '#songMenuOpenBtn', mode: 'tap', pose: 'point', text: 'Saving and loading songs is from the "≡" at the bottom right, nama. Try pressing it to open the menu, nama. When you have seen what is inside, come back with "Close" and go next, nama.' },
-          { page: 'song-edit', pose: 'thinking', text: 'Inside the opened menu is this, nama. "Overwrite Save" and "Save As" keep your song, and from "Load & File Manager" you can call back saved songs or rename them, nama. Further down are the file gates, nama. "[External Input] Import Song (.nm1)" brings a song in from a file, and "[External Output] Export Song (.nm1)" writes the current song out to a file as is, nama. An exported file can be loaded on other devices too, nama.' },
+          { page: 'song-edit', pose: 'thinking', text: 'Inside the opened menu is this, nama. "Overwrite Save" and "Save As" keep your song, and from "Load & File Manager" you can call back saved songs or rename them, nama. In that manager you can also organize songs into folders, nama. Filter by folder with the bar at the top, and move a song with the 📁 button on its row, nama. Further down are the file gates, nama. "[External Input] Import Song (.nm1)" brings a song in from a file, and "[External Output] Export Song (.nm1)" writes the current song out to a file as is, nama. An exported file can be loaded on other devices too, nama.' },
           { page: 'song-edit', target: '#tabBtn-file', pose: 'point', text: 'All the app-wide settings are gathered in the "Settings" tab at the top, nama. The next chapter guides you through them, nama.' }
         ]
       },

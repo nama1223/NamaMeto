@@ -593,7 +593,7 @@
         <div style="text-align: center; margin-bottom: 10px;">
             <div class="header-row">
                 <button class="help-btn" onclick="toggleHelp()">?</button>
-                <h1><span data-i18n="appTitleText"></span><span style="font-size:0.62rem; font-weight:400; opacity:0.6; letter-spacing:0.5px; vertical-align:baseline; margin-left:6px; line-height:1;">Z333M</span></h1>
+                <h1><span data-i18n="appTitleText"></span><span style="font-size:0.62rem; font-weight:400; opacity:0.6; letter-spacing:0.5px; vertical-align:baseline; margin-left:6px; line-height:1;">Z334M</span></h1>
                 <button id="headerVolBtn" style="width:36px; background:none; border:none; padding:2px 0; display:flex; flex-direction:column; align-items:center; cursor:pointer; user-select:none; -webkit-user-select:none; touch-action:none; -webkit-tap-highlight-color:transparent; position:relative; outline:none;">
                     <span id="headerVolIcon" style="font-size:1.3rem; line-height:1; pointer-events:none;">🔊</span>
                     <span id="headerVolPct" style="font-size:0.62rem; color:var(--primary-color); font-weight:bold; margin-top:1px; line-height:1; pointer-events:none;">100%</span>
@@ -1460,6 +1460,8 @@
         <div class="intro-close"><button onclick="toggleChangelog()">✕ 閉じる</button></div>
         <div class="cl-body">
 
+            <p class="cl-ver">Z334M</p>
+            <p class="cl-desc">楽曲のファイル管理にフォルダ分けを追加しました。上の帯でフォルダごとに絞り込め、各曲の📁ボタンからフォルダへ移動できます。単曲ファイル（.nm1）とフル書き出しにもフォルダの情報が含まれるようになり、読み込むとフォルダごと復元されます。</p>
             <p class="cl-ver">Z333M</p>
             <p class="cl-desc">エクスポートの「共有」ボタンを取り除きました。書き出しは、ファイル名を決めてダウンロードする形になります。</p>
             <p class="cl-ver">Z332M</p>
@@ -1994,6 +1996,8 @@
                 <button onclick="sortSongListSub('fm','name')" style="flex:1; padding:4px; border-radius:4px; border:none; background:var(--dot-weak); color:#fff; cursor:pointer; font-size:0.85rem;"><span data-i18n="sort_name">名前でソート</span> <span id="sortArrowFmName"></span></button>
                 <button onclick="sortSongListSub('fm','date')" style="flex:1; padding:4px; border-radius:4px; border:none; background:var(--dot-weak); color:#fff; cursor:pointer; font-size:0.85rem;"><span data-i18n="sort_date">日時でソート</span> <span id="sortArrowFmDate">▼</span></button>
             </div>
+            <div id="fmFolderBar" style="display:flex; gap:6px; overflow-x:auto; padding-bottom:6px; margin-bottom:4px; text-align:left;"></div>
+            <div id="fmFolderOps" style="margin-bottom:4px; text-align:left;"></div>
             <div id="fmSongList" style="max-height:260px; overflow-y:auto; text-align:left; margin-bottom:8px;"></div>
             <!-- 名前変更インライン -->
             <div id="fmRenameWrap" style="display:none; margin-bottom:8px;">
@@ -2004,6 +2008,15 @@
                 </div>
             </div>
             <button class="btn-cancel" style="width:100%; padding:8px;" onclick="closeModal('fileManagerModal')" data-i18n="btn_close">閉じる</button>
+        </div>
+    </div>
+
+    <!-- フォルダ移動モーダル -->
+    <div id="fmMoveModal" class="modal-overlay" onclick="if(event.target===this)closeModal('fmMoveModal')">
+        <div class="modal-content" style="max-width:340px;">
+            <h2 style="margin:0 0 10px; font-size:1.1rem;" data-i18n="fm_move_title">フォルダへ移動</h2>
+            <div id="fmMoveList" style="text-align:left; margin-bottom:8px;"></div>
+            <button class="btn-cancel" style="width:100%; padding:8px;" onclick="closeModal('fmMoveModal')" data-i18n="btn_cancel">キャンセル</button>
         </div>
     </div>
 
@@ -2512,6 +2525,7 @@
             songmenuhelp_filename_label: "📝 ファイル名入力欄",
             songmenuhelp_filename_desc: "ここにファイル名を入力してから「別名保存」または「上書き保存」を使って楽曲を保存します。",
             fmhelp_title: "📁 読み込み＆ファイル管理のヘルプ",
+            fm_folder_all: "すべて", fm_folder_none: "未分類", fm_folder_new: "＋新規", fm_move_title: "フォルダへ移動", fm_folder_rename: "名前変更", fm_folder_delete: "フォルダ削除", prompt_folder_name: "フォルダ名を入力", confirm_del_folder: "フォルダを削除しますか？ 中の曲は削除されず、未分類に戻ります。", msg_no_song_folder: "このフォルダには曲がありません", fmhelp_folder_label: "フォルダ分け", fmhelp_folder_desc: "曲をフォルダで整理できます。上の帯でフォルダごとに絞り込み、各曲の📁ボタンから移動できます。",
             fmhelp_load_label: "読み込み",
             fmhelp_load_desc: "楽曲名をタップすると現在の編集画面に読み込みます。",
             fmhelp_rename_label: "名前変更",
@@ -2678,6 +2692,7 @@
             songmenuhelp_filename_label: "📝 File Name Field",
             songmenuhelp_filename_desc: "Enter a file name here, then use \"Save As\" or \"Overwrite Save\" to save the song.",
             fmhelp_title: "📁 Load & File Manager Help",
+            fm_folder_all: "All", fm_folder_none: "Uncategorized", fm_folder_new: "+ New", fm_move_title: "Move to Folder", fm_folder_rename: "Rename", fm_folder_delete: "Delete Folder", prompt_folder_name: "Enter folder name", confirm_del_folder: "Delete this folder? Songs in it will not be deleted; they move to Uncategorized.", msg_no_song_folder: "No songs in this folder", fmhelp_folder_label: "Folders", fmhelp_folder_desc: "Organize songs into folders. Filter by folder with the bar at the top, and move a song with the 📁 button on its row.",
             fmhelp_load_label: "Load",
             fmhelp_load_desc: "Tap a song name to load it into the current editor.",
             fmhelp_rename_label: "Rename",
@@ -6351,7 +6366,8 @@ const savedRatio = localStorage.getItem('namameto_tempoRatio');
             ttsDetail: localStorage.getItem('namameto_tts_detail'),
             ttsRate: localStorage.getItem('namameto_tts_rate'),
             ttsPitch: localStorage.getItem('namameto_tts_pitch'),
-            wakeLock: localStorage.getItem('namameto_wake_lock')
+            wakeLock: localStorage.getItem('namameto_wake_lock'),
+            folders: localStorage.getItem('namameto_folders')
         };
         for(let i=1; i<=10; i++) data.slots[`slot_${i}`] = localStorage.getItem(`namameto_slot_${i}`);
         let list = []; try { list = JSON.parse(data.songList || '[]'); } catch(e){}
@@ -6367,13 +6383,14 @@ const savedRatio = localStorage.getItem('namameto_tempoRatio');
         renderSongListSub('export');
         openModal('exportSongModal');
     }
-    function exportSongFile(id, title) { const sData = localStorage.getItem(id); if (!sData) return; const data = { type: 'NM1', version: '1.0', id: id, title: title, data: sData }; closeModal('exportSongModal'); openExportFileModal(data, title + ".nm1"); }
+    function exportSongFile(id, title) { const sData = localStorage.getItem(id); if (!sData) return; const data = { type: 'NM1', version: '1.0', id: id, title: title, data: sData }; const fnm = getFolderName(getSongFolderId(id)); if (fnm) data.folder = fnm; closeModal('exportSongModal'); openExportFileModal(data, title + ".nm1"); }
     // 楽曲メニューから、現在編集中の曲をそのまま .nm1 に書き出す（保存済みでなくても書き出せる）
     function exportCurrentSongNm1() {
         const title = document.getElementById('songFileName').value || getText('str_untitled');
         const id = currentSongFileId || ('song_' + Date.now());
         const sData = JSON.stringify({ title, data: songData, offset: songBarOffset });
         const data = { type: 'NM1', version: '1.0', id: id, title: title, data: sData };
+        const fnm2 = currentSongFileId ? getFolderName(getSongFolderId(currentSongFileId)) : null; if (fnm2) data.folder = fnm2;
         closeModal('songMenuModal');
         openExportFileModal(data, title + ".nm1");
     }
@@ -6453,7 +6470,7 @@ const savedRatio = localStorage.getItem('namameto_tempoRatio');
     }
     function importNM1(data) {
         const newId = 'song_' + Date.now(); localStorage.setItem(newId, data.data);
-        let list = JSON.parse(localStorage.getItem('namameto_songlist') || '[]'); list.push({ id: newId, title: data.title, timestamp: Date.now() });
+        let list = JSON.parse(localStorage.getItem('namameto_songlist') || '[]'); const entry = { id: newId, title: data.title, timestamp: Date.now() }; if (typeof data.folder === 'string' && data.folder.trim()) entry.folder = ensureFolderByName(data.folder.trim()); list.push(entry);
         localStorage.setItem('namameto_songlist', JSON.stringify(list)); appAlert(getText('alert_imported'));
     }
     function execImportNms(targetSlot) {
@@ -6503,10 +6520,14 @@ const savedRatio = localStorage.getItem('namameto_tempoRatio');
         if(document.getElementById('chkImportSong').checked && pendingImportData.songs) {
             let list = JSON.parse(localStorage.getItem('namameto_songlist') || '[]');
             let impList = []; try { impList = JSON.parse(pendingImportData.songList || '[]'); } catch(e){}
+            let folderMap = {};
+            if (pendingImportData.folders) { let impFolders = []; try { impFolders = JSON.parse(pendingImportData.folders || '[]'); } catch(e){} impFolders.forEach(f => { if (f && f.name) folderMap[f.id] = ensureFolderByName(f.name); }); }
             impList.forEach(s => {
                 const newId = 'song_' + Date.now() + Math.floor(Math.random()*1000);
                 localStorage.setItem(newId, pendingImportData.songs[s.id]);
-                list.push({ id: newId, title: s.title, timestamp: Date.now() });
+                const entry = { id: newId, title: s.title, timestamp: Date.now() };
+                if (s.folder && folderMap[s.folder]) entry.folder = folderMap[s.folder];
+                list.push(entry);
             });
             localStorage.setItem('namameto_songlist', JSON.stringify(list));
         }
@@ -8136,6 +8157,11 @@ function sortSongListSub(target, type) {
 
 function renderSongListSub(target) {
     let list = JSON.parse(localStorage.getItem('namameto_songlist') || '[]');
+    const fmTotalCount = list.length;
+    if (target === 'fm') {
+        if (fmFolderFilter === 'none') list = list.filter(x => !x.folder);
+        else if (fmFolderFilter !== 'all') list = list.filter(x => x.folder === fmFolderFilter);
+    }
     const type = subSortType[target], asc = subSortAsc[target];
     list.sort((a,b) => type==='name'
         ? (asc ? a.title.localeCompare(b.title) : b.title.localeCompare(a.title))
@@ -8151,7 +8177,7 @@ function renderSongListSub(target) {
     const listId = target==='export' ? 'exportSongList' : target==='mp3' ? 'mp3SongList' : 'fmSongList';
     const c = document.getElementById(listId);
     if (!c) return;
-    if (list.length === 0) { c.innerHTML = `<p style="color:#888;">${getText('msg_no_song')}</p>`; return; }
+    if (list.length === 0) { c.innerHTML = `<p style="color:#888;">${getText(target === 'fm' && fmTotalCount > 0 ? 'msg_no_song_folder' : 'msg_no_song')}</p>`; return; }
 
     c.innerHTML = list.map(item => {
         const d = new Date(item.timestamp || 0);
@@ -8179,6 +8205,7 @@ function renderSongListSub(target) {
                     <span style="font-size:0.7rem; color:#888;">${dStr}</span>
                 </div>
                 <button class="btn-insert" style="padding:4px 8px; font-size:0.8rem; flex-shrink:0;" onclick="fmRenameStart('${item.id}','${item.title.replace(/'/g,'\'')}')" title="名前変更">✏️</button>
+                <button class="btn-update" style="padding:4px 8px; font-size:0.8rem; flex-shrink:0;" onclick="fmMoveStart('${item.id}')" title="${getText('fm_move_title')}">📁</button>
                 <button class="btn-add" style="padding:4px 8px; font-size:0.8rem; flex-shrink:0;" onclick="fmDuplicate('${item.id}','${item.title.replace(/'/g,'\'')}')" title="複製">📋</button>
                 <button class="btn-clear" style="padding:4px 8px; font-size:0.8rem; flex-shrink:0;" onclick="fmDelete('${item.id}')" title="削除">🗑️</button>
             </div>`;
@@ -8210,12 +8237,97 @@ function mp3SelectCurrentSong() {
     document.getElementById('mp3StartBtn').style.display = 'inline-block';
 }
 
+let fmFolderFilter = 'all';
+let _fmMoveId = null;
+
+function getFolders() { try { return JSON.parse(localStorage.getItem('namameto_folders') || '[]'); } catch(e) { return []; } }
+function saveFolders(folders) { localStorage.setItem('namameto_folders', JSON.stringify(folders)); }
+function getFolderName(fid) { const f = getFolders().find(x => x.id === fid); return f ? f.name : null; }
+function ensureFolderByName(name) { const folders = getFolders(); const ex = folders.find(x => x.name === name); if (ex) return ex.id; const id = 'folder_' + Date.now() + Math.floor(Math.random()*1000); folders.push({ id: id, name: name }); saveFolders(folders); return id; }
+function getSongFolderId(songId) { const list = JSON.parse(localStorage.getItem('namameto_songlist') || '[]'); const it = list.find(x => x.id === songId); return (it && it.folder) ? it.folder : null; }
+function setSongFolder(songId, fid) { let list = JSON.parse(localStorage.getItem('namameto_songlist') || '[]'); const it = list.find(x => x.id === songId); if (!it) return; if (fid) it.folder = fid; else delete it.folder; localStorage.setItem('namameto_songlist', JSON.stringify(list)); }
+
+function renderFmFolderBar() {
+    const bar = document.getElementById('fmFolderBar'); if (!bar) return;
+    const folders = getFolders();
+    const chip = (key, label) => {
+        const on = fmFolderFilter === key;
+        return `<button onclick="fmSetFilter('${key}')" style="flex-shrink:0; padding:5px 12px; border-radius:999px; border:1px solid var(--dot-weak); cursor:pointer; font-size:0.85rem; ${on ? 'background:var(--dot-weak); color:#fff; font-weight:bold;' : 'background:transparent; color:var(--text-color);'}">${label}</button>`;
+    };
+    let html = chip('all', getText('fm_folder_all')) + chip('none', getText('fm_folder_none'));
+    folders.forEach(f => { html += chip(f.id, '📁 ' + f.name); });
+    html += `<button onclick="fmCreateFolder()" style="flex-shrink:0; padding:5px 12px; border-radius:999px; border:1px dashed var(--dot-weak); background:transparent; color:var(--text-color); cursor:pointer; font-size:0.85rem;">${getText('fm_folder_new')}</button>`;
+    bar.innerHTML = html;
+    const ops = document.getElementById('fmFolderOps');
+    if (ops) {
+        const cur = folders.find(x => x.id === fmFolderFilter);
+        ops.innerHTML = cur ? `<div style="display:flex; gap:6px; align-items:center;"><span style="font-size:0.8rem; color:#888;">📁 ${cur.name}</span><button class="btn-insert" style="padding:3px 10px; font-size:0.8rem;" onclick="fmRenameFolder()">${getText('fm_folder_rename')}</button><button class="btn-clear" style="padding:3px 10px; font-size:0.8rem;" onclick="fmDeleteFolder()">${getText('fm_folder_delete')}</button></div>` : '';
+    }
+}
+
+function fmSetFilter(key) { fmFolderFilter = key; renderFmFolderBar(); renderSongListSub('fm'); }
+
+async function fmCreateFolder() {
+    const name = await appPrompt(getText('prompt_folder_name'));
+    if (!name || !name.trim()) return;
+    const id = ensureFolderByName(name.trim());
+    fmFolderFilter = id;
+    renderFmFolderBar(); renderSongListSub('fm');
+}
+
+async function fmRenameFolder() {
+    const folders = getFolders(); const cur = folders.find(x => x.id === fmFolderFilter); if (!cur) return;
+    const name = await appPrompt(getText('prompt_folder_name'), cur.name);
+    if (!name || !name.trim()) return;
+    cur.name = name.trim(); saveFolders(folders);
+    renderFmFolderBar(); renderSongListSub('fm');
+}
+
+async function fmDeleteFolder() {
+    const folders = getFolders(); const cur = folders.find(x => x.id === fmFolderFilter); if (!cur) return;
+    if (!(await appConfirm(getText('confirm_del_folder')))) return;
+    let list = JSON.parse(localStorage.getItem('namameto_songlist') || '[]');
+    list.forEach(x => { if (x.folder === cur.id) delete x.folder; });
+    localStorage.setItem('namameto_songlist', JSON.stringify(list));
+    saveFolders(folders.filter(x => x.id !== cur.id));
+    fmFolderFilter = 'all';
+    renderFmFolderBar(); renderSongListSub('fm');
+}
+
+function fmMoveStart(id) {
+    _fmMoveId = id;
+    const c = document.getElementById('fmMoveList'); if (!c) return;
+    const cur = getSongFolderId(id);
+    const row = (fid, label) => `<button class="btn-insert" style="width:100%; padding:9px; margin-bottom:6px; text-align:left;" onclick="fmMoveTo(${fid === null ? 'null' : "'" + fid + "'"})">${label}${fid === cur ? ' ✓' : ''}</button>`;
+    let html = row(null, getText('fm_folder_none'));
+    getFolders().forEach(f => { html += row(f.id, '📁 ' + f.name); });
+    html += `<button class="btn-add" style="width:100%; padding:9px; margin-bottom:6px; text-align:left;" onclick="fmMoveToNewFolder()">${getText('fm_folder_new')}</button>`;
+    c.innerHTML = html;
+    openModal('fmMoveModal');
+}
+
+function fmMoveTo(fid) {
+    if (_fmMoveId) setSongFolder(_fmMoveId, fid);
+    _fmMoveId = null;
+    closeModal('fmMoveModal');
+    renderSongListSub('fm');
+}
+
+async function fmMoveToNewFolder() {
+    const name = await appPrompt(getText('prompt_folder_name'));
+    if (!name || !name.trim()) return;
+    const id = ensureFolderByName(name.trim());
+    fmMoveTo(id);
+}
+
 let _fmRenameId = null;
 
 function openFileManagerModal() {
     subSortType.fm = 'date'; subSortAsc.fm = false;
+    fmFolderFilter = 'all';
     _fmRenameId = null;
     document.getElementById('fmRenameWrap').style.display = 'none';
+    renderFmFolderBar();
     renderSongListSub('fm');
     closeModal('songMenuModal');
     openModal('fileManagerModal');
@@ -8245,7 +8357,10 @@ function fmDuplicate(id, title) {
     d.title = newTitle;
     localStorage.setItem(newId, JSON.stringify(d));
     let list = JSON.parse(localStorage.getItem('namameto_songlist') || '[]');
-    list.push({ id: newId, title: newTitle, timestamp: Date.now() });
+    const srcEntry = list.find(x => x.id === id);
+    const dupEntry = { id: newId, title: newTitle, timestamp: Date.now() };
+    if (srcEntry && srcEntry.folder) dupEntry.folder = srcEntry.folder;
+    list.push(dupEntry);
     localStorage.setItem('namameto_songlist', JSON.stringify(list));
     renderSongListSub('fm');
 }
@@ -8640,6 +8755,10 @@ function playSoundOffline(offCtx, time, level, isCountIn, offBuiltinBufs, offCus
             <div style="display:flex; align-items:flex-start; gap:8px;">
                 <span style="font-size:1.2rem; flex-shrink:0;">🗑️</span>
                 <div><span style="font-weight:bold;" data-i18n="fmhelp_del_label">削除</span><br><span data-i18n="fmhelp_del_desc">楽曲データを削除します。削除すると元に戻せません。</span></div>
+            </div>
+            <div style="display:flex; align-items:flex-start; gap:8px;">
+                <span style="font-size:1.2rem; flex-shrink:0;">📁</span>
+                <div><span style="font-weight:bold;" data-i18n="fmhelp_folder_label">フォルダ分け</span><br><span data-i18n="fmhelp_folder_desc">曲をフォルダで整理できます。上の帯でフォルダごとに絞り込み、各曲の📁ボタンから移動できます。</span></div>
             </div>
         </div>
         <div style="text-align:center; margin-top:16px;">
