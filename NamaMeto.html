@@ -593,7 +593,7 @@
         <div style="text-align: center; margin-bottom: 10px;">
             <div class="header-row">
                 <button class="help-btn" onclick="toggleHelp()">?</button>
-                <h1><span data-i18n="appTitleText"></span><span style="font-size:0.62rem; font-weight:400; opacity:0.6; letter-spacing:0.5px; vertical-align:baseline; margin-left:6px; line-height:1;">Z334M</span></h1>
+                <h1><span data-i18n="appTitleText"></span><span style="font-size:0.62rem; font-weight:400; opacity:0.6; letter-spacing:0.5px; vertical-align:baseline; margin-left:6px; line-height:1;">Z335M</span></h1>
                 <button id="headerVolBtn" style="width:36px; background:none; border:none; padding:2px 0; display:flex; flex-direction:column; align-items:center; cursor:pointer; user-select:none; -webkit-user-select:none; touch-action:none; -webkit-tap-highlight-color:transparent; position:relative; outline:none;">
                     <span id="headerVolIcon" style="font-size:1.3rem; line-height:1; pointer-events:none;">🔊</span>
                     <span id="headerVolPct" style="font-size:0.62rem; color:var(--primary-color); font-weight:bold; margin-top:1px; line-height:1; pointer-events:none;">100%</span>
@@ -1460,6 +1460,8 @@
         <div class="intro-close"><button onclick="toggleChangelog()">✕ 閉じる</button></div>
         <div class="cl-body">
 
+            <p class="cl-ver">Z335M</p>
+            <p class="cl-desc">楽曲のファイル管理で、フォルダを新しい順に表示するようにし、選んだフォルダを ◀ ▶ で並び替えられるようにしました。また、フォルダの帯をソートボタンの上へ移し、管理画面は画面の上の方に固定して開くようにしました。フォルダを切り替えても上の操作部分が上下にずれず、曲が多い時はリストが下へ伸びます。</p>
             <p class="cl-ver">Z334M</p>
             <p class="cl-desc">楽曲のファイル管理にフォルダ分けを追加しました。上の帯でフォルダごとに絞り込め、各曲の📁ボタンからフォルダへ移動できます。単曲ファイル（.nm1）とフル書き出しにもフォルダの情報が含まれるようになり、読み込むとフォルダごと復元されます。</p>
             <p class="cl-ver">Z333M</p>
@@ -1986,19 +1988,19 @@
     
 
     <!-- ファイル管理モーダル -->
-    <div id="fileManagerModal" class="modal-overlay" onclick="if(event.target===this)closeModal('fileManagerModal')">
-        <div class="modal-content" style="max-width:340px;">
+    <div id="fileManagerModal" class="modal-overlay" style="align-items:flex-start;" onclick="if(event.target===this)closeModal('fileManagerModal')">
+        <div class="modal-content" style="max-width:340px; margin-top:max(20px, 6vh);">
             <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
                 <h2 style="margin:0; font-size:1.1rem;" data-i18n="btn_load_and_manage">読み込み＆ファイル管理</h2>
                 <button onclick="openModal('fmHelpModal')" style="background:var(--bubble-color,var(--primary-color)); color:#fff; border:none; border-radius:50%; width:28px; height:28px; font-size:0.9rem; font-weight:bold; cursor:pointer; flex-shrink:0;">?</button>
             </div>
+            <div id="fmFolderBar" style="display:flex; gap:6px; overflow-x:auto; padding-bottom:6px; margin-bottom:4px; text-align:left;"></div>
+            <div id="fmFolderOps" style="margin-bottom:4px; text-align:left; min-height:30px;"></div>
             <div class="flex-row" style="margin-bottom:8px;">
                 <button onclick="sortSongListSub('fm','name')" style="flex:1; padding:4px; border-radius:4px; border:none; background:var(--dot-weak); color:#fff; cursor:pointer; font-size:0.85rem;"><span data-i18n="sort_name">名前でソート</span> <span id="sortArrowFmName"></span></button>
                 <button onclick="sortSongListSub('fm','date')" style="flex:1; padding:4px; border-radius:4px; border:none; background:var(--dot-weak); color:#fff; cursor:pointer; font-size:0.85rem;"><span data-i18n="sort_date">日時でソート</span> <span id="sortArrowFmDate">▼</span></button>
             </div>
-            <div id="fmFolderBar" style="display:flex; gap:6px; overflow-x:auto; padding-bottom:6px; margin-bottom:4px; text-align:left;"></div>
-            <div id="fmFolderOps" style="margin-bottom:4px; text-align:left;"></div>
-            <div id="fmSongList" style="max-height:260px; overflow-y:auto; text-align:left; margin-bottom:8px;"></div>
+            <div id="fmSongList" style="min-height:260px; max-height:62vh; overflow-y:auto; text-align:left; margin-bottom:8px;"></div>
             <!-- 名前変更インライン -->
             <div id="fmRenameWrap" style="display:none; margin-bottom:8px;">
                 <input type="text" id="fmRenameInput" style="width:100%; box-sizing:border-box; padding:6px; font-size:0.9rem; border:1px solid var(--dot-weak); border-radius:6px; background:var(--surface-color); color:var(--text-color);">
@@ -8240,10 +8242,10 @@ function mp3SelectCurrentSong() {
 let fmFolderFilter = 'all';
 let _fmMoveId = null;
 
-function getFolders() { try { return JSON.parse(localStorage.getItem('namameto_folders') || '[]'); } catch(e) { return []; } }
+function getFolders() { try { const f = JSON.parse(localStorage.getItem('namameto_folders') || '[]'); if (!localStorage.getItem('namameto_folders_order_v2')) { const rev = f.slice().reverse(); try { localStorage.setItem('namameto_folders', JSON.stringify(rev)); localStorage.setItem('namameto_folders_order_v2', '1'); } catch(e) {} return rev; } return f; } catch(e) { return []; } }
 function saveFolders(folders) { localStorage.setItem('namameto_folders', JSON.stringify(folders)); }
 function getFolderName(fid) { const f = getFolders().find(x => x.id === fid); return f ? f.name : null; }
-function ensureFolderByName(name) { const folders = getFolders(); const ex = folders.find(x => x.name === name); if (ex) return ex.id; const id = 'folder_' + Date.now() + Math.floor(Math.random()*1000); folders.push({ id: id, name: name }); saveFolders(folders); return id; }
+function ensureFolderByName(name) { const folders = getFolders(); const ex = folders.find(x => x.name === name); if (ex) return ex.id; const id = 'folder_' + Date.now() + Math.floor(Math.random()*1000); folders.unshift({ id: id, name: name }); saveFolders(folders); return id; }
 function getSongFolderId(songId) { const list = JSON.parse(localStorage.getItem('namameto_songlist') || '[]'); const it = list.find(x => x.id === songId); return (it && it.folder) ? it.folder : null; }
 function setSongFolder(songId, fid) { let list = JSON.parse(localStorage.getItem('namameto_songlist') || '[]'); const it = list.find(x => x.id === songId); if (!it) return; if (fid) it.folder = fid; else delete it.folder; localStorage.setItem('namameto_songlist', JSON.stringify(list)); }
 
@@ -8261,11 +8263,20 @@ function renderFmFolderBar() {
     const ops = document.getElementById('fmFolderOps');
     if (ops) {
         const cur = folders.find(x => x.id === fmFolderFilter);
-        ops.innerHTML = cur ? `<div style="display:flex; gap:6px; align-items:center;"><span style="font-size:0.8rem; color:#888;">📁 ${cur.name}</span><button class="btn-insert" style="padding:3px 10px; font-size:0.8rem;" onclick="fmRenameFolder()">${getText('fm_folder_rename')}</button><button class="btn-clear" style="padding:3px 10px; font-size:0.8rem;" onclick="fmDeleteFolder()">${getText('fm_folder_delete')}</button></div>` : '';
+        const curIdx = folders.findIndex(x => x.id === fmFolderFilter);
+        ops.innerHTML = cur ? `<div style="display:flex; gap:6px; align-items:center;"><span style="font-size:0.8rem; color:#888;">📁 ${cur.name}</span>${curIdx > 0 ? '<button class="btn-insert" style="padding:3px 8px; font-size:0.8rem;" onclick="fmMoveFolder(-1)">◀</button>' : ''}${curIdx < folders.length - 1 ? '<button class="btn-insert" style="padding:3px 8px; font-size:0.8rem;" onclick="fmMoveFolder(1)">▶</button>' : ''}<button class="btn-insert" style="padding:3px 10px; font-size:0.8rem;" onclick="fmRenameFolder()">${getText('fm_folder_rename')}</button><button class="btn-clear" style="padding:3px 10px; font-size:0.8rem;" onclick="fmDeleteFolder()">${getText('fm_folder_delete')}</button></div>` : '';
     }
 }
 
 function fmSetFilter(key) { fmFolderFilter = key; renderFmFolderBar(); renderSongListSub('fm'); }
+
+function fmMoveFolder(dir) {
+    const folders = getFolders(); const idx = folders.findIndex(x => x.id === fmFolderFilter); if (idx < 0) return;
+    const to = idx + dir; if (to < 0 || to >= folders.length) return;
+    const tmp = folders[idx]; folders[idx] = folders[to]; folders[to] = tmp;
+    saveFolders(folders);
+    renderFmFolderBar();
+}
 
 async function fmCreateFolder() {
     const name = await appPrompt(getText('prompt_folder_name'));
